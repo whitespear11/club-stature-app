@@ -1,4 +1,5 @@
 import streamlit as st
+import math
 
 # League tier mapping
 league_tiers = {
@@ -15,6 +16,12 @@ country_prestige = {
     "Other": 1
 }
 
+# Player position options
+player_positions = [
+    "GK", "LB", "LWB", "CB", "RB", "RWB", "CDM", "LM", "CM", "RM",
+    "CAM", "CF", "LW", "ST", "RW"
+]
+
 def calculate_score(league, country, european, league_tiers_adjusted):
     league_score = league_tiers_adjusted.get(league, 1)  # Default to Fourth Division
     country_score = country_prestige.get(country, 1)
@@ -23,7 +30,6 @@ def calculate_score(league, country, european, league_tiers_adjusted):
 
 def calculate_minimum_offer(player_value, stature_diff, is_young):
     """Calculate the minimum offer based on stature difference and player age."""
-    # Dynamic base multiplier based on stature difference
     if stature_diff <= 0:  # Team 2's stature is equal or lower
         markup = 85.0
     else:
@@ -48,24 +54,25 @@ def calculate_minimum_offer(player_value, stature_diff, is_young):
 # App title
 st.title("FIFA Realistic Toolkit")
 
-# Form for inputs
+# Transfer Calculator Section
+st.header("Transfer Calculator")
 with st.form(key="transfer_form"):
     # Club 1 inputs
-    st.header("Your Club (Team 1) Details")
+    st.subheader("Your Club (Team 1) Details")
     club1_name = st.text_input("Enter Your Club Name (Optional)", key="club1_name")
     club1_league = st.selectbox("Select Your Club League/Division", list(league_tiers.keys()), key="club1_league")
     club1_country = st.selectbox("Select Your Club Country", list(country_prestige.keys()), key="club1_country")
     club1_european = st.checkbox("Your Club Participates in European Competitions (e.g., Champions League, Europa League)", key="club1_european")
 
     # Club 2 inputs
-    st.header("Offering Club (Team 2) Details")
+    st.subheader("Offering Club (Team 2) Details")
     club2_name = st.text_input("Enter Offering Club Name (Optional)", key="club2_name")
     club2_league = st.selectbox("Select Offering Club League/Division", list(league_tiers.keys()), key="club2_league")
     club2_country = st.selectbox("Select Offering Club Country", list(country_prestige.keys()), key="club2_country")
     club2_european = st.checkbox("Offering Club Participates in European Competitions (e.g., Champions League, Europa League)", key="club2_european")
 
     # Transfer inputs
-    st.header("Transfer Details")
+    st.subheader("Transfer Details")
     player_value = st.number_input(
         "Current Player Value",
         min_value=0.0,
@@ -77,10 +84,10 @@ with st.form(key="transfer_form"):
     is_young = st.checkbox("Player is Aged 16–21", key="is_young")
 
     # Submit button
-    submit_button = st.form_submit_button("Calculate Offer")
+    submit_transfer = st.form_submit_button("Calculate Offer")
 
-# Calculate and display results only if the button is clicked
-if submit_button:
+# Transfer results
+if submit_transfer:
     if player_value > 0:
         # Adjust league tiers if either club's league tier is < 3
         league_tiers_adjusted = league_tiers
@@ -111,3 +118,47 @@ if submit_button:
         st.success(f"You must accept any offer from {display_name2} of {minimum_offer:,.2f} or higher for this player.")
     else:
         st.info("Please enter a valid player value greater than 0.")
+
+# Starting 11 Section
+st.header("Starting 11 Overall Calculator")
+with st.form(key="starting_11_form"):
+    st.subheader("Enter Your Starting 11")
+    players = []
+    for i in range(1, 12):
+        st.write(f"Player {i}")
+        col1, col2 = st.columns([1, 1])
+        with col1:
+            position = st.selectbox(
+                "Position",
+                player_positions,
+                key=f"player_{i}_position"
+            )
+        with col2:
+            overall = st.number_input(
+                "Overall Rating",
+                min_value=0,
+                max_value=99,
+                value=0,
+                step=1,
+                format="%d",
+                key=f"player_{i}_overall"
+            )
+        players.append({"position": position, "overall": overall})
+
+    # Submit button
+    submit_starting_11 = st.form_submit_button("Calculate Team Overall")
+
+# Starting 11 results
+if submit_starting_11:
+    # Validate all overalls are >= 0
+    if all(player["overall"] >= 0 for player in players):
+        # Calculate average overall and round down
+        total_overall = sum(player["overall"] for player in players)
+        average_overall = math.floor(total_overall / 11)
+        max_signing_overall = average_overall + 2
+
+        # Display results
+        st.write(f"**Average Team Overall:** {average_overall}")
+        st.success(f"You can only sign players with an overall rating of {max_signing_overall} or below.")
+    else:
+        st.error("Please ensure all player overall ratings are non-negative.")
