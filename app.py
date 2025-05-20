@@ -1,5 +1,7 @@
 import streamlit as st
 import math
+import json
+import io
 
 # League tier mapping
 league_tiers = {
@@ -53,6 +55,12 @@ def calculate_minimum_offer(player_value, stature_diff, is_young):
         age_markup = 0.0
     
     return player_value * multiplier + player_value * age_markup
+
+# Initialize session state for Starting 11
+if "starting_11" not in st.session_state:
+    st.session_state.starting_11 = [
+        {"position": default_positions[i], "overall": 0} for i in range(11)
+    ]
 
 # App title
 st.title("FIFA Realistic Toolkit")
@@ -124,6 +132,33 @@ if submit_transfer:
 
 # Starting 11 Section
 st.header("Starting 11 Overall Calculator")
+st.info("Data persists during this browser session. Download as JSON to save or upload to restore.")
+
+# Upload Starting 11 data
+uploaded_file = st.file_uploader("Upload Starting 11 JSON", type=["json"])
+if uploaded_file:
+    try:
+        loaded_data = json.load(uploaded_file)
+        if isinstance(loaded_data, list) and len(loaded_data) == 11:
+            valid = all(
+                isinstance(player, dict) and
+                "position" in player and
+                "overall" in player and
+                player["position"] in player_positions and
+                isinstance(player["overall"], int) and
+                0 <= player["overall"] <= 99
+                for player in loaded_data
+            )
+            if valid:
+                st.session_state.starting_11 = loaded_data
+                st.success("Starting 11 data loaded successfully.")
+            else:
+                st.error("Invalid JSON format or data.")
+        else:
+            st.error("JSON must contain exactly 11 players.")
+    except json.JSONDecodeError:
+        st.error("Invalid JSON file.")
+
 with st.form(key="starting_11_form"):
     players = []
     for i in range(11):
@@ -132,7 +167,7 @@ with st.form(key="starting_11_form"):
             position = st.selectbox(
                 "",
                 player_positions,
-                index=player_positions.index(default_positions[i]),
+                index=player_positions.index(st.session_state.starting_11[i]["position"]),
                 key=f"player_{i}_position"
             )
         with col2:
@@ -140,7 +175,7 @@ with st.form(key="starting_11_form"):
                 "",
                 min_value=0,
                 max_value=99,
-                value=0,
+                value=st.session_state.starting_11[i]["overall"],
                 step=1,
                 format="%d",
                 key=f"player_{i}_overall"
@@ -150,10 +185,23 @@ with st.form(key="starting_11_form"):
     # Submit button
     submit_starting_11 = st.form_submit_button("Calculate Team Overall")
 
+# Download Starting 11 data
+if st.session_state.starting_11:
+    json_str = json.dumps(st.session_state.starting_11, indent=2)
+    st.download_button(
+        label="Download Starting 11 as JSON",
+        data=json_str,
+        file_name="starting_11.json",
+        mime="application/json"
+    )
+
 # Starting 11 results
 if submit_starting_11:
     # Validate all overalls are >= 0
     if all(player["overall"] >= 0 for player in players):
+        # Update session state
+        st.session_state.starting_11 = players
+
         # Calculate average overall and round down
         total_overall = sum(player["overall"] for player in players)
         average_overall = math.floor(total_overall / 11)
