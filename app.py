@@ -1,5 +1,9 @@
 import streamlit as st
 
+# Initialize session state for player value
+if "player_value" not in st.session_state:
+    st.session_state.player_value = 0.0
+
 # League tier mapping
 league_tiers = {
     "First Division": 10,
@@ -66,14 +70,35 @@ with st.form(key="transfer_form"):
 
     # Transfer inputs
     st.header("Transfer Details")
-    player_value = st.number_input(
+    # Player value input with increment buttons
+    st.session_state.player_value = st.number_input(
         "Current Player Value (£)",
         min_value=0.0,
         step=1000.0,
         format="%.2f",
-        key="player_value",
-        help="Enter value without commas, e.g., 1000000 for £1,000,000"
+        value=st.session_state.player_value,
+        help="Enter value without commas, e.g., 1000000 for £1,000,000",
+        key="player_value"
     )
+    
+    # Buttons for incrementing player value
+    col1, col2, col3, col4, col5 = st.columns(5)
+    with col1:
+        if st.button("+1k"):
+            st.session_state.player_value += 1000.0
+    with col2:
+        if st.button("+10k"):
+            st.session_state.player_value += 10000.0
+    with col3:
+        if st.button("+100k"):
+            st.session_state.player_value += 100000.0
+    with col4:
+        if st.button("+1m"):
+            st.session_state.player_value += 1000000.0
+    with col5:
+        if st.button("+10m"):
+            st.session_state.player_value += 10000000.0
+
     is_young = st.checkbox("Player is Aged 16–21", key="is_young")
 
     # Submit button
@@ -81,7 +106,7 @@ with st.form(key="transfer_form"):
 
 # Calculate and display results only if the button is clicked
 if submit_button:
-    if club1_name and club2_name and player_value > 0:
+    if club1_name and club2_name and st.session_state.player_value > 0:
         score1 = calculate_score(club1_league, club1_country, club1_european)
         score2 = calculate_score(club2_league, club2_country, club2_european)
         stature_diff = score2 - score1
@@ -98,9 +123,9 @@ if submit_button:
             st.info("Both clubs have equal stature.")
 
         # Calculate and display minimum offer
-        minimum_offer = calculate_minimum_offer(player_value, stature_diff, is_young)
+        minimum_offer = calculate_minimum_offer(st.session_state.player_value, stature_diff, is_young)
         st.success(f"You must accept any offer from {club2_name} of £{minimum_offer:,.2f} or higher for this player.")
     elif not club1_name or not club2_name:
         st.info("Please enter names for both clubs to compare.")
-    elif player_value <= 0:
+    elif st.session_state.player_value <= 0:
         st.info("Please enter a valid player value greater than 0.")
