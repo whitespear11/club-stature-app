@@ -1,8 +1,10 @@
 import streamlit as st
 
-# Initialize session state for player value
+# Initialize session state for player value and last submitted value
 if "player_value" not in st.session_state:
     st.session_state.player_value = 0.0
+if "last_player_value" not in st.session_state:
+    st.session_state.last_player_value = 0.0
 
 # League tier mapping
 league_tiers = {
@@ -80,7 +82,7 @@ with st.form(key="transfer_form"):
         min_value=0.0,
         step=1000.0,
         format="%.2f",
-        value=st.session_state.player_value,
+        value=st.session_state.player_value if st.session_state.player_value > 0 else st.session_state.last_player_value,
         help="Enter value without commas, e.g., 1000000 for £1,000,000",
         key="player_value"
     )
@@ -124,7 +126,9 @@ if submit_button:
         # Calculate and display minimum offer
         minimum_offer = calculate_minimum_offer(player_value_input, stature_diff, is_young)
         st.success(f"You must accept any offer from {club2_name} of £{minimum_offer:,.2f} or higher for this player.")
-        # Update session state for next input
+        # Store the submitted player value for next input
+        st.session_state.last_player_value = player_value_input
+        # Reset player_value to avoid button conflicts
         st.session_state.player_value = player_value_input
     elif not club1_name or not club2_name:
         st.info("Please enter names for both clubs to compare.")
