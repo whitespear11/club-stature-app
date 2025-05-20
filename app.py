@@ -25,13 +25,13 @@ def calculate_minimum_offer(player_value, stature_diff, is_young):
     """Calculate the minimum offer based on stature difference and player age."""
     # Base multiplier based on stature difference
     if stature_diff <= 0:  # Team 2's stature is equal or lower
-        multiplier = 1.7
+        multiplier = 1.85
     elif stature_diff <= 2.0:
-        multiplier = 1.7
+        multiplier = 1.65
     elif stature_diff <= 4.0:
-        multiplier = 1.6
+        multiplier = 1.45
     else:
-        multiplier = 1.5
+        multiplier = 1.25
     
     # Additional markup for young players (16–21)
     if is_young:
