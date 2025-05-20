@@ -27,8 +27,11 @@ player_positions = [
 # Default positions for starting 11
 default_positions = ["GK", "LB", "CB", "CB", "RB", "LM", "CM", "CM", "RM", "ST", "ST"]
 
-def calculate_score(league, country, european, league_tiers_adjusted):
-    league_score = league_tiers_adjusted.get(league, 1)  # Default to Fourth Division
+def calculate_score(league, country, european, league_tiers):
+    league_score = league_tiers.get(league, 1)  # Default to Fourth Division
+    # Halve league score if tier is < 3
+    if league_tiers.get(league, 1) < 3:
+        league_score /= 2
     country_score = country_prestige.get(country, 1)
     european_bonus = 1.0 if european else 0.0
     return league_score + country_score + european_bonus
@@ -100,13 +103,9 @@ with st.form(key="transfer_form"):
 # Transfer results
 if submit_transfer:
     if player_value > 0:
-        # Adjust league tiers if either club's league tier is < 3
-        league_tiers_adjusted = league_tiers
-        if league_tiers[club1_league] < 3 or league_tiers[club2_league] < 3:
-            league_tiers_adjusted = {k: v / 2 for k, v in league_tiers.items()}
-
-        score1 = calculate_score(club1_league, club1_country, club1_european, league_tiers_adjusted)
-        score2 = calculate_score(club2_league, club2_country, club2_european, league_tiers_adjusted)
+        # Calculate stature scores
+        score1 = calculate_score(club1_league, club1_country, club1_european, league_tiers)
+        score2 = calculate_score(club2_league, club2_country, club2_european, league_tiers)
         stature_diff = score2 - score1
 
         # Use default names if not provided
