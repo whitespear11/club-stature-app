@@ -52,7 +52,8 @@ def calculate_minimum_offer(player_value, stature_diff, is_young):
 # App title
 st.title("FIFA Career Mode Club Stature Comparator")
 
-# Increment buttons for player value (outside the form)
+# Player details section with increment buttons
+st.header("Player Details")
 st.subheader("Adjust Player Value")
 col1, col2, col3, col4, col5 = st.columns(5)
 with col1:
@@ -73,6 +74,18 @@ with col5:
 
 # Form for inputs
 with st.form(key="transfer_form"):
+    # Player value input and young player checkbox
+    player_value_input = st.number_input(
+        "Current Player Value (£)",
+        min_value=0.0,
+        step=1000.0,
+        format="%.2f",
+        value=st.session_state.player_value,
+        help="Enter value without commas, e.g., 1000000 for £1,000,000",
+        key="player_value"
+    )
+    is_young = st.checkbox("Player is Aged 16–21", key="is_young")
+
     # Club 1 inputs
     st.header("Your Club (Team 1) Details")
     club1_name = st.text_input("Enter Your Club Name", key="club1_name")
@@ -87,28 +100,12 @@ with st.form(key="transfer_form"):
     club2_country = st.selectbox("Select Offering Club Country", list(country_prestige.keys()), key="club2_country")
     club2_european = st.checkbox("Offering Club Participates in European Competitions (e.g., Champions League, Europa League)", key="club2_european")
 
-    # Transfer inputs
-    st.header("Transfer Details")
-    # Player value input synced with session state
-    player_value_input = st.number_input(
-        "Current Player Value (£)",
-        min_value=0.0,
-        step=1000.0,
-        format="%.2f",
-        value=st.session_state.player_value,
-        help="Enter value without commas, e.g., 1000000 for £1,000,000",
-        key="player_value"
-    )
-    is_young = st.checkbox("Player is Aged 16–21", key="is_young")
-
     # Submit button
     submit_button = st.form_submit_button("Calculate Offer")
 
 # Calculate and display results only if the button is clicked
 if submit_button:
-    # Sync player value from form input
-    st.session_state.player_value = player_value_input
-    if club1_name and club2_name and st.session_state.player_value > 0:
+    if club1_name and club2_name and player_value_input > 0:
         score1 = calculate_score(club1_league, club1_country, club1_european)
         score2 = calculate_score(club2_league, club2_country, club2_european)
         stature_diff = score2 - score1
@@ -125,9 +122,11 @@ if submit_button:
             st.info("Both clubs have equal stature.")
 
         # Calculate and display minimum offer
-        minimum_offer = calculate_minimum_offer(st.session_state.player_value, stature_diff, is_young)
+        minimum_offer = calculate_minimum_offer(player_value_input, stature_diff, is_young)
         st.success(f"You must accept any offer from {club2_name} of £{minimum_offer:,.2f} or higher for this player.")
+        # Update session state for next input
+        st.session_state.player_value = player_value_input
     elif not club1_name or not club2_name:
         st.info("Please enter names for both clubs to compare.")
-    elif st.session_state.player_value <= 0:
+    elif player_value_input <= 0:
         st.info("Please enter a valid player value greater than 0.")
