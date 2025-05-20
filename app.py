@@ -52,6 +52,25 @@ def calculate_minimum_offer(player_value, stature_diff, is_young):
 # App title
 st.title("FIFA Career Mode Club Stature Comparator")
 
+# Increment buttons for player value (outside the form)
+st.subheader("Adjust Player Value")
+col1, col2, col3, col4, col5 = st.columns(5)
+with col1:
+    if st.button("+1k"):
+        st.session_state.player_value += 1000.0
+with col2:
+    if st.button("+10k"):
+        st.session_state.player_value += 10000.0
+with col3:
+    if st.button("+100k"):
+        st.session_state.player_value += 100000.0
+with col4:
+    if st.button("+1m"):
+        st.session_state.player_value += 1000000.0
+with col5:
+    if st.button("+10m"):
+        st.session_state.player_value += 10000000.0
+
 # Form for inputs
 with st.form(key="transfer_form"):
     # Club 1 inputs
@@ -70,7 +89,7 @@ with st.form(key="transfer_form"):
 
     # Transfer inputs
     st.header("Transfer Details")
-    # Player value input with increment buttons
+    # Player value input synced with session state
     st.session_state.player_value = st.number_input(
         "Current Player Value (£)",
         min_value=0.0,
@@ -80,25 +99,6 @@ with st.form(key="transfer_form"):
         help="Enter value without commas, e.g., 1000000 for £1,000,000",
         key="player_value"
     )
-    
-    # Buttons for incrementing player value
-    col1, col2, col3, col4, col5 = st.columns(5)
-    with col1:
-        if st.button("+1k"):
-            st.session_state.player_value += 1000.0
-    with col2:
-        if st.button("+10k"):
-            st.session_state.player_value += 10000.0
-    with col3:
-        if st.button("+100k"):
-            st.session_state.player_value += 100000.0
-    with col4:
-        if st.button("+1m"):
-            st.session_state.player_value += 1000000.0
-    with col5:
-        if st.button("+10m"):
-            st.session_state.player_value += 10000000.0
-
     is_young = st.checkbox("Player is Aged 16–21", key="is_young")
 
     # Submit button
