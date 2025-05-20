@@ -23,15 +23,14 @@ def calculate_score(league, country, european):
 
 def calculate_minimum_offer(player_value, stature_diff, is_young):
     """Calculate the minimum offer based on stature difference and player age."""
-    # Base multiplier based on stature difference
+    # Dynamic base multiplier based on stature difference
     if stature_diff <= 0:  # Team 2's stature is equal or lower
-        multiplier = 1.85
-    elif stature_diff <= 3.5:
-        multiplier = 1.65
-    elif stature_diff <= 7.0:
-        multiplier = 1.45
+        markup = 85.0
     else:
-        multiplier = 1.25
+        # Linear interpolation: 85% at diff=0, 25% at diff=12
+        markup = 85.0 - (stature_diff / 12.0) * 60.0
+        markup = max(markup, 25.0)  # Cap at 25% for diff > 12
+    multiplier = 1.0 + markup / 100.0
     
     # Additional markup for young players (16–21)
     if is_young:
