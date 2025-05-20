@@ -5,8 +5,7 @@ league_tiers = {
     "First Division": 5,
     "Second Division": 4,
     "Third Division": 3,
-    "Lower Second Tiers": 2,
-    "Lesser-Known Leagues": 1
+    "Fourth Division": 2
 }
 
 # Country prestige mapping
@@ -17,13 +16,14 @@ country_prestige = {
 }
 
 def calculate_score(league, country, european):
-    league_score = league_tiers.get(league, 1)
+    league_score = league_tiers.get(league, 2)  # Default to Fourth Division
     country_score = country_prestige.get(country, 1)
     european_bonus = 1.0 if european else 0.0
     return league_score + country_score + european_bonus
 
-def calculate_minimum_offer(player_value, stature_diff):
-    """Calculate the minimum offer based on stature difference."""
+def calculate_minimum_offer(player_value, stature_diff, is_young):
+    """Calculate the minimum offer based on stature difference and player age."""
+    # Base multiplier based on stature difference
     if stature_diff <= 0:  # Team 2's stature is equal or lower
         multiplier = 1.7
     elif stature_diff <= 2.0:
@@ -32,7 +32,19 @@ def calculate_minimum_offer(player_value, stature_diff):
         multiplier = 1.6
     else:
         multiplier = 1.5
-    return player_value * multiplier
+    
+    # Additional markup for young players (16–21)
+    if is_young:
+        if stature_diff <= 0 or stature_diff <= 2.0:
+            age_markup = 0.2  # +20% of player value
+        elif stature_diff <= 4.0:
+            age_markup = 0.15  # +15% of player value
+        else:
+            age_markup = 0.1  # +10% of player value
+    else:
+        age_markup = 0.0
+    
+    return player_value * multiplier + player_value * age_markup
 
 # App title
 st.title("FIFA Career Mode Club Stature Comparator")
@@ -55,6 +67,7 @@ club2_european = st.checkbox("Offering Club Participates in European Competition
 st.header("Transfer Details")
 player_value = st.number_input("Current Player Value (£)", min_value=0.0, step=1000.0, format="%.2f", key="player_value")
 offered_bid = st.number_input("Team 2 Offered Bid (£)", min_value=0.0, step=1000.0, format="%.2f", key="offered_bid")
+is_young = st.checkbox("Player is Aged 16–21", key="is_young")
 
 # Calculate scores and offer
 if club1_name and club2_name and player_value > 0:
@@ -74,7 +87,7 @@ if club1_name and club2_name and player_value > 0:
         st.info("Both clubs have equal stature.")
 
     # Calculate and display minimum offer
-    minimum_offer = calculate_minimum_offer(player_value, stature_diff)
+    minimum_offer = calculate_minimum_offer(player_value, stature_diff, is_young)
     st.write(f"**Minimum Acceptable Offer**: £{minimum_offer:,.2f}")
 
     # Check if the offer must be accepted
