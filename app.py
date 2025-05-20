@@ -67,7 +67,14 @@ with st.form(key="transfer_form"):
 
     # Transfer inputs
     st.header("Transfer Details")
-    player_value = st.number_input("Current Player Value (£)", min_value=0.0, step=1000.0, format="%.2f", key="player_value")
+    player_value = st.number_input(
+        "Current Player Value (£)",
+        min_value=0.0,
+        step=1000.0,
+        format="%.2f",
+        key="player_value",
+        help="Enter value without commas, e.g., 1000000 for £1,000,000"
+    )
     is_young = st.checkbox("Player is Aged 16–21", key="is_young")
 
     # Submit button
