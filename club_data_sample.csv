@@ -1,4 +1,33 @@
 Club Name,League,Country,Reputation,European Bonus,Trophy Bonus
-Luton Town,EFL Championship,England,3.0,0,0.0
-Ajax,Eredivisie,Netherlands,4.5,1,0.5
+Arsenal,Premier League,England,4.5,0,0.5
+Aston Villa,Premier League,England,4.0,0,0.0
+Chelsea,Premier League,England,4.5,1,0.5
+Liverpool,Premier League,England,5.0,1,1.0
+Manchester City,Premier League,England,5.0,1,0.0
+Manchester United,Premier League,England,5.0,0,1.0
+Newcastle United,Premier League,England,4.5,0,0.0
+Tottenham Hotspur,Premier League,England,4.5,0,0.0
 Real Madrid,La Liga,Spain,5.0,1,1.0
+Barcelona,La Liga,Spain,5.0,1,1.0
+Atletico Madrid,La Liga,Spain,4.5,0,0.5
+Sevilla,La Liga,Spain,4.0,0,0.0
+Real Sociedad,La Liga,Spain,4.0,0,0.0
+Athletic Club,La Liga,Spain,4.0,0,0.0
+Villarreal,La Liga,Spain,4.0,0,0.0
+Bayern Munich,Bundesliga,Germany,5.0,1,1.0
+Borussia Dortmund,Bundesliga,Germany,4.5,0,0.0
+RB Leipzig,Bundesliga,Germany,4.5,0,0.0
+Bayer Leverkusen,Bundesliga,Germany,4.0,0,0.0
+Eintracht Frankfurt,Bundesliga,Germany,4.0,0,0.0
+Juventus,Serie A,Italy,5.0,0,1.0
+Inter Milan,Serie A,Italy,5.0,1,0.5
+AC Milan,Serie A,Italy,5.0,1,1.0
+Napoli,Serie A,Italy,4.5,0,0.0
+Roma,Serie A,Italy,4.5,0,0.5
+Lazio,Serie A,Italy,4.0,0,0.0
+Atalanta,Serie A,Italy,4.0,0,0.0
+Paris Saint-Germain,Ligue 1,France,5.0,0,0.0
+Marseille,Ligue 1,France,4.5,0,0.0
+Monaco,Ligue 1,France,4.0,0,0.0
+Lyon,Ligue 1,France,4.0,0,0.0
+Lille,Ligue 1,France,4.0,0,0.0
