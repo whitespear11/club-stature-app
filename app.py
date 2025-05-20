@@ -66,7 +66,6 @@ club2_european = st.checkbox("Offering Club Participates in European Competition
 # Transfer inputs
 st.header("Transfer Details")
 player_value = st.number_input("Current Player Value (£)", min_value=0.0, step=1000.0, format="%.2f", key="player_value")
-offered_bid = st.number_input("Team 2 Offered Bid (£)", min_value=0.0, step=1000.0, format="%.2f", key="offered_bid")
 is_young = st.checkbox("Player is Aged 16–21", key="is_young")
 
 # Calculate scores and offer
@@ -88,13 +87,7 @@ if club1_name and club2_name and player_value > 0:
 
     # Calculate and display minimum offer
     minimum_offer = calculate_minimum_offer(player_value, stature_diff, is_young)
-    st.write(f"**Minimum Acceptable Offer**: £{minimum_offer:,.2f}")
-
-    # Check if the offer must be accepted
-    if offered_bid >= minimum_offer:
-        st.success(f"The offered bid of £{offered_bid:,.2f} meets or exceeds the minimum acceptable offer of £{minimum_offer:,.2f}. You must accept this offer.")
-    else:
-        st.warning(f"The offered bid of £{offered_bid:,.2f} is below the minimum acceptable offer of £{minimum_offer:,.2f}. You can reject this offer.")
+    st.success(f"You must accept any offer from {club2_name} of £{minimum_offer:,.2f} or higher for this player.")
 elif not club1_name or not club2_name:
     st.info("Please enter names for both clubs to compare.")
 elif player_value <= 0:
