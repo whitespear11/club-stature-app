@@ -2,11 +2,11 @@ import streamlit as st
 
 # League tier mapping
 league_tiers = {
-    "First Division (e.g., Premier League, La Liga, Bundesliga, Serie A, Ligue 1)": 5,
-    "Second Division (e.g., Eredivisie, Liga Portugal, EFL Championship, MLS)": 4,
-    "Third Division (e.g., Belgian Pro League, Swiss Super League, 2. Bundesliga)": 3,
-    "Lower Second Tiers (e.g., Serie B, Ligue 2)": 2,
-    "Lesser-Known Leagues (e.g., Polish, Irish)": 1
+    "First Division": 5,
+    "Second Division": 4,
+    "Third Division": 3,
+    "Lower Second Tiers": 2,
+    "Lesser-Known Leagues": 1
 }
 
 # Country prestige mapping
