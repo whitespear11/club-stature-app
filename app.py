@@ -22,6 +22,9 @@ player_positions = [
     "CAM", "CF", "LW", "ST", "RW"
 ]
 
+# Default positions for starting 11
+default_positions = ["GK", "LB", "CB", "CB", "RB", "LM", "CM", "CM", "RM", "ST", "ST"]
+
 def calculate_score(league, country, european, league_tiers_adjusted):
     league_score = league_tiers_adjusted.get(league, 1)  # Default to Fourth Division
     country_score = country_prestige.get(country, 1)
@@ -122,20 +125,19 @@ if submit_transfer:
 # Starting 11 Section
 st.header("Starting 11 Overall Calculator")
 with st.form(key="starting_11_form"):
-    st.subheader("Enter Your Starting 11")
     players = []
-    for i in range(1, 12):
-        st.write(f"Player {i}")
+    for i in range(11):
         col1, col2 = st.columns([1, 1])
         with col1:
             position = st.selectbox(
-                "Position",
+                "",
                 player_positions,
+                index=player_positions.index(default_positions[i]),
                 key=f"player_{i}_position"
             )
         with col2:
             overall = st.number_input(
-                "Overall Rating",
+                "",
                 min_value=0,
                 max_value=99,
                 value=0,
@@ -158,7 +160,7 @@ if submit_starting_11:
         max_signing_overall = average_overall + 2
 
         # Display results
-        st.write(f"**Average Team Overall:** {average_overall}")
-        st.success(f"You can only sign players with an overall rating of {max_signing_overall} or below.")
+        st.write(f"Average Team Overall: {average_overall}")
+        st.success(f"Sign players with overall {max_signing_overall} or below.")
     else:
-        st.error("Please ensure all player overall ratings are non-negative.")
+        st.error("All player overall ratings must be non-negative.")
