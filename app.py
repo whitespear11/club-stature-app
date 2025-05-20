@@ -1,5 +1,7 @@
 import streamlit as st
 import math
+import json
+import io
 
 # League tier mapping
 league_tiers = {
@@ -25,8 +27,11 @@ player_positions = [
 # Default positions for starting 11
 default_positions = ["GK", "LB", "CB", "CB", "RB", "LM", "CM", "CM", "RM", "ST", "ST"]
 
-def calculate_score(league, country, european, league_tiers_adjusted):
-    league_score = league_tiers_adjusted.get(league, 1)  # Default to Fourth Division
+def calculate_score(league, country, european, league_tiers):
+    league_score = league_tiers.get(league, 1)  # Default to Fourth Division
+    # Halve league score if tier is < 3
+    if league_tiers.get(league, 1) < 3:
+        league_score /= 2
     country_score = country_prestige.get(country, 1)
     european_bonus = 1.0 if european else 0.0
     return league_score + country_score + european_bonus
@@ -34,25 +39,31 @@ def calculate_score(league, country, european, league_tiers_adjusted):
 def calculate_minimum_offer(player_value, stature_diff, is_young):
     """Calculate the minimum offer based on stature difference and player age."""
     if stature_diff <= 0:  # Team 2's stature is equal or lower
-        markup = 85.0
+        markup = 65.0
     else:
-        # Linear interpolation: 85% at diff=0, 25% at diff=12
-        markup = 85.0 - (stature_diff / 12.0) * 60.0
-        markup = max(markup, 25.0)  # Cap at 25% for diff > 12
+        # Linear interpolation: 65% at diff=0, 15% at diff=12
+        markup = 65.0 - (stature_diff / 12.0) * 50.0
+        markup = max(markup, 15.0)  # Cap at 15% for diff > 12
     multiplier = 1.0 + markup / 100.0
     
     # Additional markup for young players (16–21)
     if is_young:
         if stature_diff <= 0 or stature_diff <= 3.5:
-            age_markup = 0.2  # +20% of player value
+            age_markup = 0.25  # +25% of player value
         elif stature_diff <= 7.0:
-            age_markup = 0.15  # +15% of player value
+            age_markup = 0.18  # +18% of player value
         else:
-            age_markup = 0.1  # +10% of player value
+            age_markup = 0.12  # +12% of player value
     else:
         age_markup = 0.0
     
     return player_value * multiplier + player_value * age_markup
+
+# Initialize session state for Starting 11
+if "starting_11" not in st.session_state:
+    st.session_state.starting_11 = [
+        {"position": default_positions[i], "overall": 0, "wage": 0} for i in range(11)
+    ]
 
 # App title
 st.title("FIFA Realistic Toolkit")
@@ -92,13 +103,9 @@ with st.form(key="transfer_form"):
 # Transfer results
 if submit_transfer:
     if player_value > 0:
-        # Adjust league tiers if either club's league tier is < 3
-        league_tiers_adjusted = league_tiers
-        if league_tiers[club1_league] < 3 or league_tiers[club2_league] < 3:
-            league_tiers_adjusted = {k: v / 2 for k, v in league_tiers.items()}
-
-        score1 = calculate_score(club1_league, club1_country, club1_european, league_tiers_adjusted)
-        score2 = calculate_score(club2_league, club2_country, club2_european, league_tiers_adjusted)
+        # Calculate stature scores
+        score1 = calculate_score(club1_league, club1_country, club1_european, league_tiers)
+        score2 = calculate_score(club2_league, club2_country, club2_european, league_tiers)
         stature_diff = score2 - score1
 
         # Use default names if not provided
@@ -124,15 +131,54 @@ if submit_transfer:
 
 # Starting 11 Section
 st.header("Starting 11 Overall Calculator")
+st.info("Data persists during this browser session. Download as JSON to save or upload to restore.")
+
+# Upload Starting 11 data
+uploaded_file = st.file_uploader("Upload Starting 11 JSON", type=["json"])
+if uploaded_file:
+    try:
+        loaded_data = json.load(uploaded_file)
+        if isinstance(loaded_data, list) and len(loaded_data) == 11:
+            valid = all(
+                isinstance(player, dict) and
+                "position" in player and
+                "overall" in player and
+                "wage" in player and
+                player["position"] in player_positions and
+                isinstance(player["overall"], int) and
+                0 <= player["overall"] <= 99 and
+                isinstance(player["wage"], int) and
+                player["wage"] >= 0
+                for player in loaded_data
+            )
+            if valid:
+                st.session_state.starting_11 = loaded_data
+                st.success("Starting 11 data loaded successfully.")
+            else:
+                st.error("Invalid JSON format or data.")
+        else:
+            st.error("JSON must contain exactly 11 players.")
+    except json.JSONDecodeError:
+        st.error("Invalid JSON file.")
+
 with st.form(key="starting_11_form"):
+    # Column headers
+    col1, col2, col3 = st.columns([1, 1, 1])
+    with col1:
+        st.write("Position")
+    with col2:
+        st.write("Overall")
+    with col3:
+        st.write("Wage (p/w)")
+
     players = []
     for i in range(11):
-        col1, col2 = st.columns([1, 1])
+        col1, col2, col3 = st.columns([1, 1, 1])
         with col1:
             position = st.selectbox(
                 "",
                 player_positions,
-                index=player_positions.index(default_positions[i]),
+                index=player_positions.index(st.session_state.starting_11[i]["position"]),
                 key=f"player_{i}_position"
             )
         with col2:
@@ -140,27 +186,54 @@ with st.form(key="starting_11_form"):
                 "",
                 min_value=0,
                 max_value=99,
-                value=0,
+                value=st.session_state.starting_11[i]["overall"],
                 step=1,
                 format="%d",
                 key=f"player_{i}_overall"
             )
-        players.append({"position": position, "overall": overall})
+        with col3:
+            wage = st.number_input(
+                "",
+                min_value=0,
+                value=st.session_state.starting_11[i]["wage"],
+                step=1000,
+                format="%d",
+                key=f"player_{i}_wage"
+            )
+        players.append({"position": position, "overall": overall, "wage": wage})
 
     # Submit button
     submit_starting_11 = st.form_submit_button("Calculate Team Overall")
 
+# Download Starting 11 data
+if st.session_state.starting_11:
+    json_str = json.dumps(st.session_state.starting_11, indent=2)
+    st.download_button(
+        label="Download Starting 11 as JSON",
+        data=json_str,
+        file_name="starting_11.json",
+        mime="application/json"
+    )
+
 # Starting 11 results
 if submit_starting_11:
-    # Validate all overalls are >= 0
-    if all(player["overall"] >= 0 for player in players):
+    # Validate all overalls and wages are >= 0
+    if all(player["overall"] >= 0 and player["wage"] >= 0 for player in players):
+        # Update session state
+        st.session_state.starting_11 = players
+
         # Calculate average overall and round down
         total_overall = sum(player["overall"] for player in players)
         average_overall = math.floor(total_overall / 11)
         max_signing_overall = average_overall + 2
 
+        # Calculate wage cap
+        max_wage = max(player["wage"] for player in players)
+        wage_cap = int(max_wage * 1.2)
+
         # Display results
         st.write(f"Average Team Overall: {average_overall}")
         st.success(f"Sign players with overall {max_signing_overall} or below.")
+        st.write(f"Wage Cap for this season: {wage_cap:,} (p/w)")
     else:
-        st.error("All player overall ratings must be non-negative.")
+        st.error("All player overall ratings and wages must be non-negative.")
