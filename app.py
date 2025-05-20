@@ -15,8 +15,8 @@ country_prestige = {
     "Other": 1
 }
 
-def calculate_score(league, country, european):
-    league_score = league_tiers.get(league, 1)  # Default to Fourth Division
+def calculate_score(league, country, european, league_tiers_adjusted):
+    league_score = league_tiers_adjusted.get(league, 1)  # Default to Fourth Division
     country_score = country_prestige.get(country, 1)
     european_bonus = 1.0 if european else 0.0
     return league_score + country_score + european_bonus
@@ -46,7 +46,7 @@ def calculate_minimum_offer(player_value, stature_diff, is_young):
     return player_value * multiplier + player_value * age_markup
 
 # App title
-st.title("FIFA Career Mode Club Stature Comparator")
+st.title("FIFA Realistic Toolkit")
 
 # Form for inputs
 with st.form(key="transfer_form"):
@@ -67,12 +67,12 @@ with st.form(key="transfer_form"):
     # Transfer inputs
     st.header("Transfer Details")
     player_value = st.number_input(
-        "Current Player Value (£)",
+        "Current Player Value",
         min_value=0.0,
         step=1000.0,
         format="%.2f",
         key="player_value",
-        help="Enter value without commas, e.g., 1000000 for £1,000,000"
+        help="Enter value without commas, e.g., 1000000 for 1,000,000"
     )
     is_young = st.checkbox("Player is Aged 16–21", key="is_young")
 
@@ -82,8 +82,13 @@ with st.form(key="transfer_form"):
 # Calculate and display results only if the button is clicked
 if submit_button:
     if club1_name and club2_name and player_value > 0:
-        score1 = calculate_score(club1_league, club1_country, club1_european)
-        score2 = calculate_score(club2_league, club2_country, club2_european)
+        # Adjust league tiers if either club's league tier is < 3
+        league_tiers_adjusted = league_tiers
+        if league_tiers[club1_league] < 3 or league_tiers[club2_league] < 3:
+            league_tiers_adjusted = {k: v / 2 for k, v in league_tiers.items()}
+
+        score1 = calculate_score(club1_league, club1_country, club1_european, league_tiers_adjusted)
+        score2 = calculate_score(club2_league, club2_country, club2_european, league_tiers_adjusted)
         stature_diff = score2 - score1
 
         # Display club stature scores
@@ -99,7 +104,7 @@ if submit_button:
 
         # Calculate and display minimum offer
         minimum_offer = calculate_minimum_offer(player_value, stature_diff, is_young)
-        st.success(f"You must accept any offer from {club2_name} of £{minimum_offer:,.2f} or higher for this player.")
+        st.success(f"You must accept any offer from {club2_name} of {minimum_offer:,.2f} or higher for this player.")
     elif not club1_name or not club2_name:
         st.info("Please enter names for both clubs to compare.")
     elif player_value <= 0:
