@@ -59,7 +59,7 @@ def calculate_minimum_offer(player_value, stature_diff, is_young):
 # Initialize session state for Starting 11
 if "starting_11" not in st.session_state:
     st.session_state.starting_11 = [
-        {"position": default_positions[i], "overall": 0} for i in range(11)
+        {"position": default_positions[i], "overall": 0, "wage": 0} for i in range(11)
     ]
 
 # App title
@@ -144,9 +144,12 @@ if uploaded_file:
                 isinstance(player, dict) and
                 "position" in player and
                 "overall" in player and
+                "wage" in player and
                 player["position"] in player_positions and
                 isinstance(player["overall"], int) and
-                0 <= player["overall"] <= 99
+                0 <= player["overall"] <= 99 and
+                isinstance(player["wage"], int) and
+                player["wage"] >= 0
                 for player in loaded_data
             )
             if valid:
@@ -162,7 +165,7 @@ if uploaded_file:
 with st.form(key="starting_11_form"):
     players = []
     for i in range(11):
-        col1, col2 = st.columns([1, 1])
+        col1, col2, col3 = st.columns([1, 1, 1])
         with col1:
             position = st.selectbox(
                 "",
@@ -180,7 +183,16 @@ with st.form(key="starting_11_form"):
                 format="%d",
                 key=f"player_{i}_overall"
             )
-        players.append({"position": position, "overall": overall})
+        with col3:
+            wage = st.number_input(
+                "",
+                min_value=0,
+                value=st.session_state.starting_11[i]["wage"],
+                step=1000,
+                format="%d",
+                key=f"player_{i}_wage"
+            )
+        players.append({"position": position, "overall": overall, "wage": wage})
 
     # Submit button
     submit_starting_11 = st.form_submit_button("Calculate Team Overall")
@@ -197,8 +209,8 @@ if st.session_state.starting_11:
 
 # Starting 11 results
 if submit_starting_11:
-    # Validate all overalls are >= 0
-    if all(player["overall"] >= 0 for player in players):
+    # Validate all overalls and wages are >= 0
+    if all(player["overall"] >= 0 and player["wage"] >= 0 for player in players):
         # Update session state
         st.session_state.starting_11 = players
 
@@ -207,8 +219,13 @@ if submit_starting_11:
         average_overall = math.floor(total_overall / 11)
         max_signing_overall = average_overall + 2
 
+        # Calculate wage cap
+        max_wage = max(player["wage"] for player in players)
+        wage_cap = int(max_wage * 1.2)
+
         # Display results
         st.write(f"Average Team Overall: {average_overall}")
         st.success(f"Sign players with overall {max_signing_overall} or below.")
+        st.write(f"Wage Cap for this season: {wage_cap:,}")
     else:
-        st.error("All player overall ratings must be non-negative.")
+        st.error("All player overall ratings and wages must be non-negative.")
