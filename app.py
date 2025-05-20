@@ -163,6 +163,15 @@ if uploaded_file:
         st.error("Invalid JSON file.")
 
 with st.form(key="starting_11_form"):
+    # Column headers
+    col1, col2, col3 = st.columns([1, 1, 1])
+    with col1:
+        st.write("Position")
+    with col2:
+        st.write("Overall")
+    with col3:
+        st.write("Wage (p/w)")
+
     players = []
     for i in range(11):
         col1, col2, col3 = st.columns([1, 1, 1])
@@ -226,6 +235,6 @@ if submit_starting_11:
         # Display results
         st.write(f"Average Team Overall: {average_overall}")
         st.success(f"Sign players with overall {max_signing_overall} or below.")
-        st.write(f"Wage Cap for this season: {wage_cap:,}")
+        st.write(f"Wage Cap for this season: {wage_cap:,} (p/w)")
     else:
         st.error("All player overall ratings and wages must be non-negative.")
