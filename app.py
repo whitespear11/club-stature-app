@@ -52,14 +52,14 @@ st.title("FIFA Realistic Toolkit")
 with st.form(key="transfer_form"):
     # Club 1 inputs
     st.header("Your Club (Team 1) Details")
-    club1_name = st.text_input("Enter Your Club Name", key="club1_name")
+    club1_name = st.text_input("Enter Your Club Name (Optional)", key="club1_name")
     club1_league = st.selectbox("Select Your Club League/Division", list(league_tiers.keys()), key="club1_league")
     club1_country = st.selectbox("Select Your Club Country", list(country_prestige.keys()), key="club1_country")
     club1_european = st.checkbox("Your Club Participates in European Competitions (e.g., Champions League, Europa League)", key="club1_european")
 
     # Club 2 inputs
     st.header("Offering Club (Team 2) Details")
-    club2_name = st.text_input("Enter Offering Club Name", key="club2_name")
+    club2_name = st.text_input("Enter Offering Club Name (Optional)", key="club2_name")
     club2_league = st.selectbox("Select Offering Club League/Division", list(league_tiers.keys()), key="club2_league")
     club2_country = st.selectbox("Select Offering Club Country", list(country_prestige.keys()), key="club2_country")
     club2_european = st.checkbox("Offering Club Participates in European Competitions (e.g., Champions League, Europa League)", key="club2_european")
@@ -81,7 +81,7 @@ with st.form(key="transfer_form"):
 
 # Calculate and display results only if the button is clicked
 if submit_button:
-    if club1_name and club2_name and player_value > 0:
+    if player_value > 0:
         # Adjust league tiers if either club's league tier is < 3
         league_tiers_adjusted = league_tiers
         if league_tiers[club1_league] < 3 or league_tiers[club2_league] < 3:
@@ -91,21 +91,23 @@ if submit_button:
         score2 = calculate_score(club2_league, club2_country, club2_european, league_tiers_adjusted)
         stature_diff = score2 - score1
 
+        # Use default names if not provided
+        display_name1 = club1_name if club1_name else "Team 1"
+        display_name2 = club2_name if club2_name else "Team 2"
+
         # Display club stature scores
-        st.write(f"**{club1_name} Stature Score:** {score1:.1f}")
-        st.write(f"**{club2_name} Stature Score:** {score2:.1f}")
+        st.write(f"**{display_name1} Stature Score:** {score1:.1f}")
+        st.write(f"**{display_name2} Stature Score:** {score2:.1f}")
 
         if score1 > score2:
-            st.success(f"{club1_name} has a higher stature by {score1 - score2:.1f} points.")
+            st.success(f"{display_name1} has a higher stature by {score1 - score2:.1f} points.")
         elif score2 > score1:
-            st.warning(f"{club2_name} has a higher stature by {score2 - score1:.1f} points.")
+            st.warning(f"{display_name2} has a higher stature by {score2 - score1:.1f} points.")
         else:
             st.info("Both clubs have equal stature.")
 
         # Calculate and display minimum offer
         minimum_offer = calculate_minimum_offer(player_value, stature_diff, is_young)
-        st.success(f"You must accept any offer from {club2_name} of {minimum_offer:,.2f} or higher for this player.")
-    elif not club1_name or not club2_name:
-        st.info("Please enter names for both clubs to compare.")
-    elif player_value <= 0:
+        st.success(f"You must accept any offer from {display_name2} of {minimum_offer:,.2f} or higher for this player.")
+    else:
         st.info("Please enter a valid player value greater than 0.")
