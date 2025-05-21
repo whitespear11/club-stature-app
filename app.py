@@ -492,6 +492,10 @@ with st.form(key="buying_transfer_form"):
 # Buying transfer results
 if submit_buying_transfer:
     if player_value_buy > 0 and player_overall_buy > 0:
+        # Check if player's overall is too high
+        if st.session_state.average_team_overall is not None and player_overall_buy > st.session_state.average_team_overall + 2:
+            st.warning("The player's overall is too high to sign. You should sign a player with a lower overall or update your Starting 11 to reflect a higher team average.")
+        
         # Calculate and round up starting bid to nearest 1000
         starting_bid, is_accurate = calculate_starting_bid(
             player_value_buy,
