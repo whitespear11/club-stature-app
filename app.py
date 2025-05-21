@@ -125,8 +125,10 @@ with st.form(key="transfer_form"):
         help="Enter value without commas, e.g., 1000000 for 1,000,000"
     )
     
-    # Additional inputs for buying
-    if transfer_type == "Buying":
+    # Conditional inputs based on transfer type
+    if transfer_type == "Selling":
+        is_young = st.checkbox("Player is Aged 16–21", key="is_young")
+    else:  # Buying
         player_overall = st.number_input(
             "Player Overall Rating",
             min_value=0,
@@ -143,8 +145,6 @@ with st.form(key="transfer_form"):
             format="%d",
             key="player_age"
         )
-    else:
-        is_young = st.checkbox("Player is Aged 16–21", key="is_young")
 
     # Submit button
     submit_transfer = st.form_submit_button("Calculate Transfer")
@@ -173,7 +173,7 @@ if submit_transfer:
             st.info("Both clubs have equal stature.")
 
         if transfer_type == "Selling":
-            # Selling logic (unchanged)
+            # Selling logic
             minimum_offer = calculate_minimum_offer(player_value, stature_diff, is_young)
             st.success(f"You must accept any offer from {display_name2} of {minimum_offer:,.2f} or higher for this player.")
         else:
