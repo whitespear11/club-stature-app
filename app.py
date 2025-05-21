@@ -104,7 +104,7 @@ def calculate_starting_bid(player_value, player_overall, player_age, average_tea
         return player_value * 1.30, average_team_overall is not None
 
 def calculate_proportional_wage(player_overall, starting_11):
-    """Calculate a proportional wage based on the player's overall and Starting 11 wages, rounded up to nearest 100."""
+    """Calculate a proportional wage based on the player's overall and the highest wage in the Starting 11, rounded up to nearest 100."""
     # Filter players with valid overall and wage
     valid_players = [
         player for player in starting_11
@@ -114,12 +114,22 @@ def calculate_proportional_wage(player_overall, starting_11):
     if not valid_players:
         return None, "No valid Starting 11 data with non-zero wages and overalls."
     
-    # Calculate average wage-to-overall ratio
-    ratios = [player["wage"] / player["overall"] for player in valid_players]
-    avg_ratio = sum(ratios) / len(ratios)
+    # Find the highest wage and corresponding overall
+    max_wage = max(player["wage"] for player in valid_players)
+    max_wage_players = [player for player in valid_players if player["wage"] == max_wage]
+    max_wage_overall = max_wage_players[0]["overall"]  # Use first player's overall if multiple
     
-    # Calculate proportional wage and round up to nearest 100
-    wage = player_overall * avg_ratio
+    # Find the highest overall in the squad
+    max_overall = max(player["overall"] for player in valid_players)
+    
+    # Calculate base wage based on highest wage, scaled by overall ratio
+    wage = max_wage * (player_overall / max_wage_overall)
+    
+    # Apply 20% premium if new player's overall exceeds squad's highest overall
+    if player_overall > max_overall:
+        wage *= 1.2
+    
+    # Round up to nearest 100
     wage = math.ceil(wage / 100) * 100
     return wage, None
 
