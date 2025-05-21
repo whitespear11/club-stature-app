@@ -19,14 +19,28 @@ st.markdown(
         color: white;
     }
     .custom-info {
-        background-color: #e7f3ff;
+        background-color: #e7f3ff !important;
         border-left: 4px solid #2196F3;
         padding: 1rem;
         border-radius: 0.25rem;
         margin-bottom: 1rem;
+        color: #000000 !important;
     }
     .custom-info p {
         margin: 0.5rem 0;
+        color: #000000 !important;
+    }
+    .custom-info a {
+        color: #0000EE !important;
+        text-decoration: underline;
+    }
+    .coffee-link {
+        margin-top: 0.5rem;
+        color: #000000 !important;
+    }
+    .coffee-link a {
+        color: #0000EE !important;
+        text-decoration: underline;
     }
     </style>
     """,
@@ -170,7 +184,14 @@ st.markdown(
     <div class="custom-info">
         <p>Hello and thank you for using FIFA Realistic Toolkit! This toolkit is designed to make FIFA career mode more realistic by adding some guidelines on transfers and wages.</p>
         <p>Please fill out your team details below and your starting 11, they can be saved and uploaded.</p>
-        <p>If you enjoy this tool please consider <a href="https://buymeacoffee.com/whitespear11" target="_blank">buying me a coffee</a>.</p>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+st.markdown(
+    """
+    <div class="coffee-link">
+        If you enjoy this tool please consider <a href="https://buymeacoffee.com/whitespear11" target="_blank">buying me a coffee</a>.
     </div>
     """,
     unsafe_allow_html=True
