@@ -154,7 +154,6 @@ if "club_european" not in st.session_state:
 st.title("FIFA Realistic Toolkit")
 
 # Your Club Details Section
-st.header("Your Club Details")
 st.write(
     """
     Hello and thank you for using FIFA Realistic Toolkit! This toolkit is designed to make FIFA career mode more realistic by adding some guidelines on transfers and wages.
@@ -165,6 +164,7 @@ st.write(
 st.write(
     "If you enjoy this tool please consider [buying me a coffee](https://buymeacoffee.com/whitespear11)."
 )
+st.header("Your Club Details")
 
 # Upload Combined Club Details and Starting 11 data
 uploaded_file = st.file_uploader("Upload Club and Starting 11 JSON", type=["json"], key="combined_upload")
