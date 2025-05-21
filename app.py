@@ -37,7 +37,7 @@ def calculate_score(league, country, european, league_tiers):
     return league_score + country_score + european_bonus
 
 def calculate_minimum_offer(player_value, stature_diff, is_young):
-    """Calculate the minimum offer based on stature difference and player age."""
+    """Calculate the minimum offer for selling based on stature difference and player age."""
     if stature_diff <= 0:  # Team 2's stature is equal or lower
         markup = 65.0
     else:
@@ -59,11 +59,37 @@ def calculate_minimum_offer(player_value, stature_diff, is_young):
     
     return player_value * multiplier + player_value * age_markup
 
+def calculate_starting_bid(player_value, player_overall, player_age, average_team_overall=None):
+    """Calculate the starting bid for buying based on age and overall relative to team average."""
+    if player_age >= 16 and player_age <= 24:
+        if average_team_overall is None:
+            return player_value * 1.75, False
+        elif player_overall > average_team_overall:
+            return player_value * 2.00, True
+        elif player_overall == average_team_overall:
+            return player_value * 1.75, True
+        else:
+            return player_value * 1.50, True
+    elif player_age >= 25 and player_age <= 29:
+        if average_team_overall is None:
+            return player_value * 1.75, False
+        elif player_overall > average_team_overall:
+            return player_value * 1.40, True
+        elif player_overall == average_team_overall:
+            return player_value * 1.30, True
+        else:
+            return player_value * 1.10, True
+    else:
+        # Default case for ages outside 16-29
+        return player_value * 1.30, average_team_overall is not None
+
 # Initialize session state for Starting 11
 if "starting_11" not in st.session_state:
     st.session_state.starting_11 = [
         {"position": default_positions[i], "overall": 0, "wage": 0} for i in range(11)
     ]
+if "average_team_overall" not in st.session_state:
+    st.session_state.average_team_overall = None
 
 # App title
 st.title("FIFA Realistic Toolkit")
@@ -71,19 +97,22 @@ st.title("FIFA Realistic Toolkit")
 # Transfer Calculator Section
 st.header("Transfer Calculator")
 with st.form(key="transfer_form"):
-    # Club 1 inputs
+    # Transfer type toggle
+    transfer_type = st.radio("Transfer Type", ["Selling", "Buying"], key="transfer_type")
+
+    # Club 1 inputs (Your Club)
     st.subheader("Your Club (Team 1) Details")
     club1_name = st.text_input("Enter Your Club Name (Optional)", key="club1_name")
     club1_league = st.selectbox("Select Your Club League/Division", list(league_tiers.keys()), key="club1_league")
     club1_country = st.selectbox("Select Your Club Country", list(country_prestige.keys()), key="club1_country")
     club1_european = st.checkbox("Your Club Participates in European Competitions (e.g., Champions League, Europa League)", key="club1_european")
 
-    # Club 2 inputs
-    st.subheader("Offering Club (Team 2) Details")
-    club2_name = st.text_input("Enter Offering Club Name (Optional)", key="club2_name")
-    club2_league = st.selectbox("Select Offering Club League/Division", list(league_tiers.keys()), key="club2_league")
-    club2_country = st.selectbox("Select Offering Club Country", list(country_prestige.keys()), key="club2_country")
-    club2_european = st.checkbox("Offering Club Participates in European Competitions (e.g., Champions League, Europa League)", key="club2_european")
+    # Club 2 inputs (Other Club)
+    st.subheader("Other Club (Team 2) Details")
+    club2_name = st.text_input("Enter Other Club Name (Optional)", key="club2_name")
+    club2_league = st.selectbox("Select Other Club League/Division", list(league_tiers.keys()), key="club2_league")
+    club2_country = st.selectbox("Select Other Club Country", list(country_prestige.keys()), key="club2_country")
+    club2_european = st.checkbox("Other Club Participates in European Competitions (e.g., Champions League, Europa League)", key="club2_european")
 
     # Transfer inputs
     st.subheader("Transfer Details")
@@ -95,10 +124,30 @@ with st.form(key="transfer_form"):
         key="player_value",
         help="Enter value without commas, e.g., 1000000 for 1,000,000"
     )
-    is_young = st.checkbox("Player is Aged 16–21", key="is_young")
+    
+    # Additional inputs for buying
+    if transfer_type == "Buying":
+        player_overall = st.number_input(
+            "Player Overall Rating",
+            min_value=0,
+            max_value=99,
+            step=1,
+            format="%d",
+            key="player_overall"
+        )
+        player_age = st.number_input(
+            "Player Age",
+            min_value=16,
+            max_value=40,
+            step=1,
+            format="%d",
+            key="player_age"
+        )
+    else:
+        is_young = st.checkbox("Player is Aged 16–21", key="is_young")
 
     # Submit button
-    submit_transfer = st.form_submit_button("Calculate Offer")
+    submit_transfer = st.form_submit_button("Calculate Transfer")
 
 # Transfer results
 if submit_transfer:
@@ -106,11 +155,11 @@ if submit_transfer:
         # Calculate stature scores
         score1 = calculate_score(club1_league, club1_country, club1_european, league_tiers)
         score2 = calculate_score(club2_league, club2_country, club2_european, league_tiers)
-        stature_diff = score2 - score1
+        stature_diff = score2 - score1 if transfer_type == "Selling" else score1 - score2
 
         # Use default names if not provided
-        display_name1 = club1_name if club1_name else "Team 1"
-        display_name2 = club2_name if club2_name else "Team 2"
+        display_name1 = club1_name if club1_name else "Your Club"
+        display_name2 = club2_name if club2_name else "Other Club"
 
         # Display club stature scores
         st.write(f"**{display_name1} Stature Score:** {score1:.1f}")
@@ -123,11 +172,23 @@ if submit_transfer:
         else:
             st.info("Both clubs have equal stature.")
 
-        # Calculate and display minimum offer
-        minimum_offer = calculate_minimum_offer(player_value, stature_diff, is_young)
-        st.success(f"You must accept any offer from {display_name2} of {minimum_offer:,.2f} or higher for this player.")
+        if transfer_type == "Selling":
+            # Selling logic (unchanged)
+            minimum_offer = calculate_minimum_offer(player_value, stature_diff, is_young)
+            st.success(f"You must accept any offer from {display_name2} of {minimum_offer:,.2f} or higher for this player.")
+        else:
+            # Buying logic
+            starting_bid, is_accurate = calculate_starting_bid(
+                player_value,
+                player_overall,
+                player_age,
+                st.session_state.average_team_overall
+            )
+            st.success(f"You should start your bid to {display_name2} at {starting_bid:,.2f} for this player.")
+            if not is_accurate:
+                st.warning("This bid is based on a default 175% markup because the Starting 11 average overall has not been calculated. Please calculate your Starting 11 average for a more accurate bid.")
     else:
-        st.info("Please enter a valid player value greater than 0.")
+        st.error("Please enter a valid player value greater than 0.")
 
 # Starting 11 Section
 st.header("Starting 11 Overall Calculator")
@@ -153,6 +214,9 @@ if uploaded_file:
             )
             if valid:
                 st.session_state.starting_11 = loaded_data
+                # Recalculate average team overall
+                total_overall = sum(player["overall"] for player in loaded_data)
+                st.session_state.average_team_overall = math.floor(total_overall / 11)
                 st.success("Starting 11 data loaded successfully.")
             else:
                 st.error("Invalid JSON format or data.")
@@ -225,6 +289,7 @@ if submit_starting_11:
         # Calculate average overall and round down
         total_overall = sum(player["overall"] for player in players)
         average_overall = math.floor(total_overall / 11)
+        st.session_state.average_team_overall = average_overall
         max_signing_overall = average_overall + 2
 
         # Calculate wage cap
