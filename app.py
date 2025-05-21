@@ -3,7 +3,7 @@ import math
 import json
 import io
 
-# Apply custom CSS for green download buttons and info box styling
+# Apply custom CSS for green download buttons
 st.markdown(
     """
     <style>
@@ -17,30 +17,6 @@ st.markdown(
     button[kind="primary"]:hover {
         background-color: #218838;
         color: white;
-    }
-    .custom-info {
-        background-color: #e7f3ff !important;
-        border-left: 4px solid #2196F3;
-        padding: 1rem;
-        border-radius: 0.25rem;
-        margin-bottom: 1rem;
-        color: #000000 !important;
-    }
-    .custom-info p {
-        margin: 0.5rem 0;
-        color: #000000 !important;
-    }
-    .custom-info a {
-        color: #0000EE !important;
-        text-decoration: underline;
-    }
-    .coffee-link {
-        margin-top: 0.5rem;
-        color: #000000 !important;
-    }
-    .coffee-link a {
-        color: #0000EE !important;
-        text-decoration: underline;
     }
     </style>
     """,
@@ -179,22 +155,15 @@ st.title("FIFA Realistic Toolkit")
 
 # Your Club Details Section
 st.header("Your Club Details")
-st.markdown(
+st.write(
     """
-    <div class="custom-info">
-        <p>Hello and thank you for using FIFA Realistic Toolkit! This toolkit is designed to make FIFA career mode more realistic by adding some guidelines on transfers and wages.</p>
-        <p>Please fill out your team details below and your starting 11, they can be saved and uploaded.</p>
-    </div>
-    """,
-    unsafe_allow_html=True
+    Hello and thank you for using FIFA Realistic Toolkit! This toolkit is designed to make FIFA career mode more realistic by adding some guidelines on transfers and wages.
+
+    Please fill out your team details below and your starting 11, they can be saved and uploaded.
+    """
 )
-st.markdown(
-    """
-    <div class="coffee-link">
-        If you enjoy this tool please consider <a href="https://buymeacoffee.com/whitespear11" target="_blank">buying me a coffee</a>.
-    </div>
-    """,
-    unsafe_allow_html=True
+st.write(
+    "If you enjoy this tool please consider [buying me a coffee](https://buymeacoffee.com/whitespear11)."
 )
 
 # Upload Combined Club Details and Starting 11 data
