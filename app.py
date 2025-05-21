@@ -83,6 +83,25 @@ def calculate_starting_bid(player_value, player_overall, player_age, average_tea
         # Default case for ages outside 16-29
         return player_value * 1.30, average_team_overall is not None
 
+def calculate_proportional_wage(player_overall, starting_11):
+    """Calculate a proportional wage based on the player's overall and Starting 11 wages."""
+    # Filter players with valid overall and wage
+    valid_players = [
+        player for player in starting_11
+        if player["overall"] > 0 and player["wage"] > 0
+    ]
+    
+    if not valid_players:
+        return None, "No valid Starting 11 data with non-zero wages and overalls."
+    
+    # Calculate average wage-to-overall ratio
+    ratios = [player["wage"] / player["overall"] for player in valid_players]
+    avg_ratio = sum(ratios) / len(ratios)
+    
+    # Calculate proportional wage
+    wage = int(player_overall * avg_ratio)
+    return wage, None
+
 # Initialize session state for Starting 11 and Your Club Details
 if "starting_11" not in st.session_state:
     st.session_state.starting_11 = [
@@ -352,12 +371,12 @@ with st.form(key="buying_transfer_form"):
     )
 
     # Submit button
-    submit_buying_transfer = st.form_submit_button("Calculate Starting Bid")
+    submit_buying_transfer = st.form_submit_button("Calculate Starting Bid and Wage")
 
 # Buying transfer results
 if submit_buying_transfer:
-    if player_value_buy > 0:
-        # Calculate and display starting bid
+    if player_value_buy > 0 and player_overall_buy > 0:
+        # Calculate starting bid
         starting_bid, is_accurate = calculate_starting_bid(
             player_value_buy,
             player_overall_buy,
@@ -367,5 +386,12 @@ if submit_buying_transfer:
         st.success(f"You should start your bid at {starting_bid:,.2f} for this player.")
         if not is_accurate:
             st.warning("This bid is based on a default 175% markup because the Starting 11 average overall has not been calculated. Please calculate your Starting 11 average for a more accurate bid.")
+
+        # Calculate proportional wage
+        wage, wage_error = calculate_proportional_wage(player_overall_buy, st.session_state.starting_11)
+        if wage is not None:
+            st.success(f"Recommended wage for this player: {wage:,} p/w")
+        else:
+            st.warning(f"Cannot calculate wage: {wage_error} Please ensure your Starting 11 has valid wages and overalls.")
     else:
-        st.error("Please enter a valid player value greater than 0.")
+        st.error("Please enter a valid player value and overall greater than 0.")
