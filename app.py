@@ -229,4 +229,286 @@ if uploaded_file:
             st.session_state.average_team_overall = math.floor(total_overall / 11)
             st.success(
                 f"Club details and Starting 11 loaded successfully. "
-                f/tomorrow, May 22, 2025.)
+                f"Club: Name: {loaded_data['club_details']['name'] or 'None'}, "
+                f"League: {loaded_data['club_details']['league']}, "
+                f"Country: {loaded_data['club_details']['country']}, "
+                f"European: {loaded_data['club_details']['european']}. "
+                f"Stature score: {calculate_score(loaded_data['club_details']['league'], loaded_data['club_details']['country'], loaded_data['club_details']['european'], league_tiers):.1f}"
+            )
+        else:
+            st.error("Invalid JSON format or data. Ensure it contains valid club_details and starting_11 fields.")
+    except json.JSONDecodeError:
+        st.error("Invalid JSON file.")
+
+# Download Combined Club Details and Starting 11 data (top button)
+if st.session_state.club_details and st.session_state.starting_11:
+    combined_data = {
+        "club_details": st.session_state.club_details,
+        "starting_11": st.session_state.starting_11
+    }
+    json_str = json.dumps(combined_data, indent=2)
+    st.download_button(
+        label="Save Club and Starting 11 info",
+        data=json_str,
+        file_name="team_data.json",
+        mime="application/json",
+        key="download_top",
+        use_container_width=True
+    )
+
+with st.form(key="club_details_form"):
+    club_name = st.text_input(
+        "Enter Your Club Name (Optional)",
+        key="club_name"
+    )
+    club_league = st.selectbox(
+        "Select Your Club League/Division",
+        list(league_tiers.keys()),
+        index=list(league_tiers.keys()).index(st.session_state.form_league),
+        key="form_league"
+    )
+    club_country = st.selectbox(
+        "Select Your Club Country",
+        list(country_prestige.keys()),
+        index=list(country_prestige.keys()).index(st.session_state.club_country),
+        key="club_country"
+    )
+    club_european = st.checkbox(
+        "Your Club Participates in European Competitions (e.g., Champions League, Europa League)",
+        key="club_european"
+    )
+    
+    # Submit button
+    submit_club_details = st.form_submit_button("Save Club Details")
+
+# Handle form submission
+if submit_club_details:
+    # Update session state with form values
+    st.session_state.club_details = {
+        "name": st.session_state["club_name"],
+        "league": st.session_state["form_league"],
+        "country": st.session_state["club_country"],
+        "european": st.session_state["club_european"]
+    }
+    st.session_state.club_details_updated = False
+    st.session_state.pending_club_details = None
+    # Force re-render to update UI
+    st.rerun()
+
+# Starting 11 Section
+st.header("Starting 11 Overall Calculator")
+st.info("Enter your starting 11 details. DON'T FORGET TO SAVE!")
+
+with st.form(key="starting_11_form"):
+    # Column headers
+    col1, col2, col3 = st.columns([1, 1, 1])
+    with col1:
+        st.write("Position")
+    with col2:
+        st.write("Overall")
+    with col3:
+        st.write("Wage (p/w)")
+
+    players = []
+    for i in range(11):
+        col1, col2, col3 = st.columns([1, 1, 1])
+        with col1:
+            position = st.selectbox(
+                "",
+                player_positions,
+                index=player_positions.index(st.session_state.get(f"player_{i}_position", st.session_state.starting_11[i]["position"])),
+                key=f"player_{i}_position"
+            )
+        with col2:
+            overall = st.number_input(
+                "",
+                min_value=0,
+                max_value=99,
+                value=st.session_state.get(f"player_{i}_overall", st.session_state.starting_11[i]["overall"]),
+                step=1,
+                format="%d",
+                key=f"player_{i}_overall"
+            )
+        with col3:
+            wage = st.number_input(
+                "",
+                min_value=0,
+                value=st.session_state.get(f"player_{i}_wage", st.session_state.starting_11[i]["wage"]),
+                step=1000,
+                format="%d",
+                key=f"player_{i}_wage"
+            )
+        players.append({"position": position, "overall": overall, "wage": wage})
+
+    # Submit button
+    submit_starting_11 = st.form_submit_button("Calculate Team Overall")
+
+# Download Combined Club Details and Starting 11 data (bottom button)
+if st.session_state.club_details and st.session_state.starting_11:
+    combined_data = {
+        "club_details": st.session_state.club_details,
+        "starting_11": st.session_state.starting_11
+    }
+    json_str = json.dumps(combined_data, indent=2)
+    st.download_button(
+        label="Save Club and Starting 11 info",
+        data=json_str,
+        file_name="team_data.json",
+        mime="application/json",
+        key="download_bottom",
+        use_container_width=True
+    )
+
+# Starting 11 results
+if submit_starting_11:
+    # Validate all overalls and wages are >= 0
+    if all(player["overall"] >= 0 and player["wage"] >= 0 for player in players):
+        # Update session state
+        st.session_state.starting_11 = players
+        # Clear widget states to ensure form reflects new values
+        for i in range(11):
+            for key in [f"player_{i}_position", f"player_{i}_overall", f"player_{i}_wage"]:
+                st.session_state.pop(key, None)
+        # Set widget values to new data
+        for i, player in enumerate(players):
+            st.session_state[f"player_{i}_position"] = player["position"]
+            st.session_state[f"player_{i}_overall"] = player["overall"]
+            st.session_state[f"player_{i}_wage"] = player["wage"]
+
+        # Calculate average overall and round down
+        total_overall = sum(player["overall"] for player in players)
+        average_overall = math.floor(total_overall / 11)
+        st.session_state.average_team_overall = average_overall
+        max_signing_overall = average_overall + 2
+
+        # Calculate wage cap
+        max_wage = max(player["wage"] for player in players)
+        wage_cap = int(max_wage * 1.2)
+
+        # Display results
+        st.write(f"Average Team Overall: {average_overall}")
+        st.success(f"Sign players with overall {max_signing_overall} or below.")
+        st.write(f"Wage Cap for this season: {wage_cap:,} (p/w)")
+    else:
+        st.error("All player overall ratings and wages must be non-negative.")
+
+# Selling Transfer Calculator Section
+st.header("Transfer Calculator (Selling)")
+with st.form(key="selling_transfer_form"):
+    # Club 2 inputs (Offering Club)
+    st.subheader("Offering Club Details")
+    club2_name_sell = st.text_input("Enter Offering Club Name (Optional)", key="club2_name_sell")
+    club2_league_sell = st.selectbox("Select Offering Club League/Division", list(league_tiers.keys()), key="club2_league_sell")
+    club2_country_sell = st.selectbox("Select Offering Club Country", list(country_prestige.keys()), key="club2_country_sell")
+    club2_european_sell = st.checkbox("Offering Club Participates in European Competitions (e.g., Champions League, Europa League)", key="club2_european_sell")
+
+    # Transfer inputs
+    st.subheader("Transfer Details")
+    player_value_sell = st.number_input(
+        "Current Player Value",
+        min_value=0.0,
+        step=1000.0,
+        format="%.2f",
+        key="player_value_sell",
+        help="Enter value without commas, e.g., 1000000 for 1,000,000"
+    )
+    is_young_sell = st.checkbox("Player is Aged 16–21", key="is_young_sell")
+
+    # Submit button
+    submit_selling_transfer = st.form_submit_button("Calculate Selling Offer")
+
+# Selling transfer results
+if submit_selling_transfer:
+    if player_value_sell > 0:
+        # Fetch current club details from session state
+        club_details = st.session_state.club_details
+        # Calculate stature scores
+        score1 = calculate_score(
+            club_details["league"],
+            club_details["country"],
+            club_details["european"],
+            league_tiers
+        )
+        score2 = calculate_score(club2_league_sell, club2_country_sell, club2_european_sell, league_tiers)
+        stature_diff = score2 - score1
+
+        # Use default names if not provided
+        display_name1 = club_details["name"] if club_details["name"] else "Your Club"
+        display_name2 = club2_name_sell if club2_name_sell else "Offering Club"
+
+        # Display club details used for calculation
+        st.write(f"**Your Club Details Used:** Name: {display_name1}, League: {club_details['league']}, Country: {club_details['country']}, European: {club_details['european']}")
+        # Display club stature scores
+        st.write(f"**{display_name1} Stature Score:** {score1:.1f}")
+        st.write(f"**{display_name2} Stature Score:** {score2:.1f}")
+
+        if score1 > score2:
+            st.success(f"{display_name1} has a higher stature by {score1 - score2:.1f} points.")
+        elif score2 > score1:
+            st.warning(f"{display_name2} has a higher stature by {score2 - score1:.1f} points.")
+        else:
+            st.info("Both clubs have equal stature.")
+
+        # Calculate and round up minimum offer to nearest 1000
+        minimum_offer = calculate_minimum_offer(player_value_sell, stature_diff, is_young_sell)
+        minimum_offer = math.ceil(minimum_offer / 1000) * 1000
+        st.success(f"You must accept any offer from {display_name2} of {minimum_offer:,.0f} or higher for this player.")
+    else:
+        st.error("Please enter a valid player value greater than 0.")
+
+# Buying Transfer Calculator Section
+st.header("Transfer Calculator (Buying)")
+with st.form(key="buying_transfer_form"):
+    # Transfer inputs
+    st.subheader("Player Details")
+    player_value_buy = st.number_input(
+        "Current Player Value",
+        min_value=0.0,
+        step=1000.0,
+        format="%.2f",
+        key="player_value_buy",
+        help="Enter value without commas, e.g., 1000000 for 1,000,000"
+    )
+    player_overall_buy = st.number_input(
+        "Player Overall Rating",
+        min_value=0,
+        max_value=99,
+        step=1,
+        format="%d",
+        key="player_overall_buy"
+    )
+    player_age_buy = st.number_input(
+        "Player Age",
+        min_value=16,
+        max_value=40,
+        step=1,
+        format="%d",
+        key="player_age_buy"
+    )
+
+    # Submit button
+    submit_buying_transfer = st.form_submit_button("Calculate Starting Bid and Wage")
+
+# Buying transfer results
+if submit_buying_transfer:
+    if player_value_buy > 0 and player_overall_buy > 0:
+        # Calculate and round up starting bid to nearest 1000
+        starting_bid, is_accurate = calculate_starting_bid(
+            player_value_buy,
+            player_overall_buy,
+            player_age_buy,
+            st.session_state.average_team_overall
+        )
+        starting_bid = math.ceil(starting_bid / 1000) * 1000
+        st.success(f"You should start your bid at {starting_bid:,.0f} for this player.")
+        if not is_accurate:
+            st.warning("This bid is based on a default 175% markup because the Starting 11 average overall has not been calculated. Please calculate your Starting 11 average for a more accurate bid.")
+
+        # Calculate proportional wage
+        wage, wage_error = calculate_proportional_wage(player_overall_buy, st.session_state.starting_11)
+        if wage is not None:
+            st.success(f"Minimum Wage for this player: {wage:,} p/w")
+        else:
+            st.warning(f"Cannot calculate wage: {wage_error} Please ensure your Starting 11 has valid wages and overalls.")
+    else:
+        st.error("Please enter a valid player value and overall greater than 0.")
