@@ -141,13 +141,30 @@ if "club_details_updated" not in st.session_state:
     st.session_state.club_details_updated = False
 if "pending_club_details" not in st.session_state:
     st.session_state.pending_club_details = None
+if "club_name" not in st.session_state:
+    st.session_state.club_name = st.session_state.club_details["name"]
+if "form_league" not in st.session_state:
+    st.session_state.form_league = st.session_state.club_details["league"]
+if "club_country" not in st.session_state:
+    st.session_state.club_country = st.session_state.club_details["country"]
+if "club_european" not in st.session_state:
+    st.session_state.club_european = st.session_state.club_details["european"]
 
 # App title
 st.title("FIFA Realistic Toolkit")
 
 # Your Club Details Section
 st.header("Your Club Details")
-st.info("Enter your club details to use in the selling calculator. Save and load both club details and Starting 11 in a single JSON file.")
+st.info(
+    """
+    Hello and thank you for using FIFA Realistic Toolkit! This toolkit is designed to make FIFA career mode more realistic by adding some guidelines on transfers and wages.
+
+    Please fill out your team details below and your starting 11, they can be saved and uploaded.
+
+    If you enjoy this tool please consider [buying me a coffee](https://buymeacoffee.com/whitespear11).
+    """,
+    unsafe_allow_html=True
+)
 
 # Upload Combined Club Details and Starting 11 data
 uploaded_file = st.file_uploader("Upload Club and Starting 11 JSON", type=["json"], key="combined_upload")
@@ -232,24 +249,22 @@ if st.session_state.club_details and st.session_state.starting_11:
 with st.form(key="club_details_form"):
     club_name = st.text_input(
         "Enter Your Club Name (Optional)",
-        value=st.session_state.get("club_name", st.session_state.club_details["name"]),
         key="club_name"
     )
     club_league = st.selectbox(
         "Select Your Club League/Division",
         list(league_tiers.keys()),
-        index=list(league_tiers.keys()).index(st.session_state.get("form_league", st.session_state.club_details["league"])),
+        index=list(league_tiers.keys()).index(st.session_state.form_league),
         key="form_league"
     )
     club_country = st.selectbox(
         "Select Your Club Country",
         list(country_prestige.keys()),
-        index=list(country_prestige.keys()).index(st.session_state.get("club_country", st.session_state.club_details["country"])),
+        index=list(country_prestige.keys()).index(st.session_state.club_country),
         key="club_country"
     )
     club_european = st.checkbox(
         "Your Club Participates in European Competitions (e.g., Champions League, Europa League)",
-        value=st.session_state.get("club_european", st.session_state.club_details["european"]),
         key="club_european"
     )
     
