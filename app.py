@@ -103,24 +103,58 @@ st.title("FIFA Realistic Toolkit")
 
 # Your Club Details Section
 st.header("Your Club Details")
-st.info("Enter your club details to use in the selling calculator. Data persists during this browser session. Download as JSON to save or upload to restore.")
+st.info("Enter your club details to use in the selling calculator. Save and load both club details and Starting 11 in a single JSON file.")
 
-# Upload Club Details data
-uploaded_club_file = st.file_uploader("Upload Club Details JSON", type=["json"], key="club_upload")
-if uploaded_club_file:
+# Upload Combined Club Details and Starting 11 data
+uploaded_file = st.file_uploader("Upload Club and Starting 11 JSON", type=["json"], key="combined_upload")
+if uploaded_file:
     try:
-        loaded_club_data = json.load(uploaded_club_file)
-        if isinstance(loaded_club_data, dict) and all(key in loaded_club_data for key in ["name", "league", "country", "european"]):
-            if (loaded_club_data["league"] in league_tiers and
-                loaded_club_data["country"] in country_prestige and
-                isinstance(loaded_club_data["name"], str) and
-                isinstance(loaded_club_data["european"], bool)):
-                st.session_state.club_details = loaded_club_data
-                st.success("Club details loaded successfully.")
-            else:
-                st.error("Invalid JSON format or data.")
+        loaded_data = json.load(uploaded_file)
+        # Validate club_details
+        club_valid = (
+            isinstance(loaded_data.get("club_details"), dict) and
+            all(key in loaded_data["club_details"] for key in ["name", "league", "country", "european"]) and
+            isinstance(loaded_data["club_details"]["name"], str) and
+            loaded_data["club_details"]["league"] in league_tiers and
+            loaded_data["club_details"]["country"] in country_prestige and
+            isinstance(loaded_data["club_details"]["european"], bool)
+        )
+        # Validate starting_11
+        starting_11_valid = (
+            isinstance(loaded_data.get("starting_11"), list) and
+            len(loaded_data["starting_11"]) == 11 and
+            all(
+                isinstance(player, dict) and
+                "position" in player and
+                "overall" in player and
+                "wage" in player and
+                player["position"] in player_positions and
+                isinstance(player["overall"], int) and
+                0 <= player["overall"] <= 99 and
+                isinstance(player["wage"], int) and
+                player["wage"] >= 0
+                for player in loaded_data["starting_11"]
+            )
+        )
+        if club_valid and starting_11_valid:
+            # Clear widget states to ensure form updates
+            st.session_state.pop("club_name", None)
+            st.session_state.pop("club_league", None)
+            st.session_state.pop("club_country", None)
+            st.session_state.pop("club_european", None)
+            for i in range(11):
+                st.session_state.pop(f"player_{i}_position", None)
+                st.session_state.pop(f"player_{i}_overall", None)
+                st.session_state.pop(f"player_{i}_wage", None)
+            # Update session state
+            st.session_state.club_details = loaded_data["club_details"]
+            st.session_state.starting_11 = loaded_data["starting_11"]
+            # Recalculate average team overall
+            total_overall = sum(player["overall"] for player in loaded_data["starting_11"])
+            st.session_state.average_team_overall = math.floor(total_overall / 11)
+            st.success("Club details and Starting 11 data loaded successfully.")
         else:
-            st.error("JSON must contain name, league, country, and european fields.")
+            st.error("Invalid JSON format or data. Ensure it contains valid club_details and starting_11 fields.")
     except json.JSONDecodeError:
         st.error("Invalid JSON file.")
 
@@ -142,50 +176,9 @@ if submit_club_details:
     }
     st.success("Club details saved successfully.")
 
-# Download Club Details data
-if st.session_state.club_details:
-    club_json_str = json.dumps(st.session_state.club_details, indent=2)
-    st.download_button(
-        label="Download Club Details as JSON",
-        data=club_json_str,
-        file_name="club_details.json",
-        mime="application/json"
-    )
-
 # Starting 11 Section
 st.header("Starting 11 Overall Calculator")
-st.info("Data persists during this browser session. Download as JSON to save or upload to restore.")
-
-# Upload Starting 11 data
-uploaded_file = st.file_uploader("Upload Starting 11 JSON", type=["json"])
-if uploaded_file:
-    try:
-        loaded_data = json.load(uploaded_file)
-        if isinstance(loaded_data, list) and len(loaded_data) == 11:
-            valid = all(
-                isinstance(player, dict) and
-                "position" in player and
-                "overall" in player and
-                "wage" in player and
-                player["position"] in player_positions and
-                isinstance(player["overall"], int) and
-                0 <= player["overall"] <= 99 and
-                isinstance(player["wage"], int) and
-                player["wage"] >= 0
-                for player in loaded_data
-            )
-            if valid:
-                st.session_state.starting_11 = loaded_data
-                # Recalculate average team overall
-                total_overall = sum(player["overall"] for player in loaded_data)
-                st.session_state.average_team_overall = math.floor(total_overall / 11)
-                st.success("Starting 11 data loaded successfully.")
-            else:
-                st.error("Invalid JSON format or data.")
-        else:
-            st.error("JSON must contain exactly 11 players.")
-    except json.JSONDecodeError:
-        st.error("Invalid JSON file.")
+st.info("Enter your starting 11 details. Save and load both club details and Starting 11 in a single JSON file.")
 
 with st.form(key="starting_11_form"):
     # Column headers
@@ -231,13 +224,17 @@ with st.form(key="starting_11_form"):
     # Submit button
     submit_starting_11 = st.form_submit_button("Calculate Team Overall")
 
-# Download Starting 11 data
-if st.session_state.starting_11:
-    json_str = json.dumps(st.session_state.starting_11, indent=2)
+# Download Combined Club Details and Starting 11 data
+if st.session_state.club_details and st.session_state.starting_11:
+    combined_data = {
+        "club_details": st.session_state.club_details,
+        "starting_11": st.session_state.starting_11
+    }
+    json_str = json.dumps(combined_data, indent=2)
     st.download_button(
-        label="Download Starting 11 as JSON",
+        label="Download Club Details and Starting 11 as JSON",
         data=json_str,
-        file_name="starting_11.json",
+        file_name="team_data.json",
         mime="application/json"
     )
 
