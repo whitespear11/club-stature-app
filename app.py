@@ -83,126 +83,74 @@ def calculate_starting_bid(player_value, player_overall, player_age, average_tea
         # Default case for ages outside 16-29
         return player_value * 1.30, average_team_overall is not None
 
-# Initialize session state for Starting 11
+# Initialize session state for Starting 11 and Your Club Details
 if "starting_11" not in st.session_state:
     st.session_state.starting_11 = [
         {"position": default_positions[i], "overall": 0, "wage": 0} for i in range(11)
     ]
 if "average_team_overall" not in st.session_state:
     st.session_state.average_team_overall = None
+if "club_details" not in st.session_state:
+    st.session_state.club_details = {
+        "name": "",
+        "league": "First Division",
+        "country": "England",
+        "european": False
+    }
 
 # App title
 st.title("FIFA Realistic Toolkit")
 
-# Selling Transfer Calculator Section
-st.header("Transfer Calculator (Selling)")
-with st.form(key="selling_transfer_form"):
-    # Club 1 inputs (Your Club)
-    st.subheader("Your Club (Team 1) Details")
-    club1_name_sell = st.text_input("Enter Your Club Name (Optional)", key="club1_name_sell")
-    club1_league_sell = st.selectbox("Select Your Club League/Division", list(league_tiers.keys()), key="club1_league_sell")
-    club1_country_sell = st.selectbox("Select Your Club Country", list(country_prestige.keys()), key="club1_country_sell")
-    club1_european_sell = st.checkbox("Your Club Participates in European Competitions (e.g., Champions League, Europa League)", key="club1_european_sell")
+# Your Club Details Section
+st.header("Your Club Details")
+st.info("Enter your club details to use in the selling calculator. Data persists during this browser session. Download as JSON to save or upload to restore.")
 
-    # Club 2 inputs (Offering Club)
-    st.subheader("Offering Club (Team 2) Details")
-    club2_name_sell = st.text_input("Enter Offering Club Name (Optional)", key="club2_name_sell")
-    club2_league_sell = st.selectbox("Select Offering Club League/Division", list(league_tiers.keys()), key="club2_league_sell")
-    club2_country_sell = st.selectbox("Select Offering Club Country", list(country_prestige.keys()), key="club2_country_sell")
-    club2_european_sell = st.checkbox("Offering Club Participates in European Competitions (e.g., Champions League, Europa League)", key="club2_european_sell")
-
-    # Transfer inputs
-    st.subheader("Transfer Details")
-    player_value_sell = st.number_input(
-        "Current Player Value",
-        min_value=0.0,
-        step=1000.0,
-        format="%.2f",
-        key="player_value_sell",
-        help="Enter value without commas, e.g., 1000000 for 1,000,000"
-    )
-    is_young_sell = st.checkbox("Player is Aged 16–21", key="is_young_sell")
-
-    # Submit button
-    submit_selling_transfer = st.form_submit_button("Calculate Selling Offer")
-
-# Selling transfer results
-if submit_selling_transfer:
-    if player_value_sell > 0:
-        # Calculate stature scores
-        score1 = calculate_score(club1_league_sell, club1_country_sell, club1_european_sell, league_tiers)
-        score2 = calculate_score(club2_league_sell, club2_country_sell, club2_european_sell, league_tiers)
-        stature_diff = score2 - score1
-
-        # Use default names if not provided
-        display_name1 = club1_name_sell if club1_name_sell else "Your Club"
-        display_name2 = club2_name_sell if club2_name_sell else "Offering Club"
-
-        # Display club stature scores
-        st.write(f"**{display_name1} Stature Score:** {score1:.1f}")
-        st.write(f"**{display_name2} Stature Score:** {score2:.1f}")
-
-        if score1 > score2:
-            st.success(f"{display_name1} has a higher stature by {score1 - score2:.1f} points.")
-        elif score2 > score1:
-            st.warning(f"{display_name2} has a higher stature by {score2 - score1:.1f} points.")
+# Upload Club Details data
+uploaded_club_file = st.file_uploader("Upload Club Details JSON", type=["json"], key="club_upload")
+if uploaded_club_file:
+    try:
+        loaded_club_data = json.load(uploaded_club_file)
+        if isinstance(loaded_club_data, dict) and all(key in loaded_club_data for key in ["name", "league", "country", "european"]):
+            if (loaded_club_data["league"] in league_tiers and
+                loaded_club_data["country"] in country_prestige and
+                isinstance(loaded_club_data["name"], str) and
+                isinstance(loaded_club_data["european"], bool)):
+                st.session_state.club_details = loaded_club_data
+                st.success("Club details loaded successfully.")
+            else:
+                st.error("Invalid JSON format or data.")
         else:
-            st.info("Both clubs have equal stature.")
+            st.error("JSON must contain name, league, country, and european fields.")
+    except json.JSONDecodeError:
+        st.error("Invalid JSON file.")
 
-        # Calculate and display minimum offer
-        minimum_offer = calculate_minimum_offer(player_value_sell, stature_diff, is_young_sell)
-        st.success(f"You must accept any offer from {display_name2} of {minimum_offer:,.2f} or higher for this player.")
-    else:
-        st.error("Please enter a valid player value greater than 0.")
-
-# Buying Transfer Calculator Section
-st.header("Transfer Calculator (Buying)")
-with st.form(key="buying_transfer_form"):
-    # Transfer inputs
-    st.subheader("Player Details")
-    player_value_buy = st.number_input(
-        "Current Player Value",
-        min_value=0.0,
-        step=1000.0,
-        format="%.2f",
-        key="player_value_buy",
-        help="Enter value without commas, e.g., 1000000 for 1,000,000"
-    )
-    player_overall_buy = st.number_input(
-        "Player Overall Rating",
-        min_value=0,
-        max_value=99,
-        step=1,
-        format="%d",
-        key="player_overall_buy"
-    )
-    player_age_buy = st.number_input(
-        "Player Age",
-        min_value=16,
-        max_value=40,
-        step=1,
-        format="%d",
-        key="player_age_buy"
-    )
-
+with st.form(key="club_details_form"):
+    club_name = st.text_input("Enter Your Club Name (Optional)", value=st.session_state.club_details["name"], key="club_name")
+    club_league = st.selectbox("Select Your Club League/Division", list(league_tiers.keys()), index=list(league_tiers.keys()).index(st.session_state.club_details["league"]), key="club_league")
+    club_country = st.selectbox("Select Your Club Country", list(country_prestige.keys()), index=list(country_prestige.keys()).index(st.session_state.club_details["country"]), key="club_country")
+    club_european = st.checkbox("Your Club Participates in European Competitions (e.g., Champions League, Europa League)", value=st.session_state.club_details["european"], key="club_european")
+    
     # Submit button
-    submit_buying_transfer = st.form_submit_button("Calculate Starting Bid")
+    submit_club_details = st.form_submit_button("Save Club Details")
 
-# Buying transfer results
-if submit_buying_transfer:
-    if player_value_buy > 0:
-        # Calculate and display starting bid
-        starting_bid, is_accurate = calculate_starting_bid(
-            player_value_buy,
-            player_overall_buy,
-            player_age_buy,
-            st.session_state.average_team_overall
-        )
-        st.success(f"You should start your bid at {starting_bid:,.2f} for this player.")
-        if not is_accurate:
-            st.warning("This bid is based on a default 175% markup because the Starting 11 average overall has not been calculated. Please calculate your Starting 11 average for a more accurate bid.")
-    else:
-        st.error("Please enter a valid player value greater than 0.")
+if submit_club_details:
+    st.session_state.club_details = {
+        "name": club_name,
+        "league": club_league,
+        "country": club_country,
+        "european": club_european
+    }
+    st.success("Club details saved successfully.")
+
+# Download Club Details data
+if st.session_state.club_details:
+    club_json_str = json.dumps(st.session_state.club_details, indent=2)
+    st.download_button(
+        label="Download Club Details as JSON",
+        data=club_json_str,
+        file_name="club_details.json",
+        mime="application/json"
+    )
 
 # Starting 11 Section
 st.header("Starting 11 Overall Calculator")
@@ -316,3 +264,111 @@ if submit_starting_11:
         st.write(f"Wage Cap for this season: {wage_cap:,} (p/w)")
     else:
         st.error("All player overall ratings and wages must be non-negative.")
+
+# Selling Transfer Calculator Section
+st.header("Transfer Calculator (Selling)")
+with st.form(key="selling_transfer_form"):
+    # Club 2 inputs (Offering Club)
+    st.subheader("Offering Club Details")
+    club2_name_sell = st.text_input("Enter Offering Club Name (Optional)", key="club2_name_sell")
+    club2_league_sell = st.selectbox("Select Offering Club League/Division", list(league_tiers.keys()), key="club2_league_sell")
+    club2_country_sell = st.selectbox("Select Offering Club Country", list(country_prestige.keys()), key="club2_country_sell")
+    club2_european_sell = st.checkbox("Offering Club Participates in European Competitions (e.g., Champions League, Europa League)", key="club2_european_sell")
+
+    # Transfer inputs
+    st.subheader("Transfer Details")
+    player_value_sell = st.number_input(
+        "Current Player Value",
+        min_value=0.0,
+        step=1000.0,
+        format="%.2f",
+        key="player_value_sell",
+        help="Enter value without commas, e.g., 1000000 for 1,000,000"
+    )
+    is_young_sell = st.checkbox("Player is Aged 16–21", key="is_young_sell")
+
+    # Submit button
+    submit_selling_transfer = st.form_submit_button("Calculate Selling Offer")
+
+# Selling transfer results
+if submit_selling_transfer:
+    if player_value_sell > 0:
+        # Calculate stature scores using Your Club Details from session state
+        score1 = calculate_score(
+            st.session_state.club_details["league"],
+            st.session_state.club_details["country"],
+            st.session_state.club_details["european"],
+            league_tiers
+        )
+        score2 = calculate_score(club2_league_sell, club2_country_sell, club2_european_sell, league_tiers)
+        stature_diff = score2 - score1
+
+        # Use default names if not provided
+        display_name1 = st.session_state.club_details["name"] if st.session_state.club_details["name"] else "Your Club"
+        display_name2 = club2_name_sell if club2_name_sell else "Offering Club"
+
+        # Display club stature scores
+        st.write(f"**{display_name1} Stature Score:** {score1:.1f}")
+        st.write(f"**{display_name2} Stature Score:** {score2:.1f}")
+
+        if score1 > score2:
+            st.success(f"{display_name1} has a higher stature by {score1 - score2:.1f} points.")
+        elif score2 > score1:
+            st.warning(f"{display_name2} has a higher stature by {score2 - score1:.1f} points.")
+        else:
+            st.info("Both clubs have equal stature.")
+
+        # Calculate and display minimum offer
+        minimum_offer = calculate_minimum_offer(player_value_sell, stature_diff, is_young_sell)
+        st.success(f"You must accept any offer from {display_name2} of {minimum_offer:,.2f} or higher for this player.")
+    else:
+        st.error("Please enter a valid player value greater than 0.")
+
+# Buying Transfer Calculator Section
+st.header("Transfer Calculator (Buying)")
+with st.form(key="buying_transfer_form"):
+    # Transfer inputs
+    st.subheader("Player Details")
+    player_value_buy = st.number_input(
+        "Current Player Value",
+        min_value=0.0,
+        step=1000.0,
+        format="%.2f",
+        key="player_value_buy",
+        help="Enter value without commas, e.g., 1000000 for 1,000,000"
+    )
+    player_overall_buy = st.number_input(
+        "Player Overall Rating",
+        min_value=0,
+        max_value=99,
+        step=1,
+        format="%d",
+        key="player_overall_buy"
+    )
+    player_age_buy = st.number_input(
+        "Player Age",
+        min_value=16,
+        max_value=40,
+        step=1,
+        format="%d",
+        key="player_age_buy"
+    )
+
+    # Submit button
+    submit_buying_transfer = st.form_submit_button("Calculate Starting Bid")
+
+# Buying transfer results
+if submit_buying_transfer:
+    if player_value_buy > 0:
+        # Calculate and display starting bid
+        starting_bid, is_accurate = calculate_starting_bid(
+            player_value_buy,
+            player_overall_buy,
+            player_age_buy,
+            st.session_state.average_team_overall
+        )
+        st.success(f"You should start your bid at {starting_bid:,.2f} for this player.")
+        if not is_accurate:
+            st.warning("This bid is based on a default 175% markup because the Starting 11 average overall has not been calculated. Please calculate your Starting 11 average for a more accurate bid.")
+    else:
+        st.error("Please enter a valid player value greater than 0.")
