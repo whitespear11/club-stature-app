@@ -178,6 +178,21 @@ if uploaded_file:
     except json.JSONDecodeError:
         st.error("Invalid JSON file.")
 
+# Download Combined Club Details and Starting 11 data (top button)
+if st.session_state.club_details and st.session_state.starting_11:
+    combined_data = {
+        "club_details": st.session_state.club_details,
+        "starting_11": st.session_state.starting_11
+    }
+    json_str = json.dumps(combined_data, indent=2)
+    st.download_button(
+        label="Download Club Details and Starting 11 as JSON",
+        data=json_str,
+        file_name="team_data.json",
+        mime="application/json",
+        key="download_top"
+    )
+
 with st.form(key="club_details_form"):
     club_name = st.text_input("Enter Your Club Name (Optional)", value=st.session_state.club_details["name"], key="club_name")
     club_league = st.selectbox("Select Your Club League/Division", list(league_tiers.keys()), index=list(league_tiers.keys()).index(st.session_state.club_details["league"]), key="club_league")
@@ -188,13 +203,15 @@ with st.form(key="club_details_form"):
     submit_club_details = st.form_submit_button("Save Club Details")
 
 if submit_club_details:
-    st.session_state.club_details = {
+    # Update session state with new club details
+    new_club_details = {
         "name": club_name,
         "league": club_league,
         "country": club_country,
         "european": club_european
     }
-    st.success("Club details saved successfully.")
+    st.session_state.club_details = new_club_details
+    st.success(f"Club details saved successfully. New stature score: {calculate_score(club_league, club_country, club_european, league_tiers):.1f}")
 
 # Starting 11 Section
 st.header("Starting 11 Overall Calculator")
@@ -244,7 +261,7 @@ with st.form(key="starting_11_form"):
     # Submit button
     submit_starting_11 = st.form_submit_button("Calculate Team Overall")
 
-# Download Combined Club Details and Starting 11 data
+# Download Combined Club Details and Starting 11 data (bottom button)
 if st.session_state.club_details and st.session_state.starting_11:
     combined_data = {
         "club_details": st.session_state.club_details,
@@ -255,7 +272,8 @@ if st.session_state.club_details and st.session_state.starting_11:
         label="Download Club Details and Starting 11 as JSON",
         data=json_str,
         file_name="team_data.json",
-        mime="application/json"
+        mime="application/json",
+        key="download_bottom"
     )
 
 # Starting 11 results
@@ -310,20 +328,24 @@ with st.form(key="selling_transfer_form"):
 # Selling transfer results
 if submit_selling_transfer:
     if player_value_sell > 0:
-        # Calculate stature scores using Your Club Details from session state
+        # Fetch current club details from session state
+        club_details = st.session_state.club_details
+        # Calculate stature scores
         score1 = calculate_score(
-            st.session_state.club_details["league"],
-            st.session_state.club_details["country"],
-            st.session_state.club_details["european"],
+            club_details["league"],
+            club_details["country"],
+            club_details["european"],
             league_tiers
         )
         score2 = calculate_score(club2_league_sell, club2_country_sell, club2_european_sell, league_tiers)
         stature_diff = score2 - score1
 
         # Use default names if not provided
-        display_name1 = st.session_state.club_details["name"] if st.session_state.club_details["name"] else "Your Club"
+        display_name1 = club_details["name"] if club_details["name"] else "Your Club"
         display_name2 = club2_name_sell if club2_name_sell else "Offering Club"
 
+        # Display club details used for calculation
+        st.write(f"**Your Club Details Used:** League: {club_details['league']}, Country: {club_details['country']}, European: {club_details['european']}")
         # Display club stature scores
         st.write(f"**{display_name1} Stature Score:** {score1:.1f}")
         st.write(f"**{display_name2} Stature Score:** {score2:.1f}")
