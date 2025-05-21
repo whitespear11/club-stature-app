@@ -128,7 +128,6 @@ st.title("FIFA Realistic Toolkit")
 # Your Club Details Section
 st.header("Your Club Details")
 st.info("Enter your club details to use in the selling calculator. Save and load both club details and Starting 11 in a single JSON file.")
-st.warning("Note: If you have uploaded a JSON file, please remove it using the clear button (X) in the uploader before making changes to the form fields below.")
 
 # Display current stature score
 current_stature = calculate_score(
@@ -141,6 +140,9 @@ st.write(f"Current Club Stature Score: {current_stature:.1f}")
 
 # Upload Combined Club Details and Starting 11 data
 uploaded_file = st.file_uploader("Upload Club and Starting 11 JSON", type=["json"], key="combined_upload")
+# Show disclaimer only if a file is uploaded
+if st.session_state.get("combined_upload") is not None:
+    st.warning("Note: If you have uploaded a JSON file, please remove it using the clear button (X) in the uploader before making changes to the form fields below.")
 if uploaded_file:
     try:
         loaded_data = json.load(uploaded_file)
@@ -174,6 +176,11 @@ if uploaded_file:
             st.session_state.starting_11 = loaded_data["starting_11"]
             st.session_state.club_details_updated = True
             st.session_state.pending_club_details = None
+            # Update form widget states
+            st.session_state["club_name"] = loaded_data["club_details"]["name"]
+            st.session_state["form_league"] = loaded_data["club_details"]["league"]
+            st.session_state["club_country"] = loaded_data["club_details"]["country"]
+            st.session_state["club_european"] = loaded_data["club_details"]["european"]
             # Recalculate average team overall
             total_overall = sum(player["overall"] for player in loaded_data["starting_11"])
             st.session_state.average_team_overall = math.floor(total_overall / 11)
