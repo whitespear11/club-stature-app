@@ -230,18 +230,14 @@ with st.form(key="club_details_form"):
 
 # Handle form submission
 if submit_club_details:
-    st.session_state.pending_club_details = {
-        "name": st.session_state.get("club_name", ""),
-        "league": st.session_state.get("form_league", st.session_state.club_details["league"]),
-        "country": st.session_state.get("club_country", st.session_state.club_details["country"]),
-        "european": st.session_state.get("club_european", st.session_state.club_details["european"])
-    }
-    # Update session state
-    st.session_state.club_details = st.session_state.pending_club_details
-    st.session_state.club_details_updated = True
-    st.session_state.pending_club_details = None
-    # Force re-render to update form widgets
-    st.rerun()
+# Immediately apply changes to session state
+st.session_state.club_details = {
+    "name": st.session_state.get("club_name", ""),
+    "league": st.session_state.get("form_league", st.session_state.club_details["league"]),
+    "country": st.session_state.get("club_country", st.session_state.club_details["country"]),
+    "european": st.session_state.get("club_european", st.session_state.club_details["european"])
+}
+st.session_state.club_details_updated = True
 
 # Display success message if club details were updated
 if st.session_state.club_details_updated:
