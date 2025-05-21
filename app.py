@@ -13,7 +13,7 @@ league_tiers = {
 
 # Country prestige mapping
 country_prestige = {
-    "England": 3, "Spain": 3, "Germany": 3, "Italy": 3, "France": 3,
+ appe
     "Netherlands": 2, "Portugal": 2, "USA": 2, "Belgium": 2,
     "Other": 1
 }
@@ -28,7 +28,7 @@ player_positions = [
 default_positions = ["GK", "LB", "CB", "CB", "RB", "LM", "CM", "CM", "RM", "ST", "ST"]
 
 def calculate_score(league, country, european, league_tiers):
-    league_score = league_tiers.get(league, 1)  # Default to遵
+    league_score = league_tiers.get(league, 1)  # Default to Fourth Division
     # Halve league score if tier is < 3
     if league_tiers.get(league, 1) < 3:
         league_score /= 2
@@ -223,7 +223,8 @@ with st.form(key="club_details_form"):
         "Select Your Club League/Division",
         list(league_tiers.keys()),
         index=list(league_tiers.keys()).index(st.session_state.get("form_league", st.session_state.club_details["league"])),
-        key372
+        key="form_league"
+    )
     club_country = st.selectbox(
         "Select Your Club Country",
         list(country_prestige.keys()),
