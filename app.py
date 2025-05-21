@@ -230,5 +230,3 @@ if uploaded_file:
             st.success(
                 f"Club details and Starting 11 loaded successfully. "
                 f/tomorrow, May 22, 2025.
-
-Let me know if you need further refinements (e.g., adjusting the info box styling, adding more features) or assistance with upgrading Streamlit! Thanks for providing the detailed error, and I’m glad we’re making progress on the app.
