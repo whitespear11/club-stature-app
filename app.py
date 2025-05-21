@@ -94,72 +94,49 @@ if "average_team_overall" not in st.session_state:
 # App title
 st.title("FIFA Realistic Toolkit")
 
-# Transfer Calculator Section
-st.header("Transfer Calculator")
-with st.form(key="transfer_form"):
-    # Transfer type toggle
-    transfer_type = st.radio("Transfer Type", ["Selling", "Buying"], key="transfer_type")
-
+# Selling Transfer Calculator Section
+st.header("Transfer Calculator (Selling)")
+with st.form(key="selling_transfer_form"):
     # Club 1 inputs (Your Club)
     st.subheader("Your Club (Team 1) Details")
-    club1_name = st.text_input("Enter Your Club Name (Optional)", key="club1_name")
-    club1_league = st.selectbox("Select Your Club League/Division", list(league_tiers.keys()), key="club1_league")
-    club1_country = st.selectbox("Select Your Club Country", list(country_prestige.keys()), key="club1_country")
-    club1_european = st.checkbox("Your Club Participates in European Competitions (e.g., Champions League, Europa League)", key="club1_european")
+    club1_name_sell = st.text_input("Enter Your Club Name (Optional)", key="club1_name_sell")
+    club1_league_sell = st.selectbox("Select Your Club League/Division", list(league_tiers.keys()), key="club1_league_sell")
+    club1_country_sell = st.selectbox("Select Your Club Country", list(country_prestige.keys()), key="club1_country_sell")
+    club1_european_sell = st.checkbox("Your Club Participates in European Competitions (e.g., Champions League, Europa League)", key="club1_european_sell")
 
-    # Club 2 inputs (Other Club)
-    st.subheader("Other Club (Team 2) Details")
-    club2_name = st.text_input("Enter Other Club Name (Optional)", key="club2_name")
-    club2_league = st.selectbox("Select Other Club League/Division", list(league_tiers.keys()), key="club2_league")
-    club2_country = st.selectbox("Select Other Club Country", list(country_prestige.keys()), key="club2_country")
-    club2_european = st.checkbox("Other Club Participates in European Competitions (e.g., Champions League, Europa League)", key="club2_european")
+    # Club 2 inputs (Offering Club)
+    st.subheader("Offering Club (Team 2) Details")
+    club2_name_sell = st.text_input("Enter Offering Club Name (Optional)", key="club2_name_sell")
+    club2_league_sell = st.selectbox("Select Offering Club League/Division", list(league_tiers.keys()), key="club2_league_sell")
+    club2_country_sell = st.selectbox("Select Offering Club Country", list(country_prestige.keys()), key="club2_country_sell")
+    club2_european_sell = st.checkbox("Offering Club Participates in European Competitions (e.g., Champions League, Europa League)", key="club2_european_sell")
 
     # Transfer inputs
     st.subheader("Transfer Details")
-    player_value = st.number_input(
+    player_value_sell = st.number_input(
         "Current Player Value",
         min_value=0.0,
         step=1000.0,
         format="%.2f",
-        key="player_value",
+        key="player_value_sell",
         help="Enter value without commas, e.g., 1000000 for 1,000,000"
     )
-    
-    # Conditional inputs based on transfer type
-    if transfer_type == "Selling":
-        is_young = st.checkbox("Player is Aged 16–21", key="is_young")
-    else:  # Buying
-        player_overall = st.number_input(
-            "Player Overall Rating",
-            min_value=0,
-            max_value=99,
-            step=1,
-            format="%d",
-            key="player_overall"
-        )
-        player_age = st.number_input(
-            "Player Age",
-            min_value=16,
-            max_value=40,
-            step=1,
-            format="%d",
-            key="player_age"
-        )
+    is_young_sell = st.checkbox("Player is Aged 16–21", key="is_young_sell")
 
     # Submit button
-    submit_transfer = st.form_submit_button("Calculate Transfer")
+    submit_selling_transfer = st.form_submit_button("Calculate Selling Offer")
 
-# Transfer results
-if submit_transfer:
-    if player_value > 0:
+# Selling transfer results
+if submit_selling_transfer:
+    if player_value_sell > 0:
         # Calculate stature scores
-        score1 = calculate_score(club1_league, club1_country, club1_european, league_tiers)
-        score2 = calculate_score(club2_league, club2_country, club2_european, league_tiers)
-        stature_diff = score2 - score1 if transfer_type == "Selling" else score1 - score2
+        score1 = calculate_score(clubstol1_league_sell, club1_country_sell, club1_european_sell, league_tiers)
+        score2 = calculate_score(club2_league_sell, club2_country_sell, club2_european_sell, league_tiers)
+        stature_diff = score2 - score1
 
         # Use default names if not provided
-        display_name1 = club1_name if club1_name else "Your Club"
-        display_name2 = club2_name if club2_name else "Other Club"
+        display_name1 = club1_name_sell if club1_name_sell else "Your Club"
+        display_name2 = club2_name_sell if club2_name_sell else "Offering Club"
 
         # Display club stature scores
         st.write(f"**{display_name1} Stature Score:** {score1:.1f}")
@@ -172,21 +149,92 @@ if submit_transfer:
         else:
             st.info("Both clubs have equal stature.")
 
-        if transfer_type == "Selling":
-            # Selling logic
-            minimum_offer = calculate_minimum_offer(player_value, stature_diff, is_young)
-            st.success(f"You must accept any offer from {display_name2} of {minimum_offer:,.2f} or higher for this player.")
+        # Calculate and display minimum offer
+        minimum_offer = calculate_minimum_offer(player_value_sell, stature_diff, is_young_sell)
+        st.success(f"You must accept any offer from {display_name2} of {minimum_offer:,.2f} or higher for this player.")
+    else:
+        st.error("Please enter a valid player value greater than 0.")
+
+# Buying Transfer Calculator Section
+st.header("Transfer Calculator (Buying)")
+with st.form(key="buying_transfer_form"):
+    # Club 1 inputs (Your Club)
+    st.subheader("Your Club (Team 1) Details")
+    club1_name_buy = st.text_input("Enter Your Club Name (Optional)", key="club1_name_buy")
+    club1_league_buy = st.selectbox("Select Your Club League/Division", list(league_tiers.keys()), key="club1_league_buy")
+    club1_country_buy = st.selectbox("Select Your Club Country", list(country_prestige.keys()), key="club1_country_buy")
+    club1_european_buy = st.checkbox("Your Club Participates in European Competitions (e.g., Champions League, Europa League)", key="club1_european_buy")
+
+    # Club 2 inputs (Selling Club)
+    st.subheader("Selling Club (Team 2) Details")
+    club2_name_buy = st.text_input("Enter Selling Club Name (Optional)", key="club2_name_buy")
+    club2_league_buy = st.selectbox("Select Selling Club League/Division", list(league_tiers.keys()), key="club2_league_buy")
+    club2_country_buy = st.selectbox("Select Selling Club Country", list(country_prestige.keys()), key="club2_country_buy")
+    club2_european_buy = st.checkbox("Selling Club Participates in European Competitions (e.g., Champions League, Europa League)", key="club2_european_buy")
+
+    # Transfer inputs
+    st.subheader("Transfer Details")
+    player_value_buy = st.number_input(
+        "Current Player Value",
+        min_value=0.0,
+        step=1000.0,
+        format="%.2f",
+        key="player_value_buy",
+        help="Enter value without commas, e.g., 1000000 for 1,000,000"
+    )
+    player_overall_buy = st.number_input(
+        "Player Overall Rating",
+        min_value=0,
+        max_value=99,
+        step=1,
+        format="%d",
+        key="player_overall_buy"
+    )
+    player_age_buy = st.number_input(
+        "Player Age",
+        min_value=16,
+        max_value=40,
+        step=1,
+        format="%d",
+        key="player_age_buy"
+    )
+
+    # Submit button
+    submit_buying_transfer = st.form_submit_button("Calculate Starting Bid")
+
+# Buying transfer results
+if submit_buying_transfer:
+    if player_value_buy > 0:
+        # Calculate stature scores
+        score1 = calculate_score(club1_league_buy, club1_country_buy, club1_european_buy, league_tiers)
+        score2 = calculate_score(club2_league_buy, club2_country_buy, club2_european_buy, league_tiers)
+        stature_diff = score1 - score2  # Your club minus selling club
+
+        # Use default names if not provided
+        display_name1 = club1_name_buy if club1_name_buy else "Your Club"
+        display_name2 = club2_name_buy if club2_name_buy else "Selling Club"
+
+        # Display club stature scores
+        st.write(f"**{display_name1} Stature Score:** {score1:.1f}")
+        st.write(f"**{display_name2} Stature Score:** {score2:.1f}")
+
+        if score1 > score2:
+            st.success(f"{display_name1} has a higher stature by {score1 - score2:.1f} points.")
+        elif score2 > score1:
+            st.warning(f"{display_name2} has a higher stature by {score2 - score1:.1f} points.")
         else:
-            # Buying logic
-            starting_bid, is_accurate = calculate_starting_bid(
-                player_value,
-                player_overall,
-                player_age,
-                st.session_state.average_team_overall
-            )
-            st.success(f"You should start your bid to {display_name2} at {starting_bid:,.2f} for this player.")
-            if not is_accurate:
-                st.warning("This bid is based on a default 175% markup because the Starting 11 average overall has not been calculated. Please calculate your Starting 11 average for a more accurate bid.")
+            st.info("Both clubs have equal stature.")
+
+        # Calculate and display starting bid
+        starting_bid, is_accurate = calculate_starting_bid(
+            player_value_buy,
+            player_overall_buy,
+            player_age_buy,
+            st.session_state.average_team_overall
+        )
+        st.success(f"You should start your bid to {display_name2} at {starting_bid:,.2f} for this player.")
+        if not is_accurate:
+            st.warning("This bid is based on a default 175% markup because the Starting 11 average overall has not been calculated. Please calculate your Starting 11 average for a more accurate bid.")
     else:
         st.error("Please enter a valid player value greater than 0.")
 
