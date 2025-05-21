@@ -176,6 +176,8 @@ if uploaded_file:
             # Recalculate average team overall
             total_overall = sum(player["overall"] for player in loaded_data["starting_11"])
             st.session_state.average_team_overall = math.floor(total_overall / 11)
+            # Clear the file uploader
+            st.session_state["combined_upload"] = None
             st.success(
                 f"Club details and Starting 11 loaded successfully. "
                 f"Club: Name: {loaded_data['club_details']['name'] or 'None'}, "
@@ -184,10 +186,18 @@ if uploaded_file:
                 f"European: {loaded_data['club_details']['european']}. "
                 f"Stature score: {calculate_score(loaded_data['club_details']['league'], loaded_data['club_details']['country'], loaded_data['club_details']['european'], league_tiers):.1f}"
             )
+            # Trigger rerun to refresh UI and clear uploader
+            st.rerun()
         else:
             st.error("Invalid JSON format or data. Ensure it contains valid club_details and starting_11 fields.")
+            # Clear the file uploader on error
+            st.session_state["combined_upload"] = None
+            st.rerun()
     except json.JSONDecodeError:
         st.error("Invalid JSON file.")
+        # Clear the file uploader on error
+        st.session_state["combined_upload"] = None
+        st.rerun()
 
 # Download Combined Club Details and Starting 11 data (top button)
 if st.session_state.club_details and st.session_state.starting_11:
