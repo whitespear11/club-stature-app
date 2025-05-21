@@ -3,7 +3,7 @@ import math
 import json
 import io
 
-# Apply custom CSS for green download buttons and info box styling
+# Apply custom CSS for green download buttons
 st.markdown(
     """
     <style>
@@ -17,16 +17,6 @@ st.markdown(
     button[kind="primary"]:hover {
         background-color: #218838;
         color: white;
-    }
-    .custom-info {
-        background-color: #e7f3ff;
-        border-left: 4px solid #2196F3;
-        padding: 1rem;
-        border-radius: 0.25rem;
-        margin-bottom: 1rem;
-    }
-    .custom-info p {
-        margin: 0.5rem 0;
     }
     </style>
     """,
@@ -164,17 +154,17 @@ if "club_european" not in st.session_state:
 st.title("FIFA Realistic Toolkit")
 
 # Your Club Details Section
-st.header("Your Club Details")
-st.markdown(
+st.write(
     """
-    <div class="custom-info">
-        <p>Hello and thank you for using FIFA Realistic Toolkit! This toolkit is designed to make FIFA career mode more realistic by adding some guidelines on transfers and wages.</p>
-        <p>Please fill out your team details below and your starting 11, they can be saved and uploaded.</p>
-        <p>If you enjoy this tool please consider <a href="https://buymeacoffee.com/whitespear11" target="_blank">buying me a coffee</a>.</p>
-    </div>
-    """,
-    unsafe_allow_html=True
+    Hello and thank you for using FIFA Realistic Toolkit! This toolkit is designed to make FIFA career mode more realistic by adding some guidelines on transfers and wages.
+
+    Please fill out your team details below and your starting 11, they can be saved and uploaded.
+    """
 )
+st.write(
+    "If you enjoy this tool please consider [buying me a coffee](https://buymeacoffee.com/whitespear11)."
+)
+st.header("Your Club Details")
 
 # Upload Combined Club Details and Starting 11 data
 uploaded_file = st.file_uploader("Upload Club and Starting 11 JSON", type=["json"], key="combined_upload")
