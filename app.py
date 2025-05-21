@@ -229,4 +229,4 @@ if uploaded_file:
             st.session_state.average_team_overall = math.floor(total_overall / 11)
             st.success(
                 f"Club details and Starting 11 loaded successfully. "
-                f/tomorrow, May 22, 2025.
+                f/tomorrow, May 22, 2025.)
