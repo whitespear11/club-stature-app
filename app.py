@@ -121,8 +121,6 @@ if "club_details_updated" not in st.session_state:
     st.session_state.club_details_updated = False
 if "pending_club_details" not in st.session_state:
     st.session_state.pending_club_details = None
-if "clear_uploader" not in st.session_state:
-    st.session_state.clear_uploader = False
 
 # App title
 st.title("FIFA Realistic Toolkit")
@@ -130,6 +128,7 @@ st.title("FIFA Realistic Toolkit")
 # Your Club Details Section
 st.header("Your Club Details")
 st.info("Enter your club details to use in the selling calculator. Save and load both club details and Starting 11 in a single JSON file.")
+st.warning("Note: If you have uploaded a JSON file, please remove it using the clear button (X) in the uploader before making changes to the form fields below.")
 
 # Display current stature score
 current_stature = calculate_score(
@@ -139,11 +138,6 @@ current_stature = calculate_score(
     league_tiers
 )
 st.write(f"Current Club Stature Score: {current_stature:.1f}")
-
-# Clear uploader state if flag is set
-if st.session_state.clear_uploader:
-    st.session_state["combined_upload"] = None
-    st.session_state.clear_uploader = False
 
 # Upload Combined Club Details and Starting 11 data
 uploaded_file = st.file_uploader("Upload Club and Starting 11 JSON", type=["json"], key="combined_upload")
@@ -183,8 +177,6 @@ if uploaded_file:
             # Recalculate average team overall
             total_overall = sum(player["overall"] for player in loaded_data["starting_11"])
             st.session_state.average_team_overall = math.floor(total_overall / 11)
-            # Set flag to clear uploader in next run
-            st.session_state.clear_uploader = True
             st.success(
                 f"Club details and Starting 11 loaded successfully. "
                 f"Club: Name: {loaded_data['club_details']['name'] or 'None'}, "
@@ -193,18 +185,10 @@ if uploaded_file:
                 f"European: {loaded_data['club_details']['european']}. "
                 f"Stature score: {calculate_score(loaded_data['club_details']['league'], loaded_data['club_details']['country'], loaded_data['club_details']['european'], league_tiers):.1f}"
             )
-            # Trigger rerun to refresh UI and clear uploader
-            st.rerun()
         else:
             st.error("Invalid JSON format or data. Ensure it contains valid club_details and starting_11 fields.")
-            # Set flag to clear uploader in next run
-            st.session_state.clear_uploader = True
-            st.rerun()
     except json.JSONDecodeError:
         st.error("Invalid JSON file.")
-        # Set flag to clear uploader in next run
-        st.session_state.clear_uploader = True
-        st.rerun()
 
 # Download Combined Club Details and Starting 11 data (top button)
 if st.session_state.club_details and st.session_state.starting_11:
