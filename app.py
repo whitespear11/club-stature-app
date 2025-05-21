@@ -121,6 +121,8 @@ if "club_details_updated" not in st.session_state:
     st.session_state.club_details_updated = False
 if "pending_club_details" not in st.session_state:
     st.session_state.pending_club_details = None
+if "clear_uploader" not in st.session_state:
+    st.session_state.clear_uploader = False
 
 # App title
 st.title("FIFA Realistic Toolkit")
@@ -137,6 +139,11 @@ current_stature = calculate_score(
     league_tiers
 )
 st.write(f"Current Club Stature Score: {current_stature:.1f}")
+
+# Clear uploader state if flag is set
+if st.session_state.clear_uploader:
+    st.session_state["combined_upload"] = None
+    st.session_state.clear_uploader = False
 
 # Upload Combined Club Details and Starting 11 data
 uploaded_file = st.file_uploader("Upload Club and Starting 11 JSON", type=["json"], key="combined_upload")
@@ -176,8 +183,8 @@ if uploaded_file:
             # Recalculate average team overall
             total_overall = sum(player["overall"] for player in loaded_data["starting_11"])
             st.session_state.average_team_overall = math.floor(total_overall / 11)
-            # Clear the file uploader
-            st.session_state["combined_upload"] = None
+            # Set flag to clear uploader in next run
+            st.session_state.clear_uploader = True
             st.success(
                 f"Club details and Starting 11 loaded successfully. "
                 f"Club: Name: {loaded_data['club_details']['name'] or 'None'}, "
@@ -190,13 +197,13 @@ if uploaded_file:
             st.rerun()
         else:
             st.error("Invalid JSON format or data. Ensure it contains valid club_details and starting_11 fields.")
-            # Clear the file uploader on error
-            st.session_state["combined_upload"] = None
+            # Set flag to clear uploader in next run
+            st.session_state.clear_uploader = True
             st.rerun()
     except json.JSONDecodeError:
         st.error("Invalid JSON file.")
-        # Clear the file uploader on error
-        st.session_state["combined_upload"] = None
+        # Set flag to clear uploader in next run
+        st.session_state.clear_uploader = True
         st.rerun()
 
 # Download Combined Club Details and Starting 11 data (top button)
