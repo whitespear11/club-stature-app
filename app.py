@@ -103,7 +103,7 @@ def calculate_proportional_wage(player_overall, starting_11):
     wage = math.ceil(wage / 100) * 100
     return wage, None
 
-# Initialize session state for Starting 11 and Your Club Details
+# Initialize session state
 if "starting_11" not in st.session_state:
     st.session_state.starting_11 = [
         {"position": default_positions[i], "overall": 0, "wage": 0} for i in range(11)
@@ -117,6 +117,23 @@ if "club_details" not in st.session_state:
         "country": "England",
         "european": False
     }
+if "club_details_updated" not in st.session_state:
+    st.session_state.club_details_updated = False
+
+# Callback function for form submission
+def save_club_details():
+    new_club_details = {
+        "name": st.session_state.get("club_name", ""),
+        "league": st.session_state.get("club_league", "First Division"),
+        "country": st.session_state.get("club_country", "England"),
+        "european": st.session_state.get("club_european", False)
+    }
+    # Update session state
+    st.session_state.club_details = new_club_details
+    st.session_state.club_details_updated = True
+    # Clear widget states to force form refresh
+    for key in ["club_name", "club_league", "club_country", "club_european"]:
+        st.session_state.pop(key, None)
 
 # App title
 st.title("FIFA Realistic Toolkit")
@@ -145,9 +162,7 @@ if uploaded_file:
             len(loaded_data["starting_11"]) == 11 and
             all(
                 isinstance(player, dict) and
-                "position" in player and
-                "overall" in player and
-                "wage" in player and
+                all(key in player for key in ["position", "overall", "wage"]) and
                 player["position"] in player_positions and
                 isinstance(player["overall"], int) and
                 0 <= player["overall"] <= 99 and
@@ -157,22 +172,36 @@ if uploaded_file:
             )
         )
         if club_valid and starting_11_valid:
-            # Clear widget states to ensure form updates
-            st.session_state.pop("club_name", None)
-            st.session_state.pop("club_league", None)
-            st.session_state.pop("club_country", None)
-            st.session_state.pop("club_european", None)
+            # Clear all widget states
+            for key in ["club_name", "club_league", "club_country", "club_european"]:
+                st.session_state.pop(key, None)
             for i in range(11):
-                st.session_state.pop(f"player_{i}_position", None)
-                st.session_state.pop(f"player_{i}_overall", None)
-                st.session_state.pop(f"player_{i}_wage", None)
+                for key in [f"player_{i}_position", f"player_{i}_overall", f"player_{i}_wage"]:
+                    st.session_state.pop(key, None)
             # Update session state
             st.session_state.club_details = loaded_data["club_details"]
             st.session_state.starting_11 = loaded_data["starting_11"]
+            st.session_state.club_details_updated = True
             # Recalculate average team overall
             total_overall = sum(player["overall"] for player in loaded_data["starting_11"])
             st.session_state.average_team_overall = math.floor(total_overall / 11)
-            st.success("Club details and Starting 11 data loaded successfully.")
+            # Set form widget values to loaded data
+            st.session_state.club_name = loaded_data["club_details"]["name"]
+            st.session_state.club_league = loaded_data["club_details"]["league"]
+            st.session_state.club_country = loaded_data["club_details"]["country"]
+            st.session_state.club_european = loaded_data["club_details"]["european"]
+            for i, player in enumerate(loaded_data["starting_11"]):
+                st.session_state[f"player_{i}_position"] = player["position"]
+                st.session_state[f"player_{i}_overall"] = player["overall"]
+                st.session_state[f"player_{i}_wage"] = player["wage"]
+            st.success(
+                f"Club details and Starting 11 loaded successfully. "
+                f"Club: Name: {loaded_data['club_details']['name'] or 'None'}, "
+                f"League: {loaded_data['club_details']['league']}, "
+                f"Country: {loaded_data['club_details']['country']}, "
+                f"European: {loaded_data['club_details']['european']}. "
+                f"Stature score: {calculate_score(loaded_data['club_details']['league'], loaded_data['club_details']['country'], loaded_data['club_details']['european'], league_tiers):.1f}"
+            )
         else:
             st.error("Invalid JSON format or data. Ensure it contains valid club_details and starting_11 fields.")
     except json.JSONDecodeError:
@@ -194,24 +223,38 @@ if st.session_state.club_details and st.session_state.starting_11:
     )
 
 with st.form(key="club_details_form"):
-    club_name = st.text_input("Enter Your Club Name (Optional)", value=st.session_state.club_details["name"], key="club_name")
-    club_league = st.selectbox("Select Your Club League/Division", list(league_tiers.keys()), index=list(league_tiers.keys()).index(st.session_state.club_details["league"]), key="club_league")
-    club_country = st.selectbox("Select Your Club Country", list(country_prestige.keys()), index=list(country_prestige.keys()).index(st.session_state.club_details["country"]), key="club_country")
-    club_european = st.checkbox("Your Club Participates in European Competitions (e.g., Champions League, Europa League)", value=st.session_state.club_details["european"], key="club_european")
+    club_name = st.text_input("Enter Your Club Name (Optional)", value=st.session_state.get("club_name", st.session_state.club_details["name"]), key="club_name")
+    club_league = st.selectbox(
+        "Select Your Club League/Division",
+        list(league_tiers.keys()),
+        index=list(league_tiers.keys()).index(st.session_state.get("club_league", st.session_state.club_details["league"])),
+        key="club_league"
+    )
+    club_country = st.selectbox(
+        "Select Your Club Country",
+        list(country_prestige.keys()),
+        index=list(country_prestige.keys()).index(st.session_state.get("club_country", st.session_state.club_details["country"])),
+        key="club_country"
+    )
+    club_european = st.checkbox(
+        "Your Club Participates in European Competitions (e.g., Champions League, Europa League)",
+        value=st.session_state.get("club_european", st.session_state.club_details["european"]),
+        key="club_european"
+    )
     
-    # Submit button
-    submit_club_details = st.form_submit_button("Save Club Details")
+    # Submit button with callback
+    st.form_submit_button("Save Club Details", on_click=save_club_details)
 
-if submit_club_details:
-    # Update session state with new club details
-    new_club_details = {
-        "name": club_name,
-        "league": club_league,
-        "country": club_country,
-        "european": club_european
-    }
-    st.session_state.club_details = new_club_details
-    st.success(f"Club details saved successfully. New stature score: {calculate_score(club_league, club_country, club_european, league_tiers):.1f}")
+# Display success message if club details were updated
+if st.session_state.club_details_updated:
+    club_details = st.session_state.club_details
+    st.success(
+        f"Club details saved: Name: {club_details['name'] or 'None'}, "
+        f"League: {club_details['league']}, "
+        f"Country: {club_details['country']}, "
+        f"European: {club_details['european']}. "
+        f"New stature score: {calculate_score(club_details['league'], club_details['country'], club_details['european'], league_tiers):.1f}"
+    )
 
 # Starting 11 Section
 st.header("Starting 11 Overall Calculator")
@@ -234,7 +277,7 @@ with st.form(key="starting_11_form"):
             position = st.selectbox(
                 "",
                 player_positions,
-                index=player_positions.index(st.session_state.starting_11[i]["position"]),
+                index=player_positions.index(st.session_state.get(f"player_{i}_position", st.session_state.starting_11[i]["position"])),
                 key=f"player_{i}_position"
             )
         with col2:
@@ -242,7 +285,7 @@ with st.form(key="starting_11_form"):
                 "",
                 min_value=0,
                 max_value=99,
-                value=st.session_state.starting_11[i]["overall"],
+                value=st.session_state.get(f"player_{i}_overall", st.session_state.starting_11[i]["overall"]),
                 step=1,
                 format="%d",
                 key=f"player_{i}_overall"
@@ -251,7 +294,7 @@ with st.form(key="starting_11_form"):
             wage = st.number_input(
                 "",
                 min_value=0,
-                value=st.session_state.starting_11[i]["wage"],
+                value=st.session_state.get(f"player_{i}_wage", st.session_state.starting_11[i]["wage"]),
                 step=1000,
                 format="%d",
                 key=f"player_{i}_wage"
@@ -282,6 +325,15 @@ if submit_starting_11:
     if all(player["overall"] >= 0 and player["wage"] >= 0 for player in players):
         # Update session state
         st.session_state.starting_11 = players
+        # Clear widget states to ensure form reflects new values
+        for i in range(11):
+            for key in [f"player_{i}_position", f"player_{i}_overall", f"player_{i}_wage"]:
+                st.session_state.pop(key, None)
+        # Set widget values to new data
+        for i, player in enumerate(players):
+            st.session_state[f"player_{i}_position"] = player["position"]
+            st.session_state[f"player_{i}_overall"] = player["overall"]
+            st.session_state[f"player_{i}_wage"] = player["wage"]
 
         # Calculate average overall and round down
         total_overall = sum(player["overall"] for player in players)
@@ -345,7 +397,7 @@ if submit_selling_transfer:
         display_name2 = club2_name_sell if club2_name_sell else "Offering Club"
 
         # Display club details used for calculation
-        st.write(f"**Your Club Details Used:** League: {club_details['league']}, Country: {club_details['country']}, European: {club_details['european']}")
+        st.write(f"**Your Club Details Used:** Name: {display_name1}, League: {club_details['league']}, Country: {club_details['country']}, European: {club_details['european']}")
         # Display club stature scores
         st.write(f"**{display_name1} Stature Score:** {score1:.1f}")
         st.write(f"**{display_name2} Stature Score:** {score2:.1f}")
