@@ -124,16 +124,18 @@ if "club_details_updated" not in st.session_state:
 def save_club_details():
     new_club_details = {
         "name": st.session_state.get("club_name", ""),
-        "league": st.session_state.get("club_league", "First Division"),
-        "country": st.session_state.get("club_country", "England"),
-        "european": st.session_state.get("club_european", False)
+        "league": st.session_state.get("club_league", st.session_state.club_details["league"]),
+        "country": st.session_state.get("club_country", st.session_state.club_details["country"]),
+        "european": st.session_state.get("club_european", st.session_state.club_details["european"])
     }
     # Update session state
     st.session_state.club_details = new_club_details
     st.session_state.club_details_updated = True
-    # Clear widget states to force form refresh
-    for key in ["club_name", "club_league", "club_country", "club_european"]:
-        st.session_state.pop(key, None)
+    # Synchronize widget states
+    st.session_state.club_name = new_club_details["name"]
+    st.session_state.club_league = new_club_details["league"]
+    st.session_state.club_country = new_club_details["country"]
+    st.session_state.club_european = new_club_details["european"]
 
 # App title
 st.title("FIFA Realistic Toolkit")
@@ -223,7 +225,11 @@ if st.session_state.club_details and st.session_state.starting_11:
     )
 
 with st.form(key="club_details_form"):
-    club_name = st.text_input("Enter Your Club Name (Optional)", value=st.session_state.get("club_name", st.session_state.club_details["name"]), key="club_name")
+    club_name = st.text_input(
+        "Enter Your Club Name (Optional)",
+        value=st.session_state.get("club_name", st.session_state.club_details["name"]),
+        key="club_name"
+    )
     club_league = st.selectbox(
         "Select Your Club League/Division",
         list(league_tiers.keys()),
@@ -248,6 +254,9 @@ with st.form(key="club_details_form"):
 # Display success message if club details were updated
 if st.session_state.club_details_updated:
     club_details = st.session_state.club_details
+    # Check for widget synchronization issue
+    if st.session_state.get("club_league") != club_details["league"]:
+        st.warning(f"Widget mismatch detected: Form league ({st.session_state.get('club_league')}) differs from saved league ({club_details['league']}). Saved values will be used.")
     st.success(
         f"Club details saved: Name: {club_details['name'] or 'None'}, "
         f"League: {club_details['league']}, "
@@ -410,7 +419,7 @@ if submit_selling_transfer:
             st.info("Both clubs have equal stature.")
 
         # Calculate and round up minimum offer to nearest 1000
-        minimum_offer = calculate_minimum_offer(player_value_sell, stature_diff, is_young_sell)
+        minimum_offer = calculate_minimum_offer(player_value_sell, stature_diff, is_young_sell vahid)
         minimum_offer = math.ceil(minimum_offer / 1000) * 1000
         st.success(f"You must accept any offer from {display_name2} of {minimum_offer:,.0f} or higher for this player.")
     else:
