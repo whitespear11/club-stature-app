@@ -187,11 +187,16 @@ if uploaded_file:
             st.session_state.starting_11 = loaded_data["starting_11"]
             st.session_state.club_details_updated = True
             st.session_state.pending_club_details = None
-            # Update form widget states
+            # Update club details form widget states
             st.session_state["club_name"] = loaded_data["club_details"]["name"]
             st.session_state["form_league"] = loaded_data["club_details"]["league"]
             st.session_state["club_country"] = loaded_data["club_details"]["country"]
             st.session_state["club_european"] = loaded_data["club_details"]["european"]
+            # Update starting 11 form widget states
+            for i, player in enumerate(loaded_data["starting_11"]):
+                st.session_state[f"player_{i}_position"] = player["position"]
+                st.session_state[f"player_{i}_overall"] = player["overall"]
+                st.session_state[f"player_{i}_wage"] = player["wage"]
             # Recalculate average team overall
             total_overall = sum(player["overall"] for player in loaded_data["starting_11"])
             st.session_state.average_team_overall = math.floor(total_overall / 11)
