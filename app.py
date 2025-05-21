@@ -241,7 +241,7 @@ if submit_club_details:
     st.session_state.club_details_updated = True
     st.session_state.pending_club_details = None
     # Force re-render to update form widgets
-    st.experimental_rerun()
+    st.rerun()
 
 # Display success message if club details were updated
 if st.session_state.club_details_updated:
