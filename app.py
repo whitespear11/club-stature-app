@@ -13,7 +13,7 @@ league_tiers = {
 
 # Country prestige mapping
 country_prestige = {
- appe
+    "England": 3, "Spain": 3, "Germany": 3, "Italy": 3, "France": 3,
     "Netherlands": 2, "Portugal": 2, "USA": 2, "Belgium": 2,
     "Other": 1
 }
