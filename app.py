@@ -3,6 +3,26 @@ import math
 import json
 import io
 
+# Apply custom CSS for green download buttons
+st.markdown(
+    """
+    <style>
+    button[kind="primary"] {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 0.25rem;
+    }
+    button[kind="primary"]:hover {
+        background-color: #218838;
+        color: white;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 # League tier mapping
 league_tiers = {
     "First Division": 10,
@@ -129,15 +149,6 @@ st.title("FIFA Realistic Toolkit")
 st.header("Your Club Details")
 st.info("Enter your club details to use in the selling calculator. Save and load both club details and Starting 11 in a single JSON file.")
 
-# Display current stature score
-current_stature = calculate_score(
-    st.session_state.club_details["league"],
-    st.session_state.club_details["country"],
-    st.session_state.club_details["european"],
-    league_tiers
-)
-st.write(f"Current Club Stature Score: {current_stature:.1f}")
-
 # Upload Combined Club Details and Starting 11 data
 uploaded_file = st.file_uploader("Upload Club and Starting 11 JSON", type=["json"], key="combined_upload")
 # Show disclaimer only if a file is uploaded
@@ -205,11 +216,12 @@ if st.session_state.club_details and st.session_state.starting_11:
     }
     json_str = json.dumps(combined_data, indent=2)
     st.download_button(
-        label="Download Club Details and Starting 11 as JSON",
+        label="Save Club and Starting 11 info",
         data=json_str,
         file_name="team_data.json",
         mime="application/json",
-        key="download_top"
+        key="download_top",
+        use_container_width=True
     )
 
 with st.form(key="club_details_form"):
@@ -248,26 +260,14 @@ if submit_club_details:
         "country": st.session_state["club_country"],
         "european": st.session_state["club_european"]
     }
-    st.session_state.club_details_updated = True
+    st.session_state.club_details_updated = False
     st.session_state.pending_club_details = None
     # Force re-render to update UI
     st.rerun()
 
-# Display success message if club details were updated
-if st.session_state.club_details_updated:
-    club_details = st.session_state.club_details
-    new_stature = calculate_score(club_details["league"], club_details["country"], club_details["european"], league_tiers)
-    st.success(
-        f"Club details saved: Name: {club_details['name'] or 'None'}, "
-        f"League: {club_details['league']}, "
-        f"Country: {club_details['country']}, "
-        f"European: {club_details['european']}. "
-        f"New stature score: {new_stature:.1f}"
-    )
-
 # Starting 11 Section
 st.header("Starting 11 Overall Calculator")
-st.info("Enter your starting 11 details. Save and load both club details and Starting 11 in a single JSON file.")
+st.info("Enter your starting 11 details. DON'T FORGET TO SAVE!")
 
 with st.form(key="starting_11_form"):
     # Column headers
@@ -321,11 +321,12 @@ if st.session_state.club_details and st.session_state.starting_11:
     }
     json_str = json.dumps(combined_data, indent=2)
     st.download_button(
-        label="Download Club Details and Starting 11 as JSON",
+        label="Save Club and Starting 11 info",
         data=json_str,
         file_name="team_data.json",
         mime="application/json",
-        key="download_bottom"
+        key="download_bottom",
+        use_container_width=True
     )
 
 # Starting 11 results
