@@ -84,7 +84,7 @@ def calculate_starting_bid(player_value, player_overall, player_age, average_tea
         return player_value * 1.30, average_team_overall is not None
 
 def calculate_proportional_wage(player_overall, starting_11):
-    """Calculate a proportional wage based on the player's overall and Starting 11 wages."""
+    """Calculate a proportional wage based on the player's overall and Starting 11 wages, rounded up to nearest 100."""
     # Filter players with valid overall and wage
     valid_players = [
         player for player in starting_11
@@ -98,8 +98,9 @@ def calculate_proportional_wage(player_overall, starting_11):
     ratios = [player["wage"] / player["overall"] for player in valid_players]
     avg_ratio = sum(ratios) / len(ratios)
     
-    # Calculate proportional wage
-    wage = int(player_overall * avg_ratio)
+    # Calculate proportional wage and round up to nearest 100
+    wage = player_overall * avg_ratio
+    wage = math.ceil(wage / 100) * 100
     return wage, None
 
 # Initialize session state for Starting 11 and Your Club Details
@@ -334,9 +335,10 @@ if submit_selling_transfer:
         else:
             st.info("Both clubs have equal stature.")
 
-        # Calculate and display minimum offer
+        # Calculate and round up minimum offer to nearest 1000
         minimum_offer = calculate_minimum_offer(player_value_sell, stature_diff, is_young_sell)
-        st.success(f"You must accept any offer from {display_name2} of {minimum_offer:,.2f} or higher for this player.")
+        minimum_offer = math.ceil(minimum_offer / 1000) * 1000
+        st.success(f"You must accept any offer from {display_name2} of {minimum_offer:,.0f} or higher for this player.")
     else:
         st.error("Please enter a valid player value greater than 0.")
 
@@ -376,21 +378,22 @@ with st.form(key="buying_transfer_form"):
 # Buying transfer results
 if submit_buying_transfer:
     if player_value_buy > 0 and player_overall_buy > 0:
-        # Calculate starting bid
+        # Calculate and round up starting bid to nearest 1000
         starting_bid, is_accurate = calculate_starting_bid(
             player_value_buy,
             player_overall_buy,
             player_age_buy,
             st.session_state.average_team_overall
         )
-        st.success(f"You should start your bid at {starting_bid:,.2f} for this player.")
+        starting_bid = math.ceil(starting_bid / 1000) * 1000
+        st.success(f"You should start your bid at {starting_bid:,.0f} for this player.")
         if not is_accurate:
             st.warning("This bid is based on a default 175% markup because the Starting 11 average overall has not been calculated. Please calculate your Starting 11 average for a more accurate bid.")
 
         # Calculate proportional wage
         wage, wage_error = calculate_proportional_wage(player_overall_buy, st.session_state.starting_11)
         if wage is not None:
-            st.success(f"Recommended wage for this player: {wage:,} p/w")
+            st.success(f"Minimum Wage for this player: {wage:,} p/w")
         else:
             st.warning(f"Cannot calculate wage: {wage_error} Please ensure your Starting 11 has valid wages and overalls.")
     else:
