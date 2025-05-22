@@ -130,6 +130,14 @@ st.markdown(
         height: 20px;
         transition: width 0.3s ease, background-color 0.3s ease;
     }
+    /* Checklist styling */
+    .checklist-section {
+        margin-bottom: 1rem;
+    }
+    .checklist-counter {
+        font-weight: bold;
+        color: #000000;
+    }
     </style>
     """,
     unsafe_allow_html=True
@@ -276,8 +284,8 @@ if "checklist" not in st.session_state:
 # App title
 st.title("FIFA Realistic Toolkit")
 
-# Create tabs
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["Club Details", "Starting 11", "Transfer Calculators", "Help/Info", "Career Checklist"])
+# Create tabs with Career Checklist as second
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["Club Details", "Career Checklist", "Starting 11", "Transfer Calculators", "Help/Info"])
 
 # Tab 1: Club Details
 with tab1:
@@ -422,223 +430,8 @@ with tab1:
             st.session_state.pending_club_details = None
             st.rerun()
 
-# Tab 2: Starting 11
+# Tab 2: Career Checklist
 with tab2:
-    st.header("Starting 11 Calculator")
-    st.write("Enter your starting 11 to calculate team average overall and wage cap.")
-    
-    # Progress indicator for starting 11
-    valid_players = sum(1 for player in st.session_state.starting_11 if player["overall"] > 0) / 11
-    starting_11_progress_percentage = int(valid_players * 100)
-    starting_11_progress_color = "#28a745" if valid_players == 1 else "#3498db"
-    st.markdown(
-        f"""
-        <div style="margin-bottom: 5px;">Starting 11 Completion: {starting_11_progress_percentage}%</div>
-        <div class="custom-progress-container">
-            <div class="custom-progress-bar" style="width: {starting_11_progress_percentage}%; background-color: {starting_11_progress_color};"></div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-    
-    with st.expander("Enter Starting 11 Details", expanded=True):
-        with st.form(key="starting_11_form"):
-            col1, col2, col3 = st.columns([1, 1, 1])
-            with col1:
-                st.write("**Position**")
-            with col2:
-                st.write("**Overall**")
-            with col3:
-                st.write("**Wage (p/w)**")
-            
-            players = []
-            for i in range(11):
-                col1, col2, col3 = st.columns([1, 1, 1])
-                with col1:
-                    position = st.selectbox(
-                        "",
-                        player_positions,
-                        index=player_positions.index(st.session_state.get(f"player_{i}_position", st.session_state.starting_11[i]["position"])),
-                        key=f"player_{i}_position"
-                    )
-                with col2:
-                    overall = st.number_input(
-                        "",
-                        min_value=0,
-                        max_value=99,
-                        value=st.session_state.get(f"player_{i}_overall", st.session_state.starting_11[i]["overall"]),
-                        step=1,
-                        format="%d",
-                        key=f"player_{i}_overall"
-                    )
-                with col3:
-                    wage = st.number_input(
-                        "",
-                        min_value=0,
-                        value=st.session_state.get(f"player_{i}_wage", st.session_state.starting_11[i]["wage"]),
-                        step=1000,
-                        format="%d",
-                        key=f"player_{i}_wage"
-                    )
-                players.append({"position": position, "overall": overall, "wage": wage})
-            
-            submit_starting_11 = st.form_submit_button("Calculate Team Overall")
-    
-    if submit_starting_11:
-        if all(player["overall"] >= 0 and player["wage"] >= 0 for player in players):
-            st.session_state.starting_11 = players
-            for i in range(11):
-                for key in [f"player_{i}_position", f"player_{i}_overall", f"player_{i}_wage"]:
-                    st.session_state.pop(key, None)
-            for i, player in enumerate(players):
-                st.session_state[f"player_{i}_position"] = player["position"]
-                st.session_state[f"player_{i}_overall"] = player["overall"]
-                st.session_state[f"player_{i}_wage"] = player["wage"]
-            total_overall = sum(player["overall"] for player in players)
-            average_overall = math.floor(total_overall / 11)
-            st.session_state.average_team_overall = average_overall
-            max_signing_overall = average_overall + 2
-            max_wage = max(player["wage"] for player in players)
-            wage_cap = int(max_wage * 1.2)
-            st.success(f"Average Team Overall: {average_overall}")
-            st.success(f"Sign players with overall {max_signing_overall} or below.")
-            st.success(f"Wage Cap: {wage_cap:,} p/w")
-        else:
-            st.error("All player overalls and wages must be non-negative.")
-
-    # Download button
-    if st.session_state.club_details and st.session_state.starting_11:
-        combined_data = {
-            "club_details": st.session_state.club_details,
-            "starting_11": st.session_state.starting_11
-        }
-        json_str = json.dumps(combined_data, indent=2)
-        st.download_button(
-            label="Save Club and Starting 11 Data",
-            data=json_str,
-            file_name="team_data.json",
-            mime="application/json",
-            key="download_starting_11",
-            use_container_width=True
-        )
-
-# Tab 3: Transfer Calculators
-with tab3:
-    st.header("Transfer Calculators")
-    
-    # Selling Transfer Calculator
-    with st.expander("Selling Transfer Calculator", expanded=False):
-        with st.form(key="selling_transfer_form"):
-            st.subheader("Offering Club Details")
-            club2_name_sell = st.text_input("Offering Club Name (Optional)", key="club2_name_sell")
-            club2_league_sell = st.selectbox("Offering Club League", list(league_tiers.keys()), key="club2_league_sell")
-            club2_country_sell = st.selectbox("Offering Club Country", list(country_prestige.keys()), key="club2_country_sell")
-            club2_european_sell = st.checkbox("Offering Club in European Competitions", key="club2_european_sell")
-            
-            st.subheader("Transfer Details")
-            player_value_sell = st.number_input(
-                "Player Value",
-                min_value=0.0,
-                step=1000.0,
-                format="%.2f",
-                key="player_value_sell",
-                help="Enter value without commas, e.g., 1000000"
-            )
-            is_young_sell = st.checkbox("Player Aged 16–21", key="is_young_sell")
-            submit_selling_transfer = st.form_submit_button("Calculate Selling Offer")
-        
-        if submit_selling_transfer:
-            if player_value_sell > 0:
-                club_details = st.session_state.club_details
-                score1 = calculate_score(club_details["league"], club_details["country"], club_details["european"], league_tiers)
-                score2 = calculate_score(club2_league_sell, club2_country_sell, club2_european_sell, league_tiers)
-                stature_diff = score2 - score1
-                display_name1 = club_details["name"] if club_details["name"] else "Your Club"
-                display_name2 = club2_name_sell if club2_name_sell else "Offering Club"
-                st.write(f"**{display_name1}**: {club_details['league']}, {club_details['country']}, European: {club_details['european']}")
-                st.write(f"**Stature Score**: {score1:.1f}")
-                st.write(f"**{display_name2}**: {club2_league_sell}, {club2_country_sell}, European: {club2_european_sell}")
-                st.write(f"**Stature Score**: {score2:.1f}")
-                if score1 > score2:
-                    st.success(f"{display_name1} has higher stature by {score1 - score2:.1f}.")
-                elif score2 > score1:
-                    st.warning(f"{display_name2} has higher stature by {score2 - score1:.1f}.")
-                else:
-                    st.info("Clubs have equal stature.")
-                minimum_offer = calculate_minimum_offer(player_value_sell, stature_diff, is_young_sell)
-                minimum_offer = math.ceil(minimum_offer / 1000) * 1000
-                st.success(f"Accept offers from {display_name2} of {minimum_offer:,.0f} or higher.")
-            else:
-                st.error("Player value must be greater than 0.")
-
-    # Buying Transfer Calculator
-    with st.expander("Buying Transfer Calculator", expanded=False):
-        with st.form(key="buying_transfer_form"):
-            st.subheader("Player Details")
-            player_value_buy = st.number_input(
-                "Player Value",
-                min_value=0.0,
-                step=1000.0,
-                format="%.2f",
-                key="player_value_buy",
-                help="Enter value without commas, e.g., 1000000"
-            )
-            player_overall_buy = st.number_input(
-                "Player Overall",
-                min_value=0,
-                max_value=99,
-                step=1,
-                format="%d",
-                key="player_overall_buy"
-            )
-            player_age_buy = st.number_input(
-                "Player Age",
-                min_value=16,
-                max_value=40,
-                step=1,
-                format="%d",
-                key="player_age_buy"
-            )
-            submit_buying_transfer = st.form_submit_button("Calculate Bid and Wage")
-        
-        if submit_buying_transfer:
-            if player_value_buy > 0 and player_overall_buy > 0:
-                if st.session_state.average_team_overall is not None and player_overall_buy > st.session_state.average_team_overall + 2:
-                    st.warning("Player's overall is too high. Sign players with lower overall or update Starting 11.")
-                starting_bid, is_accurate = calculate_starting_bid(
-                    player_value_buy, player_overall_buy, player_age_buy, st.session_state.average_team_overall
-                )
-                starting_bid = math.ceil(starting_bid / 1000) * 1000
-                st.success(f"Start your bid at {starting_bid:,.0f}.")
-                if not is_accurate:
-                    st.warning("Bid uses default markup. Calculate Starting 11 average for accuracy.")
-                wage, wage_error = calculate_proportional_wage(player_overall_buy, st.session_state.starting_11)
-                if wage is not None:
-                    st.success(f"Minimum Wage: {wage:,} p/w")
-                else:
-                    st.warning(f"Wage error: {wage_error}")
-            else:
-                st.error("Player value and overall must be greater than 0.")
-
-# Tab 4: Help/Info
-with tab4:
-    st.header("Help & Info")
-    st.write(
-        """
-        **FIFA Realistic Toolkit** helps you manage your FIFA career mode with realistic transfer and wage guidelines.
-        
-        - **Club Details**: Enter your club's league, country, and European status to calculate stature.
-        - **Starting 11**: Input your starting lineup to determine average overall and wage caps.
-        - **Transfer Calculators**: Compute minimum selling offers and starting bids for buying players.
-        - **Career Checklist**: Track your signings and ensure compliance with transfer window rules.
-        - **Save/Load**: Use JSON files to save or load your club and player data.
-        
-        If you enjoy this tool, consider [buying me a coffee](https://buymeacoffee.com/whitespear11).
-        """
-    )
-
-# Tab 5: Career Checklist
-with tab5:
     st.header("Career Checklist")
     st.write("Track your signings and sales to stay within the guidelines for each transfer window.")
 
@@ -668,20 +461,22 @@ with tab5:
     # Summer Window
     with st.expander("Summer Window", expanded=True):
         st.subheader("Summer Window Guidelines")
-        
+
         # Starting 11 Signings
-        st.markdown("**Starting 11 Signings (Max 2)**")
+        st.markdown('<div class="checklist-section"><strong>Starting 11 Signings (Max 2)</strong></div>', unsafe_allow_html=True)
         summer_starting_max = 2
         summer_starting_extra = 1 if st.session_state.checklist["summer"]["starting_sold"] >= 2 else 0
+        summer_starting_total_max = summer_starting_max + summer_starting_extra
         if summer_starting_extra:
             st.markdown("*Extra signing unlocked (2 starting players sold)!*")
-        summer_starting_total_max = summer_starting_max + summer_starting_extra
-        col1, col2 = st.columns([3, 1])
+        col1, col2, col3 = st.columns([2, 1, 1])
         with col1:
-            st.write(f"Signings made: {st.session_state.checklist['summer']['starting_signings']}/{summer_starting_total_max}")
+            st.write("Signings made:")
         with col2:
+            st.write(f"<span class='checklist-counter'>{st.session_state.checklist['summer']['starting_signings']}</span>/{summer_starting_total_max}", unsafe_allow_html=True)
+        with col3:
             if st.session_state.checklist["summer"]["starting_signings"] < summer_starting_total_max:
-                if st.button("Add Starting Signing", key="summer_starting_add"):
+                if st.button("Add", key="summer_starting_add"):
                     st.session_state.checklist["summer"]["starting_signings"] += 1
                     st.rerun()
             if st.session_state.checklist["summer"]["starting_signings"] > 0:
@@ -692,15 +487,16 @@ with tab5:
             st.error("Exceeded starting 11 signings limit!")
 
         # Bench Signings
-        st.markdown("**Bench Signings (Max 2)**")
-        summer_bench_max = 2
-        summer_bench_total_max = summer_bench_max + summer_starting_extra  # Same extra signing applies
-        col1, col2 = st.columns([3, 1])
+        st.markdown('<div class="checklist-section"><strong>Bench Signings (Max 2)</strong></div>', unsafe_allow_html=True)
+        summer_bench_total_max = summer_bench_max + summer_starting_extra
+        col1, col2, col3 = st.columns([2, 1, 1])
         with col1:
-            st.write(f"Signings made: {st.session_state.checklist['summer']['bench_signings']}/{summer_bench_total_max}")
+            st.write("Signings made:")
         with col2:
+            st.write(f"<span class='checklist-counter'>{st.session_state.checklist['summer']['bench_signings']}</span>/{summer_bench_total_max}", unsafe_allow_html=True)
+        with col3:
             if st.session_state.checklist["summer"]["bench_signings"] < summer_bench_total_max:
-                if st.button("Add Bench Signing", key="summer_bench_add"):
+                if st.button("Add", key="summer_bench_add"):
                     st.session_state.checklist["summer"]["bench_signings"] += 1
                     st.rerun()
             if st.session_state.checklist["summer"]["bench_signings"] > 0:
@@ -711,14 +507,16 @@ with tab5:
             st.error("Exceeded bench signings limit!")
 
         # Reserve Signings
-        st.markdown("**Reserve Signings (Max 3)**")
+        st.markdown('<div class="checklist-section"><strong>Reserve Signings (Max 3)</strong></div>', unsafe_allow_html=True)
         summer_reserve_max = 3
-        col1, col2 = st.columns([3, 1])
+        col1, col2, col3 = st.columns([2, 1, 1])
         with col1:
-            st.write(f"Signings made: {st.session_state.checklist['summer']['reserve_signings']}/{summer_reserve_max}")
+            st.write("Signings made:")
         with col2:
+            st.write(f"<span class='checklist-counter'>{st.session_state.checklist['summer']['reserve_signings']}</span>/{summer_reserve_max}", unsafe_allow_html=True)
+        with col3:
             if st.session_state.checklist["summer"]["reserve_signings"] < summer_reserve_max:
-                if st.button("Add Reserve Signing", key="summer_reserve_add"):
+                if st.button("Add", key="summer_reserve_add"):
                     st.session_state.checklist["summer"]["reserve_signings"] += 1
                     st.rerun()
             if st.session_state.checklist["summer"]["reserve_signings"] > 0:
@@ -729,159 +527,10 @@ with tab5:
             st.error("Exceeded reserve signings limit!")
 
         # Loans Tracking
-        st.markdown("**Loans (Max 3 Across All Signings)**")
-        col1, col2 = st.columns([3, 1])
+        st.markdown('<div class="checklist-section"><strong>Loans (Max 3 Across All Signings)</strong></div>', unsafe_allow_html=True)
+        col1, col2, col3 = st.columns([2, 1, 1])
         with col1:
-            st.write(f"Loans made: {st.session_state.checklist['summer']['loans']}/3")
+            st.write("Loans made:")
         with col2:
-            if st.session_state.checklist["summer"]["loans"] < 3:
-                if st.button("Add Loan", key="summer_loan_add"):
-                    st.session_state.checklist["summer"]["loans"] += 1
-                    st.rerun()
-            if st.session_state.checklist["summer"]["loans"] > 0:
-                if st.button("Remove", key="summer_loan_remove"):
-                    st.session_state.checklist["summer"]["loans"] -= 1
-                    st.rerun()
-        if st.session_state.checklist["summer"]["loans"] > 3:
-            st.error("Exceeded loan limit!")
-
-        # Starting Players Sold
-        st.markdown("**Starting Players Sold (Unlocks Extra Signing at 2)**")
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            st.write(f"Players sold: {st.session_state.checklist['summer']['starting_sold']}")
-        with col2:
-            if st.button("Add Sale", key="summer_sale_add"):
-                st.session_state.checklist["summer"]["starting_sold"] += 1
-                st.rerun()
-            if st.session_state.checklist["summer"]["starting_sold"] > 0:
-                if st.button("Remove", key="summer_sale_remove"):
-                    st.session_state.checklist["summer"]["starting_sold"] -= 1
-                    st.rerun()
-
-    # Winter Window
-    with st.expander("Winter Window", expanded=False):
-        st.subheader("Winter Window Guidelines")
-
-        # Starting 11 Signings
-        st.markdown("**Starting 11 Signings (Max 1)**")
-        winter_starting_max = 1
-        winter_starting_extra = 1 if st.session_state.checklist["winter"]["starting_sold"] >= 2 else 0
-        if winter_starting_extra:
-            st.markdown("*Extra signing unlocked (2 starting players sold)!*")
-        winter_starting_total_max = winter_starting_max + winter_starting_extra
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            st.write(f"Signings made: {st.session_state.checklist['winter']['starting_signings']}/{winter_starting_total_max}")
-        with col2:
-            if st.session_state.checklist["winter"]["starting_signings"] < winter_starting_total_max:
-                if st.button("Add Starting Signing", key="winter_starting_add"):
-                    st.session_state.checklist["winter"]["starting_signings"] += 1
-                    st.rerun()
-            if st.session_state.checklist["winter"]["starting_signings"] > 0:
-                if st.button("Remove", key="winter_starting_remove"):
-                    st.session_state.checklist["winter"]["starting_signings"] -= 1
-                    st.rerun()
-        if st.session_state.checklist["winter"]["starting_signings"] > winter_starting_total_max:
-            st.error("Exceeded starting 11 signings limit!")
-
-        # Bench Signings
-        st.markdown("**Bench Signings (Max 1)**")
-        winter_bench_max = 1
-        winter_bench_total_max = winter_bench_max + winter_starting_extra  # Same extra signing applies
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            st.write(f"Signings made: {st.session_state.checklist['winter']['bench_signings']}/{winter_bench_total_max}")
-        with col2:
-            if st.session_state.checklist["winter"]["bench_signings"] < winter_bench_total_max:
-                if st.button("Add Bench Signing", key="winter_bench_add"):
-                    st.session_state.checklist["winter"]["bench_signings"] += 1
-                    st.rerun()
-            if st.session_state.checklist["winter"]["bench_signings"] > 0:
-                if st.button("Remove", key="winter_bench_remove"):
-                    st.session_state.checklist["winter"]["bench_signings"] -= 1
-                    st.rerun()
-        if st.session_state.checklist["winter"]["bench_signings"] > winter_bench_total_max:
-            st.error("Exceeded bench signings limit!")
-
-        # Reserve Signings
-        st.markdown("**Reserve Signings (Max 2)**")
-        winter_reserve_max = 2
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            st.write(f"Signings made: {st.session_state.checklist['winter']['reserve_signings']}/{winter_reserve_max}")
-        with col2:
-            if st.session_state.checklist["winter"]["reserve_signings"] < winter_reserve_max:
-                if st.button("Add Reserve Signing", key="winter_reserve_add"):
-                    st.session_state.checklist["winter"]["reserve_signings"] += 1
-                    st.rerun()
-            if st.session_state.checklist["winter"]["reserve_signings"] > 0:
-                if st.button("Remove", key="winter_reserve_remove"):
-                    st.session_state.checklist["winter"]["reserve_signings"] -= 1
-                    st.rerun()
-        if st.session_state.checklist["winter"]["reserve_signings"] > winter_reserve_max:
-            st.error("Exceeded reserve signings limit!")
-
-        # Loans Tracking
-        st.markdown("**Loans (Max 1 Across All Signings)**")
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            st.write(f"Loans made: {st.session_state.checklist['winter']['loans']}/1")
-        with col2:
-            if st.session_state.checklist["winter"]["loans"] < 1:
-                if st.button("Add Loan", key="winter_loan_add"):
-                    st.session_state.checklist["winter"]["loans"] += 1
-                    st.rerun()
-            if st.session_state.checklist["winter"]["loans"] > 0:
-                if st.button("Remove", key="winter_loan_remove"):
-                    st.session_state.checklist["winter"]["loans"] -= 1
-                    st.rerun()
-        if st.session_state.checklist["winter"]["loans"] > 1:
-            st.error("Exceeded loan limit!")
-
-        # Pre-contract Signings (16-29)
-        st.markdown("**Pre-contract Signing (Ages 16-29, Max 1)**")
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            st.write(f"Pre-contracts: {st.session_state.checklist['winter']['pre_contract_16_29']}/1")
-        with col2:
-            if st.session_state.checklist["winter"]["pre_contract_16_29"] < 1:
-                if st.button("Add Pre-contract (16-29)", key="winter_pre_contract_16_29_add"):
-                    st.session_state.checklist["winter"]["pre_contract_16_29"] += 1
-                    st.rerun()
-            if st.session_state.checklist["winter"]["pre_contract_16_29"] > 0:
-                if st.button("Remove", key="winter_pre_contract_16_29_remove"):
-                    st.session_state.checklist["winter"]["pre_contract_16_29"] -= 1
-                    st.rerun()
-        if st.session_state.checklist["winter"]["pre_contract_16_29"] > 1:
-            st.error("Exceeded pre-contract (16-29) limit!")
-
-        # Pre-contract Signings (30+)
-        st.markdown("**Pre-contract Signings (Ages 30+, No Strict Limit)**")
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            st.write(f"Pre-contracts: {st.session_state.checklist['winter']['pre_contract_30_plus']}")
-        with col2:
-            if st.button("Add Pre-contract (30+)", key="winter_pre_contract_30_plus_add"):
-                st.session_state.checklist["winter"]["pre_contract_30_plus"] += 1
-                st.rerun()
-            if st.session_state.checklist["winter"]["pre_contract_30_plus"] > 0:
-                if st.button("Remove", key="winter_pre_contract_30_plus_remove"):
-                    st.session_state.checklist["winter"]["pre_contract_30_plus"] -= 1
-                    st.rerun()
-        if st.session_state.checklist["winter"]["pre_contract_30_plus"] > 3:
-            st.warning("Be cautious with too many pre-contracts for players aged 30+!")
-
-        # Starting Players Sold
-        st.markdown("**Starting Players Sold (Unlocks Extra Signing at 2)**")
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            st.write(f"Players sold: {st.session_state.checklist['winter']['starting_sold']}")
-        with col2:
-            if st.button("Add Sale", key="winter_sale_add"):
-                st.session_state.checklist["winter"]["starting_sold"] += 1
-                st.rerun()
-            if st.session_state.checklist["winter"]["starting_sold"] > 0:
-                if st.button("Remove", key="winter_sale_remove"):
-                    st.session_state.checklist["winter"]["starting_sold"] -= 1
-                    st.rerun()
+            st.write(f"<span class='checklist-counter'>{st.session_state.checklist['summer']['loans']}</span>/3", unsafe_allow_html=True)
+        with col3
