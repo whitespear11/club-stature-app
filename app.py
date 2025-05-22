@@ -113,7 +113,7 @@ st.markdown(
         cursor: pointer;
     }
     .stTabs [data-baseweb="tab"][aria-selected="true"] {
-        background-color: #28a745;
+        background-color: transparent; /* Removed dark green background */
         color: #ffffff;
         border-bottom: none;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
@@ -136,7 +136,28 @@ st.markdown(
     }
     .checklist-counter {
         font-weight: bold;
-        color: #000000;
+        color: #ffffff; /* Ensure counter text is white */
+    }
+    /* Career Checklist tab text styling */
+    div[data-testid="stVerticalBlock"] > div:nth-child(2) .stMarkdown,
+    div[data-testid="stVerticalBlock"] > div:nth-child(2) .stMarkdown p,
+    div[data-testid="stVerticalBlock"] > div:nth-child(2) .stMarkdown h2,
+    div[data-testid="stVerticalBlock"] > div:nth-child(2) .stMarkdown h3,
+    div[data-testid="stVerticalBlock"] > div:nth-child(2) .streamlit-expanderHeader,
+    div[data-testid="stVerticalBlock"] > div:nth-child(2) .streamlit-expanderContent,
+    div[data-testid="stVerticalBlock"] > div:nth-child(2) .streamlit-expanderContent p,
+    div[data-testid="stVerticalBlock"] > div:nth-child(2) .streamlit-expanderContent label,
+    div[data-testid="stVerticalBlock"] > div:nth-child(2) .stSuccess,
+    div[data-testid="stVerticalBlock"] > div:nth-child(2) .stError,
+    div[data-testid="stVerticalBlock"] > div:nth-child(2) .stWarning {
+        color: #ffffff !important;
+    }
+    /* Ensure Career Checklist tab background for better readability with white text */
+    div[data-testid="stVerticalBlock"] > div:nth-child(2) .streamlit-expanderContent {
+        background-color: #2c3e50 !important; /* Dark background for contrast */
+    }
+    div[data-testid="stVerticalBlock"] > div:nth-child(2) .streamlit-expanderHeader {
+        background-color: #34495e !important; /* Slightly lighter dark background for header */
     }
     </style>
     """,
