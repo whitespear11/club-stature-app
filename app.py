@@ -489,247 +489,193 @@ with tab2:
     # Summer Window
     with st.expander("Summer Window", expanded=True):
         st.subheader("Summer Window Guidelines")
-
-        # Starting 11 Signings
-        st.markdown('<div class="checklist-section"><strong>Starting 11 Signings (Max 2)</strong></div>', unsafe_allow_html=True)
+        
+        # Tally display at the top
         summer_starting_max = 2
+        summer_bench_max = 2
+        summer_reserve_max = 3
+        summer_loan_max = 3
         summer_starting_extra = 1 if st.session_state.checklist["summer"]["starting_sold"] >= 2 else 0
         summer_starting_total_max = summer_starting_max + summer_starting_extra
+        summer_bench_total_max = summer_bench_max + summer_starting_extra
+        st.markdown(
+            f"""
+            <div style="margin-bottom: 1rem;">
+                <strong>Tally:</strong> 
+                Starting 11 Signings: {st.session_state.checklist['summer']['starting_signings']}/{summer_starting_total_max}, 
+                Bench Signings: {st.session_state.checklist['summer']['bench_signings']}/{summer_bench_total_max}, 
+                Reserve Signings: {st.session_state.checklist['summer']['reserve_signings']}/{summer_reserve_max}, 
+                Loans: {st.session_state.checklist['summer']['loans']}/{summer_loan_max}, 
+                Starting Players Sold: {st.session_state.checklist['summer']['starting_sold']}
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
         if summer_starting_extra:
             st.markdown("*Extra signing unlocked (2 starting players sold)!*")
-        col1, col2, col3 = st.columns([2, 1, 1])
-        with col1:
-            st.write("Signings made:")
-        with col2:
-            st.write(f"<span class='checklist-counter'>{st.session_state.checklist['summer']['starting_signings']}</span>/{summer_starting_total_max}", unsafe_allow_html=True)
-        with col3:
-            if st.session_state.checklist["summer"]["starting_signings"] < summer_starting_total_max:
-                if st.button("Add", key="summer_starting_add"):
-                    st.session_state.checklist["summer"]["starting_signings"] += 1
-                    st.rerun()
-            if st.session_state.checklist["summer"]["starting_signings"] > 0:
-                if st.button("Remove", key="summer_starting_remove"):
-                    st.session_state.checklist["summer"]["starting_signings"] -= 1
-                    st.rerun()
-        if st.session_state.checklist["summer"]["starting_signings"] > summer_starting_total_max:
-            st.error("Exceeded starting 11 signings limit!")
 
-        # Bench Signings
-        st.markdown('<div class="checklist-section"><strong>Bench Signings (Max 2)</strong></div>', unsafe_allow_html=True)
-        summer_bench_max = 2
-        summer_bench_total_max = summer_bench_max + summer_starting_extra
-        col1, col2, col3 = st.columns([2, 1, 1])
-        with col1:
-            st.write("Signings made:")
-        with col2:
-            st.write(f"<span class='checklist-counter'>{st.session_state.checklist['summer']['bench_signings']}</span>/{summer_bench_total_max}", unsafe_allow_html=True)
-        with col3:
-            if st.session_state.checklist["summer"]["bench_signings"] < summer_bench_total_max:
-                if st.button("Add", key="summer_bench_add"):
-                    st.session_state.checklist["summer"]["bench_signings"] += 1
+        # Signing question and category buttons
+        if st.button("Did you make a signing?", key="summer_signing_question"):
+            st.session_state["summer_signing_mode"] = True
+            st.rerun()
+        if st.session_state.get("summer_signing_mode", False):
+            col1, col2, col3 = st.columns([1, 1, 1])
+            with col1:
+                if st.button("Starting 11 Player", key="summer_starting_add"):
+                    if st.session_state.checklist["summer"]["starting_signings"] < summer_starting_total_max:
+                        st.session_state.checklist["summer"]["starting_signings"] += 1
+                    else:
+                        st.error("Exceeded Starting 11 signings limit!")
+                    st.session_state["summer_signing_mode"] = False
                     st.rerun()
-            if st.session_state.checklist["summer"]["bench_signings"] > 0:
-                if st.button("Remove", key="summer_bench_remove"):
-                    st.session_state.checklist["summer"]["bench_signings"] -= 1
+            with col2:
+                if st.button("Bench Player", key="summer_bench_add"):
+                    if st.session_state.checklist["summer"]["bench_signings"] < summer_bench_total_max:
+                        st.session_state.checklist["summer"]["bench_signings"] += 1
+                    else:
+                        st.error("Exceeded Bench signings limit!")
+                    st.session_state["summer_signing_mode"] = False
                     st.rerun()
-        if st.session_state.checklist["summer"]["bench_signings"] > summer_bench_total_max:
-            st.error("Exceeded bench signings limit!")
+            with col3:
+                if st.button("Reserve Player", key="summer_reserve_add"):
+                    if st.session_state.checklist["summer"]["reserve_signings"] < summer_reserve_max:
+                        st.session_state.checklist["summer"]["reserve_signings"] += 1
+                    else:
+                        st.error("Exceeded Reserve signings limit!")
+                    st.session_state["summer_signing_mode"] = False
+                    st.rerun()
 
-        # Reserve Signings
-        st.markdown('<div class="checklist-section"><strong>Reserve Signings (Max 3)</strong></div>', unsafe_allow_html=True)
-        summer_reserve_max = 3
-        col1, col2, col3 = st.columns([2, 1, 1])
-        with col1:
-            st.write("Signings made:")
-        with col2:
-            st.write(f"<span class='checklist-counter'>{st.session_state.checklist['summer']['reserve_signings']}</span>/{summer_reserve_max}", unsafe_allow_html=True)
-        with col3:
-            if st.session_state.checklist["summer"]["reserve_signings"] < summer_reserve_max:
-                if st.button("Add", key="summer_reserve_add"):
-                    st.session_state.checklist["summer"]["reserve_signings"] += 1
-                    st.rerun()
-            if st.session_state.checklist["summer"]["reserve_signings"] > 0:
-                if st.button("Remove", key="summer_reserve_remove"):
-                    st.session_state.checklist["summer"]["reserve_signings"] -= 1
-                    st.rerun()
-        if st.session_state.checklist["summer"]["reserve_signings"] > summer_reserve_max:
-            st.error("Exceeded reserve signings limit!")
-
-        # Loans Tracking
+        # Loans section
         st.markdown('<div class="checklist-section"><strong>Loans (Max 3 Across All Signings)</strong></div>', unsafe_allow_html=True)
-        col1, col2, col3 = st.columns([2, 1, 1])
-        with col1:
-            st.write("Loans made:")
-        with col2:
-            st.write(f"<span class='checklist-counter'>{st.session_state.checklist['summer']['loans']}</span>/3", unsafe_allow_html=True)
-        with col3:
-            if st.session_state.checklist["summer"]["loans"] < 3:
-                if st.button("Add", key="summer_loan_add"):
-                    st.session_state.checklist["summer"]["loans"] += 1
-                    st.rerun()
-            if st.session_state.checklist["summer"]["loans"] > 0:
-                if st.button("Remove", key="summer_loan_remove"):
-                    st.session_state.checklist["summer"]["loans"] -= 1
-                    st.rerun()
-        if st.session_state.checklist["summer"]["loans"] > 3:
-            st.error("Exceeded loan limit!")
+        if st.button("Add Loan", key="summer_loan_add"):
+            if st.session_state.checklist["summer"]["loans"] < summer_loan_max:
+                st.session_state.checklist["summer"]["loans"] += 1
+            else:
+                st.error("Exceeded loan limit!")
+            st.rerun()
+        if st.session_state.checklist["summer"]["loans"] > 0:
+            if st.button("Remove Loan", key="summer_loan_remove"):
+                st.session_state.checklist["summer"]["loans"] -= 1
+                st.rerun()
 
         # Starting Players Sold
         st.markdown('<div class="checklist-section"><strong>Starting Players Sold (Unlocks Extra Signing at 2)</strong></div>', unsafe_allow_html=True)
-        col1, col2, col3 = st.columns([2, 1, 1])
-        with col1:
-            st.write("Players sold:")
-        with col2:
-            st.write(f"<span class='checklist-counter'>{st.session_state.checklist['summer']['starting_sold']}</span>", unsafe_allow_html=True)
-        with col3:
-            if st.button("Add", key="summer_sale_add"):
-                st.session_state.checklist["summer"]["starting_sold"] += 1
+        if st.button("Add Sold Player", key="summer_sale_add"):
+            st.session_state.checklist["summer"]["starting_sold"] += 1
+            st.rerun()
+        if st.session_state.checklist["summer"]["starting_sold"] > 0:
+            if st.button("Remove Sold Player", key="summer_sale_remove"):
+                st.session_state.checklist["summer"]["starting_sold"] -= 1
                 st.rerun()
-            if st.session_state.checklist["summer"]["starting_sold"] > 0:
-                if st.button("Remove", key="summer_sale_remove"):
-                    st.session_state.checklist["summer"]["starting_sold"] -= 1
-                    st.rerun()
 
     # Winter Window
     with st.expander("Winter Window", expanded=False):
         st.subheader("Winter Window Guidelines")
-
-        # Starting 11 Signings
-        st.markdown('<div class="checklist-section"><strong>Starting 11 Signings (Max 1)</strong></div>', unsafe_allow_html=True)
+        
+        # Tally display at the top
         winter_starting_max = 1
+        winter_bench_max = 1
+        winter_reserve_max = 2
+        winter_loan_max = 1
         winter_starting_extra = 1 if st.session_state.checklist["winter"]["starting_sold"] >= 2 else 0
         winter_starting_total_max = winter_starting_max + winter_starting_extra
+        winter_bench_total_max = winter_bench_max + winter_starting_extra
+        st.markdown(
+            f"""
+            <div style="margin-bottom: 1rem;">
+                <strong>Tally:</strong> 
+                Starting 11 Signings: {st.session_state.checklist['winter']['starting_signings']}/{winter_starting_total_max}, 
+                Bench Signings: {st.session_state.checklist['winter']['bench_signings']}/{winter_bench_total_max}, 
+                Reserve Signings: {st.session_state.checklist['winter']['reserve_signings']}/{winter_reserve_max}, 
+                Loans: {st.session_state.checklist['winter']['loans']}/{winter_loan_max}, 
+                Pre-contracts (16-29): {st.session_state.checklist['winter']['pre_contract_16_29']}/1, 
+                Pre-contracts (30+): {st.session_state.checklist['winter']['pre_contract_30_plus']}, 
+                Starting Players Sold: {st.session_state.checklist['winter']['starting_sold']}
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
         if winter_starting_extra:
             st.markdown("*Extra signing unlocked (2 starting players sold)!*")
-        col1, col2, col3 = st.columns([2, 1, 1])
-        with col1:
-            st.write("Signings made:")
-        with col2:
-            st.write(f"<span class='checklist-counter'>{st.session_state.checklist['winter']['starting_signings']}</span>/{winter_starting_total_max}", unsafe_allow_html=True)
-        with col3:
-            if st.session_state.checklist["winter"]["starting_signings"] < winter_starting_total_max:
-                if st.button("Add", key="winter_starting_add"):
-                    st.session_state.checklist["winter"]["starting_signings"] += 1
-                    st.rerun()
-            if st.session_state.checklist["winter"]["starting_signings"] > 0:
-                if st.button("Remove", key="winter_starting_remove"):
-                    st.session_state.checklist["winter"]["starting_signings"] -= 1
-                    st.rerun()
-        if st.session_state.checklist["winter"]["starting_signings"] > winter_starting_total_max:
-            st.error("Exceeded starting 11 signings limit!")
 
-        # Bench Signings
-        st.markdown('<div class="checklist-section"><strong>Bench Signings (Max 1)</strong></div>', unsafe_allow_html=True)
-        winter_bench_max = 1
-        winter_bench_total_max = winter_bench_max + winter_starting_extra
-        col1, col2, col3 = st.columns([2, 1, 1])
-        with col1:
-            st.write("Signings made:")
-        with col2:
-            st.write(f"<span class='checklist-counter'>{st.session_state.checklist['winter']['bench_signings']}</span>/{winter_bench_total_max}", unsafe_allow_html=True)
-        with col3:
-            if st.session_state.checklist["winter"]["bench_signings"] < winter_bench_total_max:
-                if st.button("Add", key="winter_bench_add"):
-                    st.session_state.checklist["winter"]["bench_signings"] += 1
+        # Signing question and category buttons
+        if st.button("Did you make a signing?", key="winter_signing_question"):
+            st.session_state["winter_signing_mode"] = True
+            st.rerun()
+        if st.session_state.get("winter_signing_mode", False):
+            col1, col2, col3 = st.columns([1, 1, 1])
+            with col1:
+                if st.button("Starting 11 Player", key="winter_starting_add"):
+                    if st.session_state.checklist["winter"]["starting_signings"] < winter_starting_total_max:
+                        st.session_state.checklist["winter"]["starting_signings"] += 1
+                    else:
+                        st.error("Exceeded Starting 11 signings limit!")
+                    st.session_state["winter_signing_mode"] = False
                     st.rerun()
-            if st.session_state.checklist["winter"]["bench_signings"] > 0:
-                if st.button("Remove", key="winter_bench_remove"):
-                    st.session_state.checklist["winter"]["bench_signings"] -= 1
+            with col2:
+                if st.button("Bench Player", key="winter_bench_add"):
+                    if st.session_state.checklist["winter"]["bench_signings"] < winter_bench_total_max:
+                        st.session_state.checklist["winter"]["bench_signings"] += 1
+                    else:
+                        st.error("Exceeded Bench signings limit!")
+                    st.session_state["winter_signing_mode"] = False
                     st.rerun()
-        if st.session_state.checklist["winter"]["bench_signings"] > winter_bench_total_max:
-            st.error("Exceeded bench signings limit!")
+            with col3:
+                if st.button("Reserve Player", key="winter_reserve_add"):
+                    if st.session_state.checklist["winter"]["reserve_signings"] < winter_reserve_max:
+                        st.session_state.checklist["winter"]["reserve_signings"] += 1
+                    else:
+                        st.error("Exceeded Reserve signings limit!")
+                    st.session_state["winter_signing_mode"] = False
+                    st.rerun()
 
-        # Reserve Signings
-        st.markdown('<div class="checklist-section"><strong>Reserve Signings (Max 2)</strong></div>', unsafe_allow_html=True)
-        winter_reserve_max = 2
-        col1, col2, col3 = st.columns([2, 1, 1])
-        with col1:
-            st.write("Signings made:")
-        with col2:
-            st.write(f"<span class='checklist-counter'>{st.session_state.checklist['winter']['reserve_signings']}</span>/{winter_reserve_max}", unsafe_allow_html=True)
-        with col3:
-            if st.session_state.checklist["winter"]["reserve_signings"] < winter_reserve_max:
-                if st.button("Add", key="winter_reserve_add"):
-                    st.session_state.checklist["winter"]["reserve_signings"] += 1
-                    st.rerun()
-            if st.session_state.checklist["winter"]["reserve_signings"] > 0:
-                if st.button("Remove", key="winter_reserve_remove"):
-                    st.session_state.checklist["winter"]["reserve_signings"] -= 1
-                    st.rerun()
-        if st.session_state.checklist["winter"]["reserve_signings"] > winter_reserve_max:
-            st.error("Exceeded reserve signings limit!")
-
-        # Loans Tracking
+        # Loans section
         st.markdown('<div class="checklist-section"><strong>Loans (Max 1 Across All Signings)</strong></div>', unsafe_allow_html=True)
-        col1, col2, col3 = st.columns([2, 1, 1])
-        with col1:
-            st.write("Loans made:")
-        with col2:
-            st.write(f"<span class='checklist-counter'>{st.session_state.checklist['winter']['loans']}</span>/1", unsafe_allow_html=True)
-        with col3:
-            if st.session_state.checklist["winter"]["loans"] < 1:
-                if st.button("Add", key="winter_loan_add"):
-                    st.session_state.checklist["winter"]["loans"] += 1
-                    st.rerun()
-            if st.session_state.checklist["winter"]["loans"] > 0:
-                if st.button("Remove", key="winter_loan_remove"):
-                    st.session_state.checklist["winter"]["loans"] -= 1
-                    st.rerun()
-        if st.session_state.checklist["winter"]["loans"] > 1:
-            st.error("Exceeded loan limit!")
+        if st.button("Add Loan", key="winter_loan_add"):
+            if st.session_state.checklist["winter"]["loans"] < winter_loan_max:
+                st.session_state.checklist["winter"]["loans"] += 1
+            else:
+                st.error("Exceeded loan limit!")
+            st.rerun()
+        if st.session_state.checklist["winter"]["loans"] > 0:
+            if st.button("Remove Loan", key="winter_loan_remove"):
+                st.session_state.checklist["winter"]["loans"] -= 1
+                st.rerun()
 
         # Pre-contract Signings (16-29)
         st.markdown('<div class="checklist-section"><strong>Pre-contract Signing (Ages 16-29, Max 1)</strong></div>', unsafe_allow_html=True)
-        col1, col2, col3 = st.columns([2, 1, 1])
-        with col1:
-            st.write("Pre-contracts:")
-        with col2:
-            st.write(f"<span class='checklist-counter'>{st.session_state.checklist['winter']['pre_contract_16_29']}</span>/1", unsafe_allow_html=True)
-        with col3:
+        if st.button("Add Pre-contract (16-29)", key="winter_pre_contract_16_29_add"):
             if st.session_state.checklist["winter"]["pre_contract_16_29"] < 1:
-                if st.button("Add", key="winter_pre_contract_16_29_add"):
-                    st.session_state.checklist["winter"]["pre_contract_16_29"] += 1
-                    st.rerun()
-            if st.session_state.checklist["winter"]["pre_contract_16_29"] > 0:
-                if st.button("Remove", key="winter_pre_contract_16_29_remove"):
-                    st.session_state.checklist["winter"]["pre_contract_16_29"] -= 1
-                    st.rerun()
-        if st.session_state.checklist["winter"]["pre_contract_16_29"] > 1:
-            st.error("Exceeded pre-contract (16-29) limit!")
+                st.session_state.checklist["winter"]["pre_contract_16_29"] += 1
+            else:
+                st.error("Exceeded pre-contract (16-29) limit!")
+            st.rerun()
+        if st.session_state.checklist["winter"]["pre_contract_16_29"] > 0:
+            if st.button("Remove Pre-contract (16-29)", key="winter_pre_contract_16_29_remove"):
+                st.session_state.checklist["winter"]["pre_contract_16_29"] -= 1
+                st.rerun()
 
         # Pre-contract Signings (30+)
         st.markdown('<div class="checklist-section"><strong>Pre-contract Signings (Ages 30+, No Strict Limit)</strong></div>', unsafe_allow_html=True)
-        col1, col2, col3 = st.columns([2, 1, 1])
-        with col1:
-            st.write("Pre-contracts:")
-        with col2:
-            st.write(f"<span class='checklist-counter'>{st.session_state.checklist['winter']['pre_contract_30_plus']}</span>", unsafe_allow_html=True)
-        with col3:
-            if st.button("Add", key="winter_pre_contract_30_plus_add"):
-                st.session_state.checklist["winter"]["pre_contract_30_plus"] += 1
+        if st.button("Add Pre-contract (30+)", key="winter_pre_contract_30_plus_add"):
+            st.session_state.checklist["winter"]["pre_contract_30_plus"] += 1
+            st.rerun()
+        if st.session_state.checklist["winter"]["pre_contract_30_plus"] > 0:
+            if st.button("Remove Pre-contract (30+)", key="winter_pre_contract_30_plus_remove"):
+                st.session_state.checklist["winter"]["pre_contract_30_plus"] -= 1
                 st.rerun()
-            if st.session_state.checklist["winter"]["pre_contract_30_plus"] > 0:
-                if st.button("Remove", key="winter_pre_contract_30_plus_remove"):
-                    st.session_state.checklist["winter"]["pre_contract_30_plus"] -= 1
-                    st.rerun()
         if st.session_state.checklist["winter"]["pre_contract_30_plus"] > 3:
             st.warning("Be cautious with too many pre-contracts for players aged 30+!")
 
         # Starting Players Sold
         st.markdown('<div class="checklist-section"><strong>Starting Players Sold (Unlocks Extra Signing at 2)</strong></div>', unsafe_allow_html=True)
-        col1, col2, col3 = st.columns([2, 1, 1])
-        with col1:
-            st.write("Players sold:")
-        with col2:
-            st.write(f"<span class='checklist-counter'>{st.session_state.checklist['winter']['starting_sold']}</span>", unsafe_allow_html=True)
-        with col3:
-            if st.button("Add", key="winter_sale_add"):
-                st.session_state.checklist["winter"]["starting_sold"] += 1
+        if st.button("Add Sold Player", key="winter_sale_add"):
+            st.session_state.checklist["winter"]["starting_sold"] += 1
+            st.rerun()
+        if st.session_state.checklist["winter"]["starting_sold"] > 0:
+            if st.button("Remove Sold Player", key="winter_sale_remove"):
+                st.session_state.checklist["winter"]["starting_sold"] -= 1
                 st.rerun()
-            if st.session_state.checklist["winter"]["starting_sold"] > 0:
-                if st.button("Remove", key="winter_sale_remove"):
-                    st.session_state.checklist["winter"]["starting_sold"] -= 1
-                    st.rerun()
 
 # Tab 3: Starting 11
 with tab3:
