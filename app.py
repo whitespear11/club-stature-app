@@ -303,9 +303,7 @@ if "checklist" not in st.session_state:
             "bench_signings": 0,
             "reserve_signings": 0,
             "loans": 0,
-            "starting_sold": 0,
-            "pre_contract_16_29": 0,
-            "pre_contract_30_plus": 0
+            "starting_sold": 0
         }
     }
 
@@ -406,9 +404,7 @@ with tab2:
                 "bench_signings": 0,
                 "reserve_signings": 0,
                 "loans": 0,
-                "starting_sold": 0,
-                "pre_contract_16_29": 0,
-                "pre_contract_30_plus": 0
+                "starting_sold": 0
             }
         }
         st.session_state.pop("summer_signing_category", None)
@@ -591,16 +587,6 @@ with tab2:
                     <td>{}</td>
                 </tr>
                 <tr style="background-color: #34495e; color: white;">
-                    <td>Pre-contracts (16-29)</td>
-                    <td>{}</td>
-                    <td>1</td>
-                </tr>
-                <tr style="background-color: #34495e; color: white;">
-                    <td>Pre-contracts (30+)</td>
-                    <td>{}</td>
-                    <td>-</td>
-                </tr>
-                <tr style="background-color: #34495e; color: white;">
                     <td>Starting Players Sold</td>
                     <td>{}</td>
                     <td>-</td>
@@ -615,8 +601,6 @@ with tab2:
                 winter_reserve_max,
                 st.session_state.checklist["winter"]["loans"],
                 winter_loan_max,
-                st.session_state.checklist["winter"]["pre_contract_16_29"],
-                st.session_state.checklist["winter"]["pre_contract_30_plus"],
                 st.session_state.checklist["winter"]["starting_sold"]
             ),
             unsafe_allow_html=True
@@ -683,31 +667,6 @@ with tab2:
                     st.session_state.pop("winter_signing_category", None)
                     st.session_state.pop("winter_loan_mode", None)
                     st.rerun()
-
-        # Pre-contract Signings (16-29)
-        st.markdown('<div class="checklist-section"><strong>Pre-contract Signing (Ages 16-29, Max 1)</strong></div>', unsafe_allow_html=True)
-        if st.button("Add Pre-contract (16-29)", key="winter_pre_contract_16_29_add"):
-            if st.session_state.checklist["winter"]["pre_contract_16_29"] < 1:
-                st.session_state.checklist["winter"]["pre_contract_16_29"] += 1
-            else:
-                st.error("Exceeded pre-contract (16-29) limit!")
-            st.rerun()
-        if st.session_state.checklist["winter"]["pre_contract_16_29"] > 0:
-            if st.button("Remove Pre-contract (16-29)", key="winter_pre_contract_16_29_remove"):
-                st.session_state.checklist["winter"]["pre_contract_16_29"] -= 1
-                st.rerun()
-
-        # Pre-contract Signings (30+)
-        st.markdown('<div class="checklist-section"><strong>Pre-contract Signings (Ages 30+, No Strict Limit)</strong></div>', unsafe_allow_html=True)
-        if st.button("Add Pre-contract (30+)", key="winter_pre_contract_30_plus_add"):
-            st.session_state.checklist["winter"]["pre_contract_30_plus"] += 1
-            st.rerun()
-        if st.session_state.checklist["winter"]["pre_contract_30_plus"] > 0:
-            if st.button("Remove Pre-contract (30+)", key="winter_pre_contract_30_plus_remove"):
-                st.session_state.checklist["winter"]["pre_contract_30_plus"] -= 1
-                st.rerun()
-        if st.session_state.checklist["winter"]["pre_contract_30_plus"] > 3:
-            st.warning("Be cautious with too many pre-contracts for players aged 30+!")
 
         # Starting Players Sold
         st.markdown('<div class="checklist-section"><strong>Starting Players Sold (Unlocks Extra Signing at 2)</strong></div>', unsafe_allow_html=True)
@@ -971,7 +930,7 @@ with tab6:
                 ) and
                 all(
                     key in loaded_data["checklist"]["winter"]
-                    for key in ["starting_signings", "bench_signings", "reserve_signings", "loans", "starting_sold", "pre_contract_16_29", "pre_contract_30_plus"]
+                    for key in ["starting_signings", "bench_signings", "reserve_signings", "loans", "starting_sold"]
                 ) and
                 all(
                     isinstance(loaded_data["checklist"]["summer"][key], int) and
@@ -1004,9 +963,7 @@ with tab6:
                             "bench_signings": 0,
                             "reserve_signings": 0,
                             "loans": 0,
-                            "starting_sold": 0,
-                            "pre_contract_16_29": 0,
-                            "pre_contract_30_plus": 0
+                            "starting_sold": 0
                         }
                     }
                     st.warning("Checklist data invalid or missing; reset to defaults.")
