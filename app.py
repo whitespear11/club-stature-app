@@ -483,6 +483,10 @@ with tab2:
                 "pre_contract_30_plus": 0
             }
         }
+        st.session_state.pop("summer_signing_category", None)
+        st.session_state.pop("winter_signing_category", None)
+        st.session_state.pop("summer_loan_mode", None)
+        st.session_state.pop("winter_loan_mode", None)
         st.success("Checklist reset for the new season!")
         st.rerun()
 
@@ -490,7 +494,7 @@ with tab2:
     with st.expander("Summer Window", expanded=True):
         st.subheader("Summer Window Guidelines")
         
-        # Tally display at the top
+        # Tally display as a table
         summer_starting_max = 2
         summer_bench_max = 2
         summer_reserve_max = 3
@@ -499,16 +503,50 @@ with tab2:
         summer_starting_total_max = summer_starting_max + summer_starting_extra
         summer_bench_total_max = summer_bench_max + summer_starting_extra
         st.markdown(
-            f"""
-            <div style="margin-bottom: 1rem;">
-                <strong>Tally:</strong> 
-                Starting 11 Signings: {st.session_state.checklist['summer']['starting_signings']}/{summer_starting_total_max}, 
-                Bench Signings: {st.session_state.checklist['summer']['bench_signings']}/{summer_bench_total_max}, 
-                Reserve Signings: {st.session_state.checklist['summer']['reserve_signings']}/{summer_reserve_max}, 
-                Loans: {st.session_state.checklist['summer']['loans']}/{summer_loan_max}, 
-                Starting Players Sold: {st.session_state.checklist['summer']['starting_sold']}
-            </div>
-            """,
+            """
+            <table style="width:100%; border-collapse: collapse; margin-bottom: 1rem;">
+                <tr style="background-color: #2c3e50; color: white;">
+                    <th>Category</th>
+                    <th>Current Count</th>
+                    <th>Max Limit</th>
+                </tr>
+                <tr style="background-color: #34495e; color: white;">
+                    <td>First Team Signings</td>
+                    <td>{}</td>
+                    <td>{}</td>
+                </tr>
+                <tr style="background-color: #34495e; color: white;">
+                    <td>Bench Signings</td>
+                    <td>{}</td>
+                    <td>{}</td>
+                </tr>
+                <tr style="background-color: #34495e; color: white;">
+                    <td>Reserve Signings</td>
+                    <td>{}</td>
+                    <td>{}</td>
+                </tr>
+                <tr style="background-color: #34495e; color: white;">
+                    <td>Loans</td>
+                    <td>{}</td>
+                    <td>{}</td>
+                </tr>
+                <tr style="background-color: #34495e; color: white;">
+                    <td>Starting Players Sold</td>
+                    <td>{}</td>
+                    <td>-</td>
+                </tr>
+            </table>
+            """.format(
+                st.session_state.checklist["summer"]["starting_signings"],
+                summer_starting_total_max,
+                st.session_state.checklist["summer"]["bench_signings"],
+                summer_bench_total_max,
+                st.session_state.checklist["summer"]["reserve_signings"],
+                summer_reserve_max,
+                st.session_state.checklist["summer"]["loans"],
+                summer_loan_max,
+                st.session_state.checklist["summer"]["starting_sold"]
+            ),
             unsafe_allow_html=True
         )
         if summer_starting_extra:
@@ -521,42 +559,58 @@ with tab2:
         if st.session_state.get("summer_signing_mode", False):
             col1, col2, col3 = st.columns([1, 1, 1])
             with col1:
-                if st.button("Starting 11 Player", key="summer_starting_add"):
-                    if st.session_state.checklist["summer"]["starting_signings"] < summer_starting_total_max:
-                        st.session_state.checklist["summer"]["starting_signings"] += 1
-                    else:
-                        st.error("Exceeded Starting 11 signings limit!")
+                if st.button("First Team Player", key="summer_starting_add"):
+                    st.session_state["summer_signing_category"] = "starting"
+                    st.session_state["summer_loan_mode"] = True
                     st.session_state["summer_signing_mode"] = False
                     st.rerun()
             with col2:
                 if st.button("Bench Player", key="summer_bench_add"):
-                    if st.session_state.checklist["summer"]["bench_signings"] < summer_bench_total_max:
-                        st.session_state.checklist["summer"]["bench_signings"] += 1
-                    else:
-                        st.error("Exceeded Bench signings limit!")
+                    st.session_state["summer_signing_category"] = "bench"
+                    st.session_state["summer_loan_mode"] = True
                     st.session_state["summer_signing_mode"] = False
                     st.rerun()
             with col3:
                 if st.button("Reserve Player", key="summer_reserve_add"):
-                    if st.session_state.checklist["summer"]["reserve_signings"] < summer_reserve_max:
-                        st.session_state.checklist["summer"]["reserve_signings"] += 1
-                    else:
-                        st.error("Exceeded Reserve signings limit!")
+                    st.session_state["summer_signing_category"] = "reserve"
+                    st.session_state["summer_loan_mode"] = True
                     st.session_state["summer_signing_mode"] = False
                     st.rerun()
-
-        # Loans section
-        st.markdown('<div class="checklist-section"><strong>Loans (Max 3 Across All Signings)</strong></div>', unsafe_allow_html=True)
-        if st.button("Add Loan", key="summer_loan_add"):
-            if st.session_state.checklist["summer"]["loans"] < summer_loan_max:
-                st.session_state.checklist["summer"]["loans"] += 1
-            else:
-                st.error("Exceeded loan limit!")
-            st.rerun()
-        if st.session_state.checklist["summer"]["loans"] > 0:
-            if st.button("Remove Loan", key="summer_loan_remove"):
-                st.session_state.checklist["summer"]["loans"] -= 1
-                st.rerun()
+        if st.session_state.get("summer_loan_mode", False):
+            st.write("Is this a loan?")
+            col1, col2 = st.columns([1, 1])
+            with col1:
+                if st.button("Yes", key="summer_loan_yes"):
+                    if st.session_state.checklist["summer"]["loans"] < summer_loan_max:
+                        if st.session_state["summer_signing_category"] == "starting" and st.session_state.checklist["summer"]["starting_signings"] < summer_starting_total_max:
+                            st.session_state.checklist["summer"]["starting_signings"] += 1
+                            st.session_state.checklist["summer"]["loans"] += 1
+                        elif st.session_state["summer_signing_category"] == "bench" and st.session_state.checklist["summer"]["bench_signings"] < summer_bench_total_max:
+                            st.session_state.checklist["summer"]["bench_signings"] += 1
+                            st.session_state.checklist["summer"]["loans"] += 1
+                        elif st.session_state["summer_signing_category"] == "reserve" and st.session_state.checklist["summer"]["reserve_signings"] < summer_reserve_max:
+                            st.session_state.checklist["summer"]["reserve_signings"] += 1
+                            st.session_state.checklist["summer"]["loans"] += 1
+                        else:
+                            st.error(f"Exceeded {st.session_state['summer_signing_category']} signings limit!")
+                    else:
+                        st.error("Exceeded loan limit!")
+                    st.session_state.pop("summer_signing_category", None)
+                    st.session_state.pop("summer_loan_mode", None)
+                    st.rerun()
+            with col2:
+                if st.button("No", key="summer_loan_no"):
+                    if st.session_state["summer_signing_category"] == "starting" and st.session_state.checklist["summer"]["starting_signings"] < summer_starting_total_max:
+                        st.session_state.checklist["summer"]["starting_signings"] += 1
+                    elif st.session_state["summer_signing_category"] == "bench" and st.session_state.checklist["summer"]["bench_signings"] < summer_bench_total_max:
+                        st.session_state.checklist["summer"]["bench_signings"] += 1
+                    elif st.session_state["summer_signing_category"] == "reserve" and st.session_state.checklist["summer"]["reserve_signings"] < summer_reserve_max:
+                        st.session_state.checklist["summer"]["reserve_signings"] += 1
+                    else:
+                        st.error(f"Exceeded {st.session_state['summer_signing_category']} signings limit!")
+                    st.session_state.pop("summer_signing_category", None)
+                    st.session_state.pop("summer_loan_mode", None)
+                    st.rerun()
 
         # Starting Players Sold
         st.markdown('<div class="checklist-section"><strong>Starting Players Sold (Unlocks Extra Signing at 2)</strong></div>', unsafe_allow_html=True)
@@ -572,7 +626,7 @@ with tab2:
     with st.expander("Winter Window", expanded=False):
         st.subheader("Winter Window Guidelines")
         
-        # Tally display at the top
+        # Tally display as a table
         winter_starting_max = 1
         winter_bench_max = 1
         winter_reserve_max = 2
@@ -581,18 +635,62 @@ with tab2:
         winter_starting_total_max = winter_starting_max + winter_starting_extra
         winter_bench_total_max = winter_bench_max + winter_starting_extra
         st.markdown(
-            f"""
-            <div style="margin-bottom: 1rem;">
-                <strong>Tally:</strong> 
-                Starting 11 Signings: {st.session_state.checklist['winter']['starting_signings']}/{winter_starting_total_max}, 
-                Bench Signings: {st.session_state.checklist['winter']['bench_signings']}/{winter_bench_total_max}, 
-                Reserve Signings: {st.session_state.checklist['winter']['reserve_signings']}/{winter_reserve_max}, 
-                Loans: {st.session_state.checklist['winter']['loans']}/{winter_loan_max}, 
-                Pre-contracts (16-29): {st.session_state.checklist['winter']['pre_contract_16_29']}/1, 
-                Pre-contracts (30+): {st.session_state.checklist['winter']['pre_contract_30_plus']}, 
-                Starting Players Sold: {st.session_state.checklist['winter']['starting_sold']}
-            </div>
-            """,
+            """
+            <table style="width:100%; border-collapse: collapse; margin-bottom: 1rem;">
+                <tr style="background-color: #2c3e50; color: white;">
+                    <th>Category</th>
+                    <th>Current Count</th>
+                    <th>Max Limit</th>
+                </tr>
+                <tr style="background-color: #34495e; color: white;">
+                    <td>First Team Signings</td>
+                    <td>{}</td>
+                    <td>{}</td>
+                </tr>
+                <tr style="background-color: #34495e; color: white;">
+                    <td>Bench Signings</td>
+                    <td>{}</td>
+                    <td>{}</td>
+                </tr>
+                <tr style="background-color: #34495e; color: white;">
+                    <td>Reserve Signings</td>
+                    <td>{}</td>
+                    <td>{}</td>
+                </tr>
+                <tr style="background-color: #34495e; color: white;">
+                    <td>Loans</td>
+                    <td>{}</td>
+                    <td>{}</td>
+                </tr>
+                <tr style="background-color: #34495e; color: white;">
+                    <td>Pre-contracts (16-29)</td>
+                    <td>{}</td>
+                    <td>1</td>
+                </tr>
+                <tr style="background-color: #34495e; color: white;">
+                    <td>Pre-contracts (30+)</td>
+                    <td>{}</td>
+                    <td>-</td>
+                </tr>
+                <tr style="background-color: #34495e; color: white;">
+                    <td>Starting Players Sold</td>
+                    <td>{}</td>
+                    <td>-</td>
+                </tr>
+            </table>
+            """.format(
+                st.session_state.checklist["winter"]["starting_signings"],
+                winter_starting_total_max,
+                st.session_state.checklist["winter"]["bench_signings"],
+                winter_bench_total_max,
+                st.session_state.checklist["winter"]["reserve_signings"],
+                winter_reserve_max,
+                st.session_state.checklist["winter"]["loans"],
+                winter_loan_max,
+                st.session_state.checklist["winter"]["pre_contract_16_29"],
+                st.session_state.checklist["winter"]["pre_contract_30_plus"],
+                st.session_state.checklist["winter"]["starting_sold"]
+            ),
             unsafe_allow_html=True
         )
         if winter_starting_extra:
@@ -605,42 +703,58 @@ with tab2:
         if st.session_state.get("winter_signing_mode", False):
             col1, col2, col3 = st.columns([1, 1, 1])
             with col1:
-                if st.button("Starting 11 Player", key="winter_starting_add"):
-                    if st.session_state.checklist["winter"]["starting_signings"] < winter_starting_total_max:
-                        st.session_state.checklist["winter"]["starting_signings"] += 1
-                    else:
-                        st.error("Exceeded Starting 11 signings limit!")
+                if st.button("First Team Player", key="winter_starting_add"):
+                    st.session_state["winter_signing_category"] = "starting"
+                    st.session_state["winter_loan_mode"] = True
                     st.session_state["winter_signing_mode"] = False
                     st.rerun()
             with col2:
                 if st.button("Bench Player", key="winter_bench_add"):
-                    if st.session_state.checklist["winter"]["bench_signings"] < winter_bench_total_max:
-                        st.session_state.checklist["winter"]["bench_signings"] += 1
-                    else:
-                        st.error("Exceeded Bench signings limit!")
+                    st.session_state["winter_signing_category"] = "bench"
+                    st.session_state["winter_loan_mode"] = True
                     st.session_state["winter_signing_mode"] = False
                     st.rerun()
             with col3:
                 if st.button("Reserve Player", key="winter_reserve_add"):
-                    if st.session_state.checklist["winter"]["reserve_signings"] < winter_reserve_max:
-                        st.session_state.checklist["winter"]["reserve_signings"] += 1
-                    else:
-                        st.error("Exceeded Reserve signings limit!")
+                    st.session_state["winter_signing_category"] = "reserve"
+                    st.session_state["winter_loan_mode"] = True
                     st.session_state["winter_signing_mode"] = False
                     st.rerun()
-
-        # Loans section
-        st.markdown('<div class="checklist-section"><strong>Loans (Max 1 Across All Signings)</strong></div>', unsafe_allow_html=True)
-        if st.button("Add Loan", key="winter_loan_add"):
-            if st.session_state.checklist["winter"]["loans"] < winter_loan_max:
-                st.session_state.checklist["winter"]["loans"] += 1
-            else:
-                st.error("Exceeded loan limit!")
-            st.rerun()
-        if st.session_state.checklist["winter"]["loans"] > 0:
-            if st.button("Remove Loan", key="winter_loan_remove"):
-                st.session_state.checklist["winter"]["loans"] -= 1
-                st.rerun()
+        if st.session_state.get("winter_loan_mode", False):
+            st.write("Is this a loan?")
+            col1, col2 = st.columns([1, 1])
+            with col1:
+                if st.button("Yes", key="winter_loan_yes"):
+                    if st.session_state.checklist["winter"]["loans"] < winter_loan_max:
+                        if st.session_state["winter_signing_category"] == "starting" and st.session_state.checklist["winter"]["starting_signings"] < winter_starting_total_max:
+                            st.session_state.checklist["winter"]["starting_signings"] += 1
+                            st.session_state.checklist["winter"]["loans"] += 1
+                        elif st.session_state["winter_signing_category"] == "bench" and st.session_state.checklist["winter"]["bench_signings"] < winter_bench_total_max:
+                            st.session_state.checklist["winter"]["bench_signings"] += 1
+                            st.session_state.checklist["winter"]["loans"] += 1
+                        elif st.session_state["winter_signing_category"] == "reserve" and st.session_state.checklist["winter"]["reserve_signings"] < winter_reserve_max:
+                            st.session_state.checklist["winter"]["reserve_signings"] += 1
+                            st.session_state.checklist["winter"]["loans"] += 1
+                        else:
+                            st.error(f"Exceeded {st.session_state['winter_signing_category']} signings limit!")
+                    else:
+                        st.error("Exceeded loan limit!")
+                    st.session_state.pop("winter_signing_category", None)
+                    st.session_state.pop("winter_loan_mode", None)
+                    st.rerun()
+            with col2:
+                if st.button("No", key="winter_loan_no"):
+                    if st.session_state["winter_signing_category"] == "starting" and st.session_state.checklist["winter"]["starting_signings"] < winter_starting_total_max:
+                        st.session_state.checklist["winter"]["starting_signings"] += 1
+                    elif st.session_state["winter_signing_category"] == "bench" and st.session_state.checklist["winter"]["bench_signings"] < winter_bench_total_max:
+                        st.session_state.checklist["winter"]["bench_signings"] += 1
+                    elif st.session_state["winter_signing_category"] == "reserve" and st.session_state.checklist["winter"]["reserve_signings"] < winter_reserve_max:
+                        st.session_state.checklist["winter"]["reserve_signings"] += 1
+                    else:
+                        st.error(f"Exceeded {st.session_state['winter_signing_category']} signings limit!")
+                    st.session_state.pop("winter_signing_category", None)
+                    st.session_state.pop("winter_loan_mode", None)
+                    st.rerun()
 
         # Pre-contract Signings (16-29)
         st.markdown('<div class="checklist-section"><strong>Pre-contract Signing (Ages 16-29, Max 1)</strong></div>', unsafe_allow_html=True)
