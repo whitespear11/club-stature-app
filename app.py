@@ -3,7 +3,7 @@ import math
 import json
 import io
 
-# Apply custom CSS with improved tab and progress bar styling
+# Apply custom CSS with improved tab and custom progress bar styling
 st.markdown(
     """
     <style>
@@ -118,12 +118,17 @@ st.markdown(
         border-bottom: none;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
-    /* Progress bar styling */
-    .stProgress > div > div > div > div {
-        background-color: #3498db; /* Blue by default */
+    /* Custom progress bar styling */
+    .custom-progress-container {
+        width: 100%;
+        background-color: #e0e0e0;
+        border-radius: 5px;
+        overflow: hidden;
+        margin: 10px 0;
     }
-    .stProgress[data-complete="true"] > div > div > div > div {
-        background-color: #28a745 !important; /* Green when 100% complete */
+    .custom-progress-bar {
+        height: 20px;
+        transition: width 0.3s ease, background-color 0.3s ease;
     }
     </style>
     """,
@@ -281,9 +286,17 @@ with tab1:
         (1 if is_field_valid(st.session_state.club_details["european"], "european") else 0) +
         (1 if is_field_valid(st.session_state.club_details["name"], "name") else 0)
     ) / 4
-    progress_bar = st.progress(club_progress, text=f"Club Details Completion: {int(club_progress * 100)}%")
-    if club_progress == 1:
-        progress_bar._root._progress_bar._root_container.query_selector("div").classList.add("data-complete")
+    club_progress_percentage = int(club_progress * 100)
+    club_progress_color = "#28a745" if club_progress == 1 else "#3498db"
+    st.markdown(
+        f"""
+        <div style="margin-bottom: 5px;">Club Details Completion: {club_progress_percentage}%</div>
+        <div class="custom-progress-container">
+            <div class="custom-progress-bar" style="width: {club_progress_percentage}%; background-color: {club_progress_color};"></div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
     st.write("**Required**: League, Country, European status. **Optional**: Club Name.")
 
     # File uploader
@@ -395,9 +408,17 @@ with tab2:
     
     # Progress indicator for starting 11
     valid_players = sum(1 for player in st.session_state.starting_11 if player["overall"] > 0) / 11
-    progress_bar = st.progress(valid_players, text=f"Starting 11 Completion: {int(valid_players * 100)}%")
-    if valid_players == 1:
-        progress_bar._root._progress_bar._root_container.query_selector("div").classList.add("data-complete")
+    starting_11_progress_percentage = int(valid_players * 100)
+    starting_11_progress_color = "#28a745" if valid_players == 1 else "#3498db"
+    st.markdown(
+        f"""
+        <div style="margin-bottom: 5px;">Starting 11 Completion: {starting_11_progress_percentage}%</div>
+        <div class="custom-progress-container">
+            <div class="custom-progress-bar" style="width: {starting_11_progress_percentage}%; background-color: {starting_11_progress_color};"></div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
     
     with st.expander("Enter Starting 11 Details", expanded=True):
         with st.form(key="starting_11_form"):
@@ -443,7 +464,7 @@ with tab2:
             submit_starting_11 = st.form_submit_button("Calculate Team Overall")
     
     if submit_starting_11:
-        if all(player["overall"] >= 0 and player["wage"] >= 0 for player in players):
+        if all(player["overall"] >= Berlusconi 0 and player["wage"] >= 0 for player in players):
             st.session_state.starting_11 = players
             for i in range(11):
                 for key in [f"player_{i}_position", f"player_{i}_overall", f"player_{i}_wage"]:
