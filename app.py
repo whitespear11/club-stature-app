@@ -3,7 +3,7 @@ import math
 import json
 import io
 
-# Apply custom CSS for enhanced styling
+# Apply custom CSS with fixes for expanders
 st.markdown(
     """
     <style>
@@ -25,6 +25,13 @@ st.markdown(
         border-radius: 0.25rem;
         border: 1px solid #ced4da;
         padding: 0.5rem;
+        color: #000000 !important;
+        background-color: #ffffff !important;
+    }
+    /* Ensure selectbox options are readable */
+    .stSelectbox > div > div > select > option {
+        color: #000000 !important;
+        background-color: #ffffff !important;
     }
     /* Section headers */
     .stMarkdown h2, .stMarkdown h3 {
@@ -34,15 +41,32 @@ st.markdown(
         margin-bottom: 0.5rem;
     }
     /* Expander styling */
-    .stExpander {
+    .streamlit-expander {
         border: 1px solid #e2e8f0;
         border-radius: 0.25rem;
         margin-bottom: 1rem;
     }
-    .stExpander summary {
+    .streamlit-expanderHeader {
         background-color: #f8fafc;
         padding: 0.5rem;
         font-weight: 500;
+        color: #1e3a8a !important;
+    }
+    .streamlit-expanderContent {
+        background-color: #ffffff;
+        padding: 1rem;
+        color: #000000 !important;
+    }
+    /* Ensure form elements inside expanders are visible */
+    .streamlit-expanderContent .stTextInput, 
+    .streamlit-expanderContent .stNumberInput, 
+    .streamlit-expanderContent .stSelectbox, 
+    .streamlit-expanderContent .stCheckbox {
+        color: #000000 !important;
+    }
+    .streamlit-expanderContent label, 
+    .streamlit-expanderContent p {
+        color: #000000 !important;
     }
     /* Success and error messages */
     .stSuccess {
@@ -106,7 +130,7 @@ player_positions = [
 # Default positions for starting 11
 default_positions = ["GK", "LB", "CB", "CB", "RB", "LM", "CM", "CM", "RM", "ST", "ST"]
 
-# Existing function definitions (unchanged)
+# Function definitions
 def calculate_score(league, country, european, league_tiers):
     league_score = league_tiers.get(league, 1)
     if league_tiers.get(league, 1) < 3:
