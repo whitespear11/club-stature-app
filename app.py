@@ -3,7 +3,7 @@ import math
 import json
 import io
 
-# Apply custom CSS with fixes for expanders
+# Apply custom CSS with improved tab styling
 st.markdown(
     """
     <style>
@@ -87,19 +87,36 @@ st.markdown(
         padding: 0.75rem;
         border-radius: 0.25rem;
     }
-    /* Tab styling */
+    /* Tab styling - Improved */
+    .stTabs {
+        display: flex;
+        justify-content: center;
+        background-color: #1a2526;
+        padding: 0.5rem 0;
+        border-bottom: 2px solid #28a745;
+    }
     .stTabs [data-baseweb="tab"] {
-        font-size: 1.1rem;
+        font-size: 1.2rem;
+        font-family: 'Arial', sans-serif;
+        font-weight: 600;
         padding: 0.75rem 1.5rem;
-        color: #1e3a8a;
+        margin: 0 0.5rem;
+        color: #ffffff;
+        background-color: #2c3e50;
+        border-radius: 8px 8px 0 0;
+        transition: all 0.3s ease;
+        border: none;
     }
     .stTabs [data-baseweb="tab"]:hover {
-        background-color: #e2e8f0;
+        background-color: #34495e;
+        color: #ffffff;
+        cursor: pointer;
     }
     .stTabs [data-baseweb="tab"][aria-selected="true"] {
-        border-bottom: 2px solid #28a745;
-        color: #28a745;
-        font-weight: bold;
+        background-color: #28a745;
+        color: #ffffff;
+        border-bottom: none;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
     </style>
     """,
