@@ -312,8 +312,8 @@ if "checklist" not in st.session_state:
 # App title
 st.title("FIFA Realistic Toolkit")
 
-# Create tabs with Career Checklist as second
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["Club Details", "Career Checklist", "Starting 11", "Transfer Calculators", "Help/Info"])
+# Create tabs with Save/Load as the last tab
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["Club Details", "Career Checklist", "Starting 11", "Transfer Calculators", "Help/Info", "Save/Load"])
 
 # Tab 1: Club Details
 with tab1:
@@ -321,7 +321,7 @@ with tab1:
     st.write(
         """
         Welcome to the FIFA Realistic Toolkit! Enter your club details below to calculate team stature and guide transfers.
-        Save or upload your data to continue where you left off.
+        Use the Save/Load tab to save or upload your data.
         """
     )
     
@@ -355,78 +355,6 @@ with tab1:
         unsafe_allow_html=True
     )
     st.write("**Required**: League, Country, European status.")
-
-    # File uploader
-    uploaded_file = st.file_uploader("Upload Club and Starting 11 JSON", type=["json"], key="combined_upload")
-    if st.session_state.get("combined_upload") is not None:
-        st.warning("Clear the uploaded file before editing form fields.")
-    if uploaded_file:
-        try:
-            loaded_data = json.load(uploaded_file)
-            club_valid = (
-                isinstance(loaded_data.get("club_details"), dict) and
-                all(key in loaded_data["club_details"] for key in ["name", "league", "country", "european"]) and
-                isinstance(loaded_data["club_details"]["name"], str) and
-                loaded_data["club_details"]["league"] in league_tiers and
-                loaded_data["club_details"]["country"] in country_prestige and
-                isinstance(loaded_data["club_details"]["european"], bool)
-            )
-            starting_11_valid = (
-                isinstance(loaded_data.get("starting_11"), list) and
-                len(loaded_data["starting_11"]) == 11 and
-                all(
-                    isinstance(player, dict) and
-                    all(key in player for key in ["position", "overall", "wage"]) and
-                    player["position"] in player_positions and
-                    isinstance(player["overall"], int) and
-                    0 <= player["overall"] <= 99 and
-                    isinstance(player["wage"], int) and
-                    player["wage"] >= 0
-                    for player in loaded_data["starting_11"]
-                )
-            )
-            if club_valid and starting_11_valid:
-                st.session_state.club_details = loaded_data["club_details"]
-                st.session_state.starting_11 = loaded_data["starting_11"]
-                st.session_state.club_details_updated = True
-                st.session_state.pending_club_details = None
-                st.session_state["club_name"] = loaded_data["club_details"]["name"]
-                st.session_state["form_league"] = loaded_data["club_details"]["league"]
-                st.session_state["club_country"] = loaded_data["club_details"]["country"]
-                st.session_state["club_european"] = loaded_data["club_details"]["european"]
-                for i, player in enumerate(loaded_data["starting_11"]):
-                    st.session_state[f"player_{i}_position"] = player["position"]
-                    st.session_state[f"player_{i}_overall"] = player["overall"]
-                    st.session_state[f"player_{i}_wage"] = player["wage"]
-                total_overall = sum(player["overall"] for player in loaded_data["starting_11"])
-                st.session_state.average_team_overall = math.floor(total_overall / 11)
-                st.success(
-                    f"Club data loaded: {loaded_data['club_details']['name'] or 'None'}, "
-                    f"{loaded_data['club_details']['league']}, "
-                    f"{loaded_data['club_details']['country']}, "
-                    f"European: {loaded_data['club_details']['european']}. "
-                    f"Stature: {calculate_score(loaded_data['club_details']['league'], loaded_data['club_details']['country'], loaded_data['club_details']['european'], league_tiers):.1f}"
-                )
-            else:
-                st.error("Invalid JSON format or data.")
-        except json.JSONDecodeError:
-            st.error("Invalid JSON file.")
-
-    # Download button
-    if st.session_state.club_details and st.session_state.starting_11:
-        combined_data = {
-            "club_details": st.session_state.club_details,
-            "starting_11": st.session_state.starting_11
-        }
-        json_str = json.dumps(combined_data, indent=2)
-        st.download_button(
-            label="Save Club and Starting 11 Data",
-            data=json_str,
-            file_name="team_data.json",
-            mime="application/json",
-            key="download_club",
-            use_container_width=True
-        )
 
     # Club details form in expander
     with st.expander("Enter Club Details", expanded=True):
@@ -794,7 +722,7 @@ with tab2:
 # Tab 3: Starting 11
 with tab3:
     st.header("Starting 11 Calculator")
-    st.write("Enter your starting 11 to calculate team average overall and wage cap.")
+    st.write("Enter your starting 11 to calculate team average overall and wage cap. Use the Save/Load tab to save your data.")
     
     # Progress indicator for starting 11
     valid_players = sum(1 for player in st.session_state.starting_11 if player["overall"] > 0) / 11
@@ -874,22 +802,6 @@ with tab3:
             st.success(f"Wage Cap: {wage_cap:,} p/w")
         else:
             st.error("All player overalls and wages must be non-negative.")
-
-    # Download button
-    if st.session_state.club_details and st.session_state.starting_11:
-        combined_data = {
-            "club_details": st.session_state.club_details,
-            "starting_11": st.session_state.starting_11
-        }
-        json_str = json.dumps(combined_data, indent=2)
-        st.download_button(
-            label="Save Club and Starting 11 Data",
-            data=json_str,
-            file_name="team_data.json",
-            mime="application/json",
-            key="download_starting_11",
-            use_container_width=True
-        )
 
 # Tab 4: Transfer Calculators
 with tab4:
@@ -1000,8 +912,141 @@ with tab5:
         - **Career Checklist**: Track your signings and ensure compliance with transfer window rules.
         - **Starting 11**: Input your starting lineup to determine average overall and wage caps.
         - **Transfer Calculators**: Compute minimum selling offers and starting bids for buying players.
-        - **Save/Load**: Use JSON files to save or load your club and player data.
+        - **Save/Load**: Use the Save/Load tab to save or load your club, player, and checklist data.
         
         If you enjoy this tool, consider [buying me a coffee](https://buymeacoffee.com/whitespear11).
         """
     )
+
+# Tab 6: Save/Load
+with tab6:
+    st.header("Save/Load Data")
+    st.write(
+        """
+        Save your progress or load a previous session to continue where you left off. The saved file includes your club details, starting 11, and career checklist data.
+        """
+    )
+
+    # File uploader
+    uploaded_file = st.file_uploader("Upload Club, Starting 11, and Checklist JSON", type=["json"], key="combined_upload")
+    if st.session_state.get("combined_upload") is not None:
+        st.warning("Clear the uploaded file before editing form fields.")
+    if uploaded_file:
+        try:
+            loaded_data = json.load(uploaded_file)
+            # Validate club_details
+            club_valid = (
+                isinstance(loaded_data.get("club_details"), dict) and
+                all(key in loaded_data["club_details"] for key in ["name", "league", "country", "european"]) and
+                isinstance(loaded_data["club_details"]["name"], str) and
+                loaded_data["club_details"]["league"] in league_tiers and
+                loaded_data["club_details"]["country"] in country_prestige and
+                isinstance(loaded_data["club_details"]["european"], bool)
+            )
+            # Validate starting_11
+            starting_11_valid = (
+                isinstance(loaded_data.get("starting_11"), list) and
+                len(loaded_data["starting_11"]) == 11 and
+                all(
+                    isinstance(player, dict) and
+                    all(key in player for key in ["position", "overall", "wage"]) and
+                    player["position"] in player_positions and
+                    isinstance(player["overall"], int) and
+                    0 <= player["overall"] <= 99 and
+                    isinstance(player["wage"], int) and
+                    player["wage"] >= 0
+                    for player in loaded_data["starting_11"]
+                )
+            )
+            # Validate checklist
+            checklist_valid = (
+                isinstance(loaded_data.get("checklist"), dict) and
+                "summer" in loaded_data["checklist"] and
+                "winter" in loaded_data["checklist"] and
+                isinstance(loaded_data["checklist"]["summer"], dict) and
+                isinstance(loaded_data["checklist"]["winter"], dict) and
+                all(
+                    key in loaded_data["checklist"]["summer"]
+                    for key in ["starting_signings", "bench_signings", "reserve_signings", "loans", "starting_sold"]
+                ) and
+                all(
+                    key in loaded_data["checklist"]["winter"]
+                    for key in ["starting_signings", "bench_signings", "reserve_signings", "loans", "starting_sold", "pre_contract_16_29", "pre_contract_30_plus"]
+                ) and
+                all(
+                    isinstance(loaded_data["checklist"]["summer"][key], int) and
+                    loaded_data["checklist"]["summer"][key] >= 0
+                    for key in loaded_data["checklist"]["summer"]
+                ) and
+                all(
+                    isinstance(loaded_data["checklist"]["winter"][key], int) and
+                    loaded_data["checklist"]["winter"][key] >= 0
+                    for key in loaded_data["checklist"]["winter"]
+                )
+            )
+            if club_valid and starting_11_valid:
+                st.session_state.club_details = loaded_data["club_details"]
+                st.session_state.starting_11 = loaded_data["starting_11"]
+                if checklist_valid:
+                    st.session_state.checklist = loaded_data["checklist"]
+                else:
+                    # Reset checklist if invalid or not present
+                    st.session_state.checklist = {
+                        "summer": {
+                            "starting_signings": 0,
+                            "bench_signings": 0,
+                            "reserve_signings": 0,
+                            "loans": 0,
+                            "starting_sold": 0
+                        },
+                        "winter": {
+                            "starting_signings": 0,
+                            "bench_signings": 0,
+                            "reserve_signings": 0,
+                            "loans": 0,
+                            "starting_sold": 0,
+                            "pre_contract_16_29": 0,
+                            "pre_contract_30_plus": 0
+                        }
+                    }
+                    st.warning("Checklist data invalid or missing; reset to defaults.")
+                st.session_state.club_details_updated = True
+                st.session_state.pending_club_details = None
+                st.session_state["club_name"] = loaded_data["club_details"]["name"]
+                st.session_state["form_league"] = loaded_data["club_details"]["league"]
+                st.session_state["club_country"] = loaded_data["club_details"]["country"]
+                st.session_state["club_european"] = loaded_data["club_details"]["european"]
+                for i, player in enumerate(loaded_data["starting_11"]):
+                    st.session_state[f"player_{i}_position"] = player["position"]
+                    st.session_state[f"player_{i}_overall"] = player["overall"]
+                    st.session_state[f"player_{i}_wage"] = player["wage"]
+                total_overall = sum(player["overall"] for player in loaded_data["starting_11"])
+                st.session_state.average_team_overall = math.floor(total_overall / 11)
+                st.success(
+                    f"Club data loaded: {loaded_data['club_details']['name'] or 'None'}, "
+                    f"{loaded_data['club_details']['league']}, "
+                    f"{loaded_data['club_details']['country']}, "
+                    f"European: {loaded_data['club_details']['european']}. "
+                    f"Stature: {calculate_score(loaded_data['club_details']['league'], loaded_data['club_details']['country'], loaded_data['club_details']['european'], league_tiers):.1f}"
+                )
+            else:
+                st.error("Invalid JSON format or data for club_details or starting_11.")
+        except json.JSONDecodeError:
+            st.error("Invalid JSON file.")
+
+    # Download button
+    if st.session_state.club_details and st.session_state.starting_11 and st.session_state.checklist:
+        combined_data = {
+            "club_details": st.session_state.club_details,
+            "starting_11": st.session_state.starting_11,
+            "checklist": st.session_state.checklist
+        }
+        json_str = json.dumps(combined_data, indent=2)
+        st.download_button(
+            label="Save Club, Starting 11, and Checklist Data",
+            data=json_str,
+            file_name="team_data.json",
+            mime="application/json",
+            key="download_club",
+            use_container_width=True
+        )
