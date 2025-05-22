@@ -304,7 +304,8 @@ if "checklist" not in st.session_state:
             "reserve_signings": 0,
             "loans": 0,
             "starting_sold": 0
-        }
+        },
+        "youth_promotions": 0
     }
 
 # App title
@@ -387,7 +388,7 @@ with tab1:
 # Tab 2: Career Checklist
 with tab2:
     st.header("Career Checklist")
-    st.write("Track your signings and sales to stay within the guidelines for each transfer window.")
+    st.write("Track your signings, sales, and youth promotions to stay within the guidelines.")
 
     # Reset button for the checklist
     if st.button("Reset for New Season", key="reset_checklist"):
@@ -405,7 +406,8 @@ with tab2:
                 "reserve_signings": 0,
                 "loans": 0,
                 "starting_sold": 0
-            }
+            },
+            "youth_promotions": 0
         }
         st.session_state.pop("summer_signing_category", None)
         st.session_state.pop("winter_signing_category", None)
@@ -678,6 +680,46 @@ with tab2:
                 st.session_state.checklist["winter"]["starting_sold"] -= 1
                 st.rerun()
 
+    # Youth Academy
+    with st.expander("Youth Academy", expanded=False):
+        st.subheader("Youth Academy Guidelines")
+        st.write("A total of 3 players can be promoted to the senior team.")
+        
+        # Tally display as a table
+        youth_promotion_max = 3
+        st.markdown(
+            """
+            <table style="width:100%; border-collapse: collapse; margin-bottom: 1rem;">
+                <tr style="background-color: #2c3e50; color: white;">
+                    <th>Category</th>
+                    <th>Current Count</th>
+                    <th>Max Limit</th>
+                </tr>
+                <tr style="background-color: #34495e; color: white;">
+                    <td>Youth Promotions</td>
+                    <td>{}</td>
+                    <td>{}</td>
+                </tr>
+            </table>
+            """.format(
+                st.session_state.checklist["youth_promotions"],
+                youth_promotion_max
+            ),
+            unsafe_allow_html=True
+        )
+        
+        # Promotion button
+        if st.button("I promoted a youth player", key="youth_promotion_add"):
+            if st.session_state.checklist["youth_promotions"] < youth_promotion_max:
+                st.session_state.checklist["youth_promotions"] += 1
+                st.rerun()
+            else:
+                st.error("Exceeded youth promotion limit of 3!")
+        if st.session_state.checklist["youth_promotions"] > 0:
+            if st.button("Remove Youth Promotion", key="youth_promotion_remove"):
+                st.session_state.checklist["youth_promotions"] -= 1
+                st.rerun()
+
 # Tab 3: Starting 11
 with tab3:
     st.header("Starting 11 Calculator")
@@ -868,7 +910,7 @@ with tab5:
         **FIFA Realistic Toolkit** helps you manage your FIFA career mode with realistic transfer and wage guidelines.
         
         - **Club Details**: Enter your club's league, country, and European status to calculate stature.
-        - **Career Checklist**: Track your signings and ensure compliance with transfer window rules.
+        - **Career Checklist**: Track your signings, sales, and youth promotions to ensure compliance with transfer window rules.
         - **Starting 11**: Input your starting lineup to determine average overall and wage caps.
         - **Transfer Calculators**: Compute minimum selling offers and starting bids for buying players.
         - **Save/Load**: Use the Save/Load tab to save or load your club, player, and checklist data.
@@ -922,8 +964,11 @@ with tab6:
                 isinstance(loaded_data.get("checklist"), dict) and
                 "summer" in loaded_data["checklist"] and
                 "winter" in loaded_data["checklist"] and
+                "youth_promotions" in loaded_data["checklist"] and
                 isinstance(loaded_data["checklist"]["summer"], dict) and
                 isinstance(loaded_data["checklist"]["winter"], dict) and
+                isinstance(loaded_data["checklist"]["youth_promotions"], int) and
+                loaded_data["checklist"]["youth_promotions"] >= 0 and
                 all(
                     key in loaded_data["checklist"]["summer"]
                     for key in ["starting_signings", "bench_signings", "reserve_signings", "loans", "starting_sold"]
@@ -964,7 +1009,8 @@ with tab6:
                             "reserve_signings": 0,
                             "loans": 0,
                             "starting_sold": 0
-                        }
+                        },
+                        "youth_promotions": 0
                     }
                     st.warning("Checklist data invalid or missing; reset to defaults.")
                 st.session_state.club_details_updated = True
