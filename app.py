@@ -371,7 +371,7 @@ with tab1:
                 index=list(country_prestige.keys()).index(st.session_state.club_country),
                 key="club_country"
             )
-            club_european = st.checkbox("Participates in European Competitions", key="club_european")
+            club_european = st.checkbox("Participates in European Competitions (e.g., Champions League)", key="club_european")
             submit_club_details = st.form_submit_button("Save Club Details")
 
         if submit_club_details:
@@ -383,6 +383,13 @@ with tab1:
             }
             st.session_state.club_details_updated = False
             st.session_state.pending_club_details = None
+            # Determine scout rating based on league and European status
+            if st.session_state.club_details["european"]:
+                st.success("Maximum scout rating: 8 stars (e.g., 5* experience, 3* judgment).")
+            elif st.session_state.club_details["league"] == "First Division":
+                st.success("Maximum scout rating: 6 stars.")
+            else:
+                st.success("Maximum scout rating: 4 stars. Scouts must focus on domestic or nearby countries only.")
             st.rerun()
 
 # Tab 2: Career Checklist
@@ -909,7 +916,7 @@ with tab5:
         """
         **FIFA Realistic Toolkit** helps you manage your FIFA career mode with realistic transfer and wage guidelines.
         
-        - **Club Details**: Enter your club's league, country, and European status to calculate stature.
+        - **Club Details**: Enter your club's league, country, and European status to calculate stature and determine maximum scout ratings.
         - **Career Checklist**: Track your signings, sales, and youth promotions to ensure compliance with transfer window rules.
         - **Starting 11**: Input your starting lineup to determine average overall and wage caps.
         - **Transfer Calculators**: Compute minimum selling offers and starting bids for buying players.
