@@ -3,7 +3,7 @@ import math
 import json
 import io
 
-# Apply custom CSS with improved tab styling
+# Apply custom CSS with improved tab and progress bar styling
 st.markdown(
     """
     <style>
@@ -117,6 +117,13 @@ st.markdown(
         color: #ffffff;
         border-bottom: none;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    /* Progress bar styling */
+    .stProgress > div > div > div > div {
+        background-color: #3498db; /* Blue by default */
+    }
+    .stProgress[data-complete="true"] > div > div > div > div {
+        background-color: #28a745 !important; /* Green when 100% complete */
     }
     </style>
     """,
@@ -256,10 +263,29 @@ with tab1:
         """
     )
     
-    # Progress indicator for club details
-    club_progress = sum(1 for key, value in st.session_state.club_details.items() if value) / 4
-    st.progress(club_progress, text="Club Details Completion")
-    
+    # Progress indicator for club details with clarification
+    def is_field_valid(value, field_type):
+        if field_type == "league" and value in league_tiers:
+            return True
+        elif field_type == "country" and value in country_prestige:
+            return True
+        elif field_type == "european" and isinstance(value, bool):
+            return True
+        elif field_type == "name" and value != "":
+            return True
+        return False
+
+    club_progress = (
+        (1 if is_field_valid(st.session_state.club_details["league"], "league") else 0) +
+        (1 if is_field_valid(st.session_state.club_details["country"], "country") else 0) +
+        (1 if is_field_valid(st.session_state.club_details["european"], "european") else 0) +
+        (1 if is_field_valid(st.session_state.club_details["name"], "name") else 0)
+    ) / 4
+    progress_bar = st.progress(club_progress, text=f"Club Details Completion: {int(club_progress * 100)}%")
+    if club_progress == 1:
+        progress_bar._root._progress_bar._root_container.query_selector("div").classList.add("data-complete")
+    st.write("**Required**: League, Country, European status. **Optional**: Club Name.")
+
     # File uploader
     uploaded_file = st.file_uploader("Upload Club and Starting 11 JSON", type=["json"], key="combined_upload")
     if st.session_state.get("combined_upload") is not None:
@@ -369,7 +395,9 @@ with tab2:
     
     # Progress indicator for starting 11
     valid_players = sum(1 for player in st.session_state.starting_11 if player["overall"] > 0) / 11
-    st.progress(valid_players, text="Starting 11 Completion")
+    progress_bar = st.progress(valid_players, text=f"Starting 11 Completion: {int(valid_players * 100)}%")
+    if valid_players == 1:
+        progress_bar._root._progress_bar._root_container.query_selector("div").classList.add("data-complete")
     
     with st.expander("Enter Starting 11 Details", expanded=True):
         with st.form(key="starting_11_form"):
