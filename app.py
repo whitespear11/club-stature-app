@@ -93,7 +93,7 @@ st.markdown(
         justify-content: center;
         background-color: #1a2526;
         padding: 0.5rem 0;
-        border-bottom: 2px solid #28a745;
+        border-bottom: none; /* Removed the dark green border-bottom */
     }
     .stTabs [data-baseweb="tab"] {
         font-size: 1.2rem;
@@ -113,10 +113,15 @@ st.markdown(
         cursor: pointer;
     }
     .stTabs [data-baseweb="tab"][aria-selected="true"] {
-        background-color: transparent; /* Removed dark green background */
+        background-color: #2c3e50; /* Match the inactive tab background for consistency */
         color: #ffffff;
         border-bottom: none;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    /* Override any remaining dark green backgrounds or borders in the tab area */
+    .stTabs, .stTabs [data-baseweb="tab"], .stTabs [data-baseweb="tab"][aria-selected="true"] {
+        border-color: transparent !important;
+        background-color: #2c3e50 !important; /* Ensure no green shows through */
     }
     /* Custom progress bar styling */
     .custom-progress-container {
