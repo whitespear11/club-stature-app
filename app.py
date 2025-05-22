@@ -391,13 +391,25 @@ with tab1:
             }
             st.session_state.club_details_updated = False
             st.session_state.pending_club_details = None
-            # Set scout rating message
-            if st.session_state.club_details["european"]:
-                st.session_state.scout_rating_display = "Maximum scout rating: 8 stars (e.g., 5* experience, 3* judgment)."
-            elif st.session_state.club_details["league"] == "First Division":
-                st.session_state.scout_rating_display = "Maximum scout rating: 6 stars."
-            else:
-                st.session_state.scout_rating_display = "Maximum scout rating: 4 stars. Scouts must focus on domestic or nearby countries only."
+            # Calculate scout star rating
+            league = st.session_state.club_details["league"]
+            european = st.session_state.club_details["european"]
+            if league == "First Division" and european:
+                scout_rating = 10
+                message = f"Scout Star Rating: {scout_rating} stars."
+            elif league == "First Division" and not european:
+                scout_rating = 8
+                message = f"Scout Star Rating: {scout_rating} stars. Scouts must focus on domestic or nearby countries only."
+            elif league == "Second Division":
+                scout_rating = 6
+                message = f"Scout Star Rating: {scout_rating} stars. Scouts must focus on domestic or nearby countries only."
+            elif league == "Third Division":
+                scout_rating = 4
+                message = f"Scout Star Rating: {scout_rating} stars. Scouts must focus on domestic or nearby countries only."
+            else:  # Fourth Division
+                scout_rating = 2
+                message = f"Scout Star Rating: {scout_rating} stars. Scouts must focus on domestic or nearby countries only."
+            st.session_state.scout_rating_display = message
             st.rerun()
 
 # Tab 2: Career Checklist
