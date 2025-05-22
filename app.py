@@ -143,26 +143,28 @@ st.markdown(
         font-weight: bold;
         color: #ffffff; /* Ensure counter text is white */
     }
-    /* Career Checklist tab text styling */
-    div[data-testid="stVerticalBlock"] > div:nth-child(2) .stMarkdown,
-    div[data-testid="stVerticalBlock"] > div:nth-child(2) .stMarkdown p,
-    div[data-testid="stVerticalBlock"] > div:nth-child(2) .stMarkdown h2,
-    div[data-testid="stVerticalBlock"] > div:nth-child(2) .stMarkdown h3,
-    div[data-testid="stVerticalBlock"] > div:nth-child(2) .streamlit-expanderHeader,
-    div[data-testid="stVerticalBlock"] > div:nth-child(2) .streamlit-expanderContent,
-    div[data-testid="stVerticalBlock"] > div:nth-child(2) .streamlit-expanderContent p,
-    div[data-testid="stVerticalBlock"] > div:nth-child(2) .streamlit-expanderContent label,
-    div[data-testid="stVerticalBlock"] > div:nth-child(2) .stSuccess,
-    div[data-testid="stVerticalBlock"] > div:nth-child(2) .stError,
-    div[data-testid="stVerticalBlock"] > div:nth-child(2) .stWarning {
+    /* Set background color of all tab content areas to black */
+    div[data-testid="stVerticalBlock"] > div {
+        background-color: #000000 !important; /* Apply black background to all tab content */
+    }
+    /* Ensure text readability across all tab content */
+    div[data-testid="stVerticalBlock"] > div .stMarkdown,
+    div[data-testid="stVerticalBlock"] > div .stMarkdown p,
+    div[data-testid="stVerticalBlock"] > div .stMarkdown h2,
+    div[data-testid="stVerticalBlock"] > div .stMarkdown h3,
+    div[data-testid="stVerticalBlock"] > div .streamlit-expanderHeader,
+    div[data-testid="stVerticalBlock"] > div .streamlit-expanderContent,
+    div[data-testid="stVerticalBlock"] > div .streamlit-expanderContent p,
+    div[data-testid="stVerticalBlock"] > div .streamlit-expanderContent label,
+    div[data-testid="stVerticalBlock"] > div .stSuccess,
+    div[data-testid="stVerticalBlock"] > div .stError,
+    div[data-testid="stVerticalBlock"] > div .stWarning {
         color: #ffffff !important;
     }
-    /* Change the Career Checklist tab content background to black */
-    div[data-testid="stVerticalBlock"] > div:nth-child(2) .streamlit-expanderContent {
-        background-color: #000000 !important; /* Changed from #2c3e50 to black */
-    }
-    div[data-testid="stVerticalBlock"] > div:nth-child(2) .streamlit-expanderHeader {
-        background-color: #000000 !important; /* Changed from #34495e to black for consistency */
+    /* Override any inherited blue background for all tab content */
+    div[data-testid="stVerticalBlock"] > div,
+    div[data-testid="stVerticalBlock"] > div .streamlit-expanderContent {
+        background-color: #000000 !important; /* Ensure no blue background persists */
     }
     </style>
     """,
