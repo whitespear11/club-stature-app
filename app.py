@@ -225,7 +225,7 @@ def calculate_proportional_wage(player_overall, starting_11):
     wage = math.ceil(wage / 100) * 100
     return wage, None
 
-# Initialize session state
+# Initialize session state for existing sections
 if "starting_11" not in st.session_state:
     st.session_state.starting_11 = [
         {"position": default_positions[i], "overall": 0, "wage": 0} for i in range(11)
@@ -252,11 +252,32 @@ if "club_country" not in st.session_state:
 if "club_european" not in st.session_state:
     st.session_state.club_european = st.session_state.club_details["european"]
 
+# Initialize session state for Career Checklist
+if "checklist" not in st.session_state:
+    st.session_state.checklist = {
+        "summer": {
+            "starting_signings": 0,
+            "bench_signings": 0,
+            "reserve_signings": 0,
+            "loans": 0,
+            "starting_sold": 0
+        },
+        "winter": {
+            "starting_signings": 0,
+            "bench_signings": 0,
+            "reserve_signings": 0,
+            "loans": 0,
+            "starting_sold": 0,
+            "pre_contract_16_29": 0,
+            "pre_contract_30_plus": 0
+        }
+    }
+
 # App title
 st.title("FIFA Realistic Toolkit")
 
 # Create tabs
-tab1, tab2, tab3, tab4 = st.tabs(["Club Details", "Starting 11", "Transfer Calculators", "Help/Info"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["Club Details", "Starting 11", "Transfer Calculators", "Help/Info", "Career Checklist"])
 
 # Tab 1: Club Details
 with tab1:
@@ -297,7 +318,7 @@ with tab1:
         """,
         unsafe_allow_html=True
     )
-    st.write("**Required**: League, Country, European status. **Optional**: Club Name.")
+    st.write("**Required**: League, Country, European status.")
 
     # File uploader
     uploaded_file = st.file_uploader("Upload Club and Starting 11 JSON", type=["json"], key="combined_upload")
@@ -374,7 +395,7 @@ with tab1:
     # Club details form in expander
     with st.expander("Enter Club Details", expanded=True):
         with st.form(key="club_details_form"):
-            club_name = st.text_input("Club Name (Optional)", key="club_name")
+            club_name = st.text_input("Club Name", key="club_name")
             club_league = st.selectbox(
                 "League/Division",
                 list(league_tiers.keys()),
@@ -389,7 +410,6 @@ with tab1:
             )
             club_european = st.checkbox("Participates in European Competitions", key="club_european")
             submit_club_details = st.form_submit_button("Save Club Details")
-            # Fixed the unterminated string by adding the closing quotation mark
 
         if submit_club_details:
             st.session_state.club_details = {
@@ -610,8 +630,258 @@ with tab4:
         - **Club Details**: Enter your club's league, country, and European status to calculate stature.
         - **Starting 11**: Input your starting lineup to determine average overall and wage caps.
         - **Transfer Calculators**: Compute minimum selling offers and starting bids for buying players.
+        - **Career Checklist**: Track your signings and ensure compliance with transfer window rules.
         - **Save/Load**: Use JSON files to save or load your club and player data.
         
         If you enjoy this tool, consider [buying me a coffee](https://buymeacoffee.com/whitespear11).
         """
     )
+
+# Tab 5: Career Checklist
+with tab5:
+    st.header("Career Checklist")
+    st.write("Track your signings and sales to stay within the guidelines for each transfer window.")
+
+    # Reset button for the checklist
+    if st.button("Reset for New Season", key="reset_checklist"):
+        st.session_state.checklist = {
+            "summer": {
+                "starting_signings": 0,
+                "bench_signings": 0,
+                "reserve_signings": 0,
+                "loans": 0,
+                "starting_sold": 0
+            },
+            "winter": {
+                "starting_signings": 0,
+                "bench_signings": 0,
+                "reserve_signings": 0,
+                "loans": 0,
+                "starting_sold": 0,
+                "pre_contract_16_29": 0,
+                "pre_contract_30_plus": 0
+            }
+        }
+        st.success("Checklist reset for the new season!")
+        st.rerun()
+
+    # Summer Window
+    with st.expander("Summer Window", expanded=True):
+        st.subheader("Summer Window Guidelines")
+        
+        # Starting 11 Signings
+        st.markdown("**Starting 11 Signings (Max 2)**")
+        summer_starting_max = 2
+        summer_starting_extra = 1 if st.session_state.checklist["summer"]["starting_sold"] >= 2 else 0
+        if summer_starting_extra:
+            st.markdown("*Extra signing unlocked (2 starting players sold)!*")
+        summer_starting_total_max = summer_starting_max + summer_starting_extra
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            st.write(f"Signings made: {st.session_state.checklist['summer']['starting_signings']}/{summer_starting_total_max}")
+        with col2:
+            if st.session_state.checklist["summer"]["starting_signings"] < summer_starting_total_max:
+                if st.button("Add Starting Signing", key="summer_starting_add"):
+                    st.session_state.checklist["summer"]["starting_signings"] += 1
+                    st.rerun()
+            if st.session_state.checklist["summer"]["starting_signings"] > 0:
+                if st.button("Remove", key="summer_starting_remove"):
+                    st.session_state.checklist["summer"]["starting_signings"] -= 1
+                    st.rerun()
+        if st.session_state.checklist["summer"]["starting_signings"] > summer_starting_total_max:
+            st.error("Exceeded starting 11 signings limit!")
+
+        # Bench Signings
+        st.markdown("**Bench Signings (Max 2)**")
+        summer_bench_max = 2
+        summer_bench_total_max = summer_bench_max + summer_starting_extra  # Same extra signing applies
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            st.write(f"Signings made: {st.session_state.checklist['summer']['bench_signings']}/{summer_bench_total_max}")
+        with col2:
+            if st.session_state.checklist["summer"]["bench_signings"] < summer_bench_total_max:
+                if st.button("Add Bench Signing", key="summer_bench_add"):
+                    st.session_state.checklist["summer"]["bench_signings"] += 1
+                    st.rerun()
+            if st.session_state.checklist["summer"]["bench_signings"] > 0:
+                if st.button("Remove", key="summer_bench_remove"):
+                    st.session_state.checklist["summer"]["bench_signings"] -= 1
+                    st.rerun()
+        if st.session_state.checklist["summer"]["bench_signings"] > summer_bench_total_max:
+            st.error("Exceeded bench signings limit!")
+
+        # Reserve Signings
+        st.markdown("**Reserve Signings (Max 3)**")
+        summer_reserve_max = 3
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            st.write(f"Signings made: {st.session_state.checklist['summer']['reserve_signings']}/{summer_reserve_max}")
+        with col2:
+            if st.session_state.checklist["summer"]["reserve_signings"] < summer_reserve_max:
+                if st.button("Add Reserve Signing", key="summer_reserve_add"):
+                    st.session_state.checklist["summer"]["reserve_signings"] += 1
+                    st.rerun()
+            if st.session_state.checklist["summer"]["reserve_signings"] > 0:
+                if st.button("Remove", key="summer_reserve_remove"):
+                    st.session_state.checklist["summer"]["reserve_signings"] -= 1
+                    st.rerun()
+        if st.session_state.checklist["summer"]["reserve_signings"] > summer_reserve_max:
+            st.error("Exceeded reserve signings limit!")
+
+        # Loans Tracking
+        st.markdown("**Loans (Max 3 Across All Signings)**")
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            st.write(f"Loans made: {st.session_state.checklist['summer']['loans']}/3")
+        with col2:
+            if st.session_state.checklist["summer"]["loans"] < 3:
+                if st.button("Add Loan", key="summer_loan_add"):
+                    st.session_state.checklist["summer"]["loans"] += 1
+                    st.rerun()
+            if st.session_state.checklist["summer"]["loans"] > 0:
+                if st.button("Remove", key="summer_loan_remove"):
+                    st.session_state.checklist["summer"]["loans"] -= 1
+                    st.rerun()
+        if st.session_state.checklist["summer"]["loans"] > 3:
+            st.error("Exceeded loan limit!")
+
+        # Starting Players Sold
+        st.markdown("**Starting Players Sold (Unlocks Extra Signing at 2)**")
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            st.write(f"Players sold: {st.session_state.checklist['summer']['starting_sold']}")
+        with col2:
+            if st.button("Add Sale", key="summer_sale_add"):
+                st.session_state.checklist["summer"]["starting_sold"] += 1
+                st.rerun()
+            if st.session_state.checklist["summer"]["starting_sold"] > 0:
+                if st.button("Remove", key="summer_sale_remove"):
+                    st.session_state.checklist["summer"]["starting_sold"] -= 1
+                    st.rerun()
+
+    # Winter Window
+    with st.expander("Winter Window", expanded=False):
+        st.subheader("Winter Window Guidelines")
+
+        # Starting 11 Signings
+        st.markdown("**Starting 11 Signings (Max 1)**")
+        winter_starting_max = 1
+        winter_starting_extra = 1 if st.session_state.checklist["winter"]["starting_sold"] >= 2 else 0
+        if winter_starting_extra:
+            st.markdown("*Extra signing unlocked (2 starting players sold)!*")
+        winter_starting_total_max = winter_starting_max + winter_starting_extra
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            st.write(f"Signings made: {st.session_state.checklist['winter']['starting_signings']}/{winter_starting_total_max}")
+        with col2:
+            if st.session_state.checklist["winter"]["starting_signings"] < winter_starting_total_max:
+                if st.button("Add Starting Signing", key="winter_starting_add"):
+                    st.session_state.checklist["winter"]["starting_signings"] += 1
+                    st.rerun()
+            if st.session_state.checklist["winter"]["starting_signings"] > 0:
+                if st.button("Remove", key="winter_starting_remove"):
+                    st.session_state.checklist["winter"]["starting_signings"] -= 1
+                    st.rerun()
+        if st.session_state.checklist["winter"]["starting_signings"] > winter_starting_total_max:
+            st.error("Exceeded starting 11 signings limit!")
+
+        # Bench Signings
+        st.markdown("**Bench Signings (Max 1)**")
+        winter_bench_max = 1
+        winter_bench_total_max = winter_bench_max + winter_starting_extra  # Same extra signing applies
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            st.write(f"Signings made: {st.session_state.checklist['winter']['bench_signings']}/{winter_bench_total_max}")
+        with col2:
+            if st.session_state.checklist["winter"]["bench_signings"] < winter_bench_total_max:
+                if st.button("Add Bench Signing", key="winter_bench_add"):
+                    st.session_state.checklist["winter"]["bench_signings"] += 1
+                    st.rerun()
+            if st.session_state.checklist["winter"]["bench_signings"] > 0:
+                if st.button("Remove", key="winter_bench_remove"):
+                    st.session_state.checklist["winter"]["bench_signings"] -= 1
+                    st.rerun()
+        if st.session_state.checklist["winter"]["bench_signings"] > winter_bench_total_max:
+            st.error("Exceeded bench signings limit!")
+
+        # Reserve Signings
+        st.markdown("**Reserve Signings (Max 2)**")
+        winter_reserve_max = 2
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            st.write(f"Signings made: {st.session_state.checklist['winter']['reserve_signings']}/{winter_reserve_max}")
+        with col2:
+            if st.session_state.checklist["winter"]["reserve_signings"] < winter_reserve_max:
+                if st.button("Add Reserve Signing", key="winter_reserve_add"):
+                    st.session_state.checklist["winter"]["reserve_signings"] += 1
+                    st.rerun()
+            if st.session_state.checklist["winter"]["reserve_signings"] > 0:
+                if st.button("Remove", key="winter_reserve_remove"):
+                    st.session_state.checklist["winter"]["reserve_signings"] -= 1
+                    st.rerun()
+        if st.session_state.checklist["winter"]["reserve_signings"] > winter_reserve_max:
+            st.error("Exceeded reserve signings limit!")
+
+        # Loans Tracking
+        st.markdown("**Loans (Max 1 Across All Signings)**")
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            st.write(f"Loans made: {st.session_state.checklist['winter']['loans']}/1")
+        with col2:
+            if st.session_state.checklist["winter"]["loans"] < 1:
+                if st.button("Add Loan", key="winter_loan_add"):
+                    st.session_state.checklist["winter"]["loans"] += 1
+                    st.rerun()
+            if st.session_state.checklist["winter"]["loans"] > 0:
+                if st.button("Remove", key="winter_loan_remove"):
+                    st.session_state.checklist["winter"]["loans"] -= 1
+                    st.rerun()
+        if st.session_state.checklist["winter"]["loans"] > 1:
+            st.error("Exceeded loan limit!")
+
+        # Pre-contract Signings (16-29)
+        st.markdown("**Pre-contract Signing (Ages 16-29, Max 1)**")
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            st.write(f"Pre-contracts: {st.session_state.checklist['winter']['pre_contract_16_29']}/1")
+        with col2:
+            if st.session_state.checklist["winter"]["pre_contract_16_29"] < 1:
+                if st.button("Add Pre-contract (16-29)", key="winter_pre_contract_16_29_add"):
+                    st.session_state.checklist["winter"]["pre_contract_16_29"] += 1
+                    st.rerun()
+            if st.session_state.checklist["winter"]["pre_contract_16_29"] > 0:
+                if st.button("Remove", key="winter_pre_contract_16_29_remove"):
+                    st.session_state.checklist["winter"]["pre_contract_16_29"] -= 1
+                    st.rerun()
+        if st.session_state.checklist["winter"]["pre_contract_16_29"] > 1:
+            st.error("Exceeded pre-contract (16-29) limit!")
+
+        # Pre-contract Signings (30+)
+        st.markdown("**Pre-contract Signings (Ages 30+, No Strict Limit)**")
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            st.write(f"Pre-contracts: {st.session_state.checklist['winter']['pre_contract_30_plus']}")
+        with col2:
+            if st.button("Add Pre-contract (30+)", key="winter_pre_contract_30_plus_add"):
+                st.session_state.checklist["winter"]["pre_contract_30_plus"] += 1
+                st.rerun()
+            if st.session_state.checklist["winter"]["pre_contract_30_plus"] > 0:
+                if st.button("Remove", key="winter_pre_contract_30_plus_remove"):
+                    st.session_state.checklist["winter"]["pre_contract_30_plus"] -= 1
+                    st.rerun()
+        if st.session_state.checklist["winter"]["pre_contract_30_plus"] > 3:
+            st.warning("Be cautious with too many pre-contracts for players aged 30+!")
+
+        # Starting Players Sold
+        st.markdown("**Starting Players Sold (Unlocks Extra Signing at 2)**")
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            st.write(f"Players sold: {st.session_state.checklist['winter']['starting_sold']}")
+        with col2:
+            if st.button("Add Sale", key="winter_sale_add"):
+                st.session_state.checklist["winter"]["starting_sold"] += 1
+                st.rerun()
+            if st.session_state.checklist["winter"]["starting_sold"] > 0:
+                if st.button("Remove", key="winter_sale_remove"):
+                    st.session_state.checklist["winter"]["starting_sold"] -= 1
+                    st.rerun()
