@@ -93,7 +93,7 @@ st.markdown(
         justify-content: center;
         background-color: #1a2526;
         padding: 0.5rem 0;
-        border-bottom: none; /* Removed the dark green border-bottom */
+        border-bottom: none;
     }
     .stTabs [data-baseweb="tab"] {
         font-size: 1.2rem;
@@ -113,7 +113,7 @@ st.markdown(
         cursor: pointer;
     }
     .stTabs [data-baseweb="tab"][aria-selected="true"] {
-        background-color: #2c3e50; /* Match the inactive tab background for consistency */
+        background-color: #2c3e50;
         color: #ffffff;
         border-bottom: none;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
@@ -121,7 +121,7 @@ st.markdown(
     /* Override any remaining dark green backgrounds or borders in the tab area */
     .stTabs, .stTabs [data-baseweb="tab"], .stTabs [data-baseweb="tab"][aria-selected="true"] {
         border-color: transparent !important;
-        background-color: #2c3e50 !important; /* Ensure no green shows through */
+        background-color: #2c3e50 !important;
     }
     /* Custom progress bar styling */
     .custom-progress-container {
@@ -157,12 +157,12 @@ st.markdown(
     div[data-testid="stVerticalBlock"] > div:nth-child(2) .stWarning {
         color: #ffffff !important;
     }
-    /* Ensure Career Checklist tab background for better readability with white text */
+    /* Change the Career Checklist tab content background to black */
     div[data-testid="stVerticalBlock"] > div:nth-child(2) .streamlit-expanderContent {
-        background-color: #2c3e50 !important; /* Dark background for contrast */
+        background-color: #000000 !important; /* Changed from #2c3e50 to black */
     }
     div[data-testid="stVerticalBlock"] > div:nth-child(2) .streamlit-expanderHeader {
-        background-color: #34495e !important; /* Slightly lighter dark background for header */
+        background-color: #000000 !important; /* Changed from #34495e to black for consistency */
     }
     </style>
     """,
