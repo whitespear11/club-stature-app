@@ -396,19 +396,19 @@ with tab1:
             european = st.session_state.club_details["european"]
             if league == "First Division" and european:
                 scout_rating = 10
-                message = f"Scout Star Rating: {scout_rating} stars."
+                message = f"Scout Star Rating: {scout_rating} stars. Can assign worldwide."
             elif league == "First Division" and not european:
                 scout_rating = 8
-                message = f"Scout Star Rating: {scout_rating} stars. Scouts must focus on domestic or nearby countries only."
+                message = f"Scout Star Rating: {scout_rating} stars. Can only assign to local continent and neighbouring continents."
             elif league == "Second Division":
                 scout_rating = 6
-                message = f"Scout Star Rating: {scout_rating} stars. Scouts must focus on domestic or nearby countries only."
+                message = f"Scout Star Rating: {scout_rating} stars. Can only assign to local continent."
             elif league == "Third Division":
                 scout_rating = 4
-                message = f"Scout Star Rating: {scout_rating} stars. Scouts must focus on domestic or nearby countries only."
+                message = f"Scout Star Rating: {scout_rating} stars. Can only assign to local country and neighbouring countries."
             else:  # Fourth Division
                 scout_rating = 2
-                message = f"Scout Star Rating: {scout_rating} stars. Scouts must focus on domestic or nearby countries only."
+                message = f"Scout Star Rating: {scout_rating} stars. Can only assign to local country."
             st.session_state.scout_rating_display = message
             st.rerun()
 
