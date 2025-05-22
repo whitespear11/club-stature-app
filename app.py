@@ -143,9 +143,9 @@ st.markdown(
         font-weight: bold;
         color: #ffffff; /* Ensure counter text is white */
     }
-    /* Set background color of all tab content areas to black */
+    /* Set background color of all tab content areas to transparent */
     div[data-testid="stVerticalBlock"] > div {
-        background-color: #000000 !important; /* Apply black background to all tab content */
+        background-color: transparent !important; /* Make tab content background transparent */
     }
     /* Ensure text readability across all tab content */
     div[data-testid="stVerticalBlock"] > div .stMarkdown,
@@ -164,7 +164,7 @@ st.markdown(
     /* Override any inherited blue background for all tab content */
     div[data-testid="stVerticalBlock"] > div,
     div[data-testid="stVerticalBlock"] > div .streamlit-expanderContent {
-        background-color: #000000 !important; /* Ensure no blue background persists */
+        background-color: transparent !important; /* Ensure no blue background persists */
     }
     </style>
     """,
