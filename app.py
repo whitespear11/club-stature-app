@@ -3,7 +3,7 @@ import math
 import json
 import io
 
-# Apply custom CSS with improved tab and custom progress bar styling
+# Apply custom CSS with mobile optimizations
 st.markdown(
     """
     <style>
@@ -15,6 +15,7 @@ st.markdown(
         padding: 0.5rem 1rem;
         border-radius: 0.25rem;
         font-weight: bold;
+        min-width: 100px; /* Ensure minimum width for touch */
     }
     button[kind="primary"]:hover {
         background-color: #218838;
@@ -27,11 +28,14 @@ st.markdown(
         padding: 0.5rem;
         color: #000000 !important;
         background-color: #ffffff !important;
+        font-size: 16px; /* Larger text for mobile */
+        min-height: 40px; /* Ensure touch-friendly height */
     }
     /* Ensure selectbox options are readable */
     .stSelectbox > div > div > select > option {
         color: #000000 !important;
         background-color: #ffffff !important;
+        font-size: 16px;
     }
     /* Section headers */
     .stMarkdown h2, .stMarkdown h3 {
@@ -39,6 +43,7 @@ st.markdown(
         font-weight: 600;
         margin-top: 1rem;
         margin-bottom: 0.5rem;
+        font-size: 1.5rem; /* Slightly larger for mobile readability */
     }
     /* Expander styling */
     .streamlit-expander {
@@ -51,6 +56,7 @@ st.markdown(
         padding: 0.5rem;
         font-weight: 500;
         color: #1e3a8a !important;
+        font-size: 1.2rem; /* Larger header for mobile */
     }
     .streamlit-expanderContent {
         background-color: #ffffff;
@@ -63,10 +69,12 @@ st.markdown(
     .streamlit-expanderContent .stSelectbox, 
     .streamlit-expanderContent .stCheckbox {
         color: #000000 !important;
+        font-size: 16px;
     }
     .streamlit-expanderContent label, 
     .streamlit-expanderContent p {
         color: #000000 !important;
+        font-size: 16px; /* Readable on mobile */
     }
     /* Success and error messages */
     .stSuccess {
@@ -74,38 +82,44 @@ st.markdown(
         color: #155724;
         padding: 0.75rem;
         border-radius: 0.25rem;
+        font-size: 16px;
     }
     .stError {
         background-color: #f8d7da;
         color: #721c24;
         padding: 0.75rem;
         border-radius: 0.25rem;
+        font-size: 16px;
     }
     .stWarning {
         background-color: #fff3cd;
         color: #856404;
         padding: 0.75rem;
         border-radius: 0.25rem;
+        font-size: 16px;
     }
-    /* Tab styling - Improved */
+    /* Tab styling - Improved with mobile optimization */
     .stTabs {
         display: flex;
         justify-content: center;
         background-color: #1a2526;
         padding: 0.5rem 0;
         border-bottom: none;
+        flex-wrap: wrap; /* Allow tabs to wrap on small screens */
     }
     .stTabs [data-baseweb="tab"] {
         font-size: 1.2rem;
         font-family: 'Arial', sans-serif;
         font-weight: 600;
-        padding: 0.75rem 1.5rem;
-        margin: 0 0.5rem;
+        padding: 0.75rem 1rem;
+        margin: 0 0.25rem;
         color: #ffffff;
         background-color: #2c3e50;
         border-radius: 8px 8px 0 0;
         transition: all 0.3s ease;
         border: none;
+        min-width: 80px; /* Minimum width for touch */
+        text-align: center;
     }
     .stTabs [data-baseweb="tab"]:hover {
         background-color: #34495e;
@@ -123,7 +137,7 @@ st.markdown(
         border-color: transparent !important;
         background-color: #2c3e50 !important;
     }
-    /* Custom progress bar styling */
+    /* Custom progress bar styling with mobile responsiveness */
     .custom-progress-container {
         width: 100%;
         background-color: #e0e0e0;
@@ -141,11 +155,65 @@ st.markdown(
     }
     .checklist-counter {
         font-weight: bold;
-        color: #ffffff; /* Ensure counter text is white */
+        color: #ffffff;
+    }
+    /* Table styling for mobile */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px; /* Smaller text for tables on mobile */
+    }
+    th, td {
+        padding: 0.5rem;
+        text-align: left;
+        border: 1px solid #34495e;
+    }
+    th {
+        background-color: #2c3e50;
+        color: white;
+    }
+    tr:nth-child(even) {
+        background-color: #34495e;
+        color: white;
+    }
+    /* Mobile-specific adjustments */
+    @media (max-width: 768px) {
+        .stTabs [data-baseweb="tab"] {
+            font-size: 1rem;
+            padding: 0.5rem 0.75rem;
+            margin: 0 0.1rem;
+            min-width: 60px;
+        }
+        .stMarkdown h2, .stMarkdown h3 {
+            font-size: 1.2rem;
+        }
+        .streamlit-expanderHeader {
+            font-size: 1rem;
+        }
+        .stTextInput > div > div > input, .stNumberInput > div > div > input, .stSelectbox > div > div > select {
+            font-size: 14px;
+            min-height: 35px;
+        }
+        .stSuccess, .stError, .stWarning {
+            font-size: 14px;
+            padding: 0.5rem;
+        }
+        .custom-progress-container {
+            margin: 5px 0;
+        }
+        .custom-progress-bar {
+            height: 15px;
+        }
+        table {
+            font-size: 12px;
+        }
+        th, td {
+            padding: 0.3rem;
+        }
     }
     /* Set background color of all tab content areas to transparent */
     div[data-testid="stVerticalBlock"] > div {
-        background-color: transparent !important; /* Make tab content background transparent */
+        background-color: transparent !important;
     }
     /* Ensure text readability across all tab content */
     div[data-testid="stVerticalBlock"] > div .stMarkdown,
@@ -164,7 +232,7 @@ st.markdown(
     /* Override any inherited blue background for all tab content */
     div[data-testid="stVerticalBlock"] > div,
     div[data-testid="stVerticalBlock"] > div .streamlit-expanderContent {
-        background-color: transparent !important; /* Ensure no blue background persists */
+        background-color: transparent !important;
     }
     </style>
     """,
