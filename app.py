@@ -57,7 +57,7 @@ st.markdown(
     p, h1, h2, h3, h4, h5, h6, label, span, div, a {
         color: #ffffff !important;
     }
-    /* Override Streamlit's default light theme elements */
+    /* Override StreamLit default light theme elements */
     [data-testid="stAppViewContainer"], [data-testid="stVerticalBlock"] {
         background-color: #1a2526 !important;
     }
@@ -443,14 +443,6 @@ if "club_details_updated" not in st.session_state:
     st.session_state.club_details_updated = False
 if "pending_club_details" not in st.session_state:
     st.session_state.pending_club_details = None
-if "club_name" not in st.session_state:
-    st.session_state.club_name = st.session_state.club_details["name"]
-if "form_league" not in st.session_state:
-    st.session_state.form_league = st.session_state.club_details["league"]
-if "club_country" not in st.session_state:
-    st.session_state.club_country = st.session_state.club_details["country"]
-if "club_european" not in st.session_state:
-    st.session_state.club_european = st.session_state.club_details["european"]
 
 # Initialize session state for Career Checklist
 if "checklist" not in st.session_state:
@@ -530,28 +522,36 @@ with tab1:
     # Club details form in expander
     with st.expander("Enter Club Details", expanded=True):
         with st.form(key="club_details_form"):
-            club_name = st.text_input("Club Name", key="club_name")
+            club_name = st.text_input(
+                "Club Name",
+                value=st.session_state.club_details["name"],
+                key="club_name"
+            )
             club_league = st.selectbox(
                 "League/Division",
                 list(league_tiers.keys()),
-                index=list(league_tiers.keys()).index(st.session_state.form_league),
+                index=list(league_tiers.keys()).index(st.session_state.club_details["league"]),
                 key="form_league"
             )
             club_country = st.selectbox(
                 "Country",
                 list(country_prestige.keys()),
-                index=list(country_prestige.keys()).index(st.session_state.club_country),
+                index=list(country_prestige.keys()).index(st.session_state.club_details["country"]),
                 key="club_country"
             )
-            club_european = st.checkbox("Participates in European Competitions (e.g., Champions League)", key="club_european")
+            club_european = st.checkbox(
+                "Participates in European Competitions (e.g., Champions League)",
+                value=st.session_state.club_details["european"],
+                key="club_european"
+            )
             submit_club_details = st.form_submit_button("Save Club Details")
 
         if submit_club_details:
             st.session_state.club_details = {
-                "name": st.session_state["club_name"],
-                "league": st.session_state["form_league"],
-                "country": st.session_state["club_country"],
-                "european": st.session_state["club_european"]
+                "name": club_name,
+                "league": club_league,
+                "country": club_country,
+                "european": club_european
             }
             st.session_state.club_details_updated = False
             st.session_state.pending_club_details = None
@@ -946,7 +946,7 @@ with tab3:
                         position = st.selectbox(
                             "",
                             player_positions,
-                            index=player_positions.index(st.session_state.get(f"player_{i}_position", st.session_state.starting_11[i]["position"])),
+                            index=player_positions.index(st.session_state.starting_11[i]["position"]),
                             key=f"player_{i}_position"
                         )
                     with col2:
@@ -955,7 +955,7 @@ with tab3:
                             "",
                             min_value=0,
                             max_value=99,
-                            value=st.session_state.get(f"player_{i}_overall", st.session_state.starting_11[i]["overall"]),
+                            value=st.session_state.starting_11[i]["overall"],
                             step=1,
                             format="%d",
                             key=f"player_{i}_overall"
@@ -965,7 +965,7 @@ with tab3:
                         wage = st.number_input(
                             "",
                             min_value=0,
-                            value=st.session_state.get(f"player_{i}_wage", st.session_state.starting_11[i]["wage"]),
+                            value=st.session_state.starting_11[i]["wage"],
                             step=1000,
                             format="%d",
                             key=f"player_{i}_wage"
@@ -977,13 +977,6 @@ with tab3:
     if submit_starting_11:
         if all(player["overall"] >= 0 and player["wage"] >= 0 for player in players):
             st.session_state.starting_11 = players
-            for i in range(11):
-                for key in [f"player_{i}_position", f"player_{i}_overall", f"player_{i}_wage"]:
-                    st.session_state.pop(key, None)
-            for i, player in enumerate(players):
-                st.session_state[f"player_{i}_position"] = player["position"]
-                st.session_state[f"player_{i}_overall"] = player["overall"]
-                st.session_state[f"player_{i}_wage"] = player["wage"]
             total_overall = sum(player["overall"] for player in players)
             average_overall = math.floor(total_overall / 11)
             st.session_state.average_team_overall = average_overall
@@ -1040,7 +1033,7 @@ with tab4:
                 else:
                     st.info("Clubs have equal stature.")
                 minimum_offer = calculate_minimum_offer(player_value_sell, stature_diff, is_young_sell)
-                minimum_offer = math.ceil(minimum_offer / 1000) * 1000
+                minimum_offer = math.ceil(minimum_offer /1000) * 1000
                 st.success(f"Accept offers from {display_name2} of {minimum_offer:,.0f} or higher.")
             else:
                 st.error("Player value must be greater than 0.")
@@ -1122,8 +1115,6 @@ with tab6:
 
     # File uploader
     uploaded_file = st.file_uploader("Upload Club, Starting 11, and Checklist JSON", type=["json"], key="combined_upload")
-    if st.session_state.get("combined_upload") is not None:
-        st.warning("Clear the uploaded file before editing form fields.")
     if uploaded_file:
         try:
             loaded_data = json.load(uploaded_file)
@@ -1207,14 +1198,6 @@ with tab6:
                     st.warning("Checklist data invalid or missing; reset to defaults.")
                 st.session_state.club_details_updated = True
                 st.session_state.pending_club_details = None
-                st.session_state["club_name"] = loaded_data["club_details"]["name"]
-                st.session_state["form_league"] = loaded_data["club_details"]["league"]
-                st.session_state["club_country"] = loaded_data["club_details"]["country"]
-                st.session_state["club_european"] = loaded_data["club_details"]["european"]
-                for i, player in enumerate(loaded_data["starting_11"]):
-                    st.session_state[f"player_{i}_position"] = player["position"]
-                    st.session_state[f"player_{i}_overall"] = player["overall"]
-                    st.session_state[f"player_{i}_wage"] = player["wage"]
                 total_overall = sum(player["overall"] for player in loaded_data["starting_11"])
                 st.session_state.average_team_overall = math.floor(total_overall / 11)
                 st.success(
@@ -1224,6 +1207,7 @@ with tab6:
                     f"European: {loaded_data['club_details']['european']}. "
                     f"Stature: {calculate_score(loaded_data['club_details']['league'], loaded_data['club_details']['country'], loaded_data['club_details']['european'], league_tiers):.1f}"
                 )
+                st.info("Please visit the 'Club Details' and 'Starting 11' tabs to verify loaded data.")
             else:
                 st.error("Invalid JSON format or data for club_details or starting_11.")
         except json.JSONDecodeError:
