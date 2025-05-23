@@ -3,7 +3,15 @@ import math
 import json
 import io
 
-# Apply custom CSS with responsive and touch-friendly styling
+# Add viewport meta tag for mobile optimization
+st.markdown(
+    """
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    """,
+    unsafe_allow_html=True
+)
+
+# Apply custom CSS with touch-friendly tabs and responsive styling
 st.markdown(
     """
     <style>
@@ -15,6 +23,15 @@ st.markdown(
         margin: 0;
         padding: 0;
     }
+    .app-wrapper {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow-x: hidden !important;
+        padding-top: env(safe-area-inset-top, 0) !important;
+        padding-left: env(safe-area-inset-left, 0) !important;
+    }
     /* Button styling */
     button[kind="primary"] {
         background-color: #28a745;
@@ -24,7 +41,7 @@ st.markdown(
         border-radius: 0.5rem;
         font-weight: bold;
         font-size: 1rem;
-        min-height: 44px; /* Touch-friendly size */
+        min-height: 44px;
         cursor: pointer;
         transition: background-color 0.3s ease;
     }
@@ -41,7 +58,7 @@ st.markdown(
         color: #000000 !important;
         background-color: #ffffff !important;
         font-size: 1rem;
-        min-height: 44px; /* Touch-friendly size */
+        min-height: 44px;
     }
     .stSelectbox > div > div > select > option {
         color: #000000 !important;
@@ -100,27 +117,27 @@ st.markdown(
         padding: 0.75rem;
         border-radius: 0.5rem;
     }
-    /* Tab styling */
+    /* Mobile-first tab styling */
     .stTabs {
-        display: flex;
-        flex-wrap: wrap; /* Allow tabs to wrap on small screens */
-        justify-content: center;
+        flex-direction: column;
+        padding: 0.25rem 0;
+        width: 100% !important;
+        margin: 0 !important;
         background-color: #1a2526;
-        padding: 0.5rem 0;
         border-bottom: none;
     }
     .stTabs [data-baseweb="tab"] {
         font-size: 1rem;
-        font-weight: 600;
-        padding: 0.75rem 1rem;
-        margin: 0.25rem;
-        color: #ffffff;
-        background-color: #2c3e50;
-        border-radius: 8px 8px 0 0;
-        transition: all 0.3s ease;
-        border: none;
-        min-height: 44px; /* Touch-friendly size */
+        padding: 0.75rem;
+        margin: 0 0 0.25rem 0 !important;
+        width: 100% !important;
         text-align: center;
+        background-color: #2c3e50;
+        color: #ffffff;
+        border: none;
+        border-radius: 0.25rem;
+        min-height: 44px;
+        transition: background-color 0.3s ease;
     }
     .stTabs [data-baseweb="tab"]:hover {
         background-color: #34495e;
@@ -128,7 +145,8 @@ st.markdown(
     }
     .stTabs [data-baseweb="tab"][aria-selected="true"] {
         background-color: #2c3e50;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        color: #ffffff;
+        box-shadow: none;
     }
     .stTabs, .stTabs [data-baseweb="tab"], .stTabs [data-baseweb="tab"][aria-selected="true"] {
         border-color: transparent !important;
@@ -180,12 +198,47 @@ st.markdown(
         background-color: transparent !important;
     }
 
-    /* Mobile and tablet optimizations */
-    @media (max-width: 600px) {
+    /* Enhancements for larger screens (PC/iPad) */
+    @media (min-width: 401px) {
+        .stTabs {
+            flex-direction: row;
+            justify-content: center;
+            padding: 0.5rem 0;
+        }
+        .stTabs [data-baseweb="tab"] {
+            font-size: 1.2rem;
+            padding: 0.75rem 1rem;
+            margin: 0 0.25rem !important;
+            width: auto !important;
+            border-radius: 8px 8px 0 0;
+        }
+        button[kind="primary"] {
+            font-size: 1rem;
+            padding: 0.6rem 1.2rem;
+        }
+        .stTextInput > div > div > input,
+        .stNumberInput > div > div > input,
+        .stSelectbox > div > div > select {
+            font-size: 1rem;
+            padding: 0.6rem;
+        }
+        .stMarkdown h2, .stMarkdown h3 {
+            font-size: 1.4rem;
+        }
+        .streamlit-expanderHeader {
+            font-size: 1.1rem;
+        }
+        table {
+            font-size: 0.9rem;
+        }
+    }
+
+    /* Mobile optimizations */
+    @media (max-width: 400px) {
         .stTabs [data-baseweb="tab"] {
             font-size: 0.9rem;
             padding: 0.5rem;
-            margin: 0.2rem;
+            margin: 0 0 0.2rem 0 !important;
             min-height: 40px;
         }
         button[kind="primary"] {
@@ -219,32 +272,16 @@ st.markdown(
             margin-bottom: 0.5rem;
         }
     }
-    @media (min-width: 601px) and (max-width: 1024px) {
-        .stTabs [data-baseweb="tab"] {
-            font-size: 1rem;
-            padding: 0.6rem 1.2rem;
-        }
-        button[kind="primary"] {
-            font-size: 1rem;
-            padding: 0.6rem 1.2rem;
-        }
-        .stTextInput > div > div > input,
-        .stNumberInput > div > div > input,
-        .stSelectbox > div > div > select {
-            font-size: 1rem;
-            padding: 0.6rem;
-        }
-        .stMarkdown h2, .stMarkdown h3 {
-            font-size: 1.4rem;
-        }
-        .streamlit-expanderHeader {
-            font-size: 1.1rem;
-        }
-        table {
-            font-size: 0.9rem;
+
+    /* iOS safe area support */
+    @supports (-webkit-overflow-scrolling: touch) {
+        .app-wrapper {
+            padding-top: env(safe-area-inset-top, 0) !important;
+            padding-left: env(safe-area-inset-left, 0) !important;
         }
     }
     </style>
+    <div class="app-wrapper">
     """,
     unsafe_allow_html=True
 )
@@ -314,6 +351,7 @@ def calculate_starting_bid(player_value, player_overall, player_age, average_tea
         if average_team_overall is None:
             return player_value * 1.75, False
         elif player_overall > average_team_overall:
+            return player_value 친구
             return player_value * 1.40, True
         elif player_overall == average_team_overall:
             return player_value * 1.30, True
@@ -1164,3 +1202,6 @@ with tab6:
             key="download_club",
             use_container_width=True
         )
+
+# Close the wrapper div
+st.markdown("</div>", unsafe_allow_html=True)
