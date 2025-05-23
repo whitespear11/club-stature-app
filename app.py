@@ -150,6 +150,17 @@ st.markdown(
         margin: 0.25rem 0 !important;
     }
 
+    /* Specific fix for Starting 11 form on all devices */
+    [data-testid="stForm"][key="starting_11_form"] .stColumns > div {
+        width: 33% !important; /* Roughly equal width for each column */
+        padding: 0 0.25rem !important;
+    }
+    [data-testid="stForm"][key="starting_11_form"] .stSelectbox > div > div > select,
+    [data-testid="stForm"][key="starting_11_form"] .stNumberInput > div > div > input {
+        width: 100% !important;
+        max-width: 120px !important; /* Prevent inputs from stretching too wide */
+    }
+
     /* Enhancements for larger screens (PC/iPad) */
     @media (min-width: 401px) {
         .stTabs {
@@ -191,6 +202,15 @@ st.markdown(
         }
         th, td {
             padding: 0.5rem;
+        }
+        /* Adjust Starting 11 columns for larger screens */
+        [data-testid="stForm"][key="starting_11_form"] .stColumns > div {
+            width: 32% !important; /* Slightly adjusted for larger screens */
+            padding: 0 0.5rem !important;
+        }
+        [data-testid="stForm"][key="starting_11_form"] .stSelectbox > div > div > select,
+        [data-testid="stForm"][key="starting_11_form"] .stNumberInput > div > div > input {
+            max-width: 150px !important; /* Slightly larger max-width for iPad */
         }
     }
 
