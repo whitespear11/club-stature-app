@@ -935,31 +935,34 @@ with tab3:
                     with col1:
                         st.markdown(f"**Player {i+1} Position**")
                         position = st.selectbox(
-                            "",
+                            f"Player {i+1} Position",
                             player_positions,
                             index=player_positions.index(st.session_state.starting_11[i]["position"]),
-                            key=f"player_{i}_position"
+                            key=f"player_{i}_position",
+                            label_visibility="collapsed"
                         )
                     with col2:
                         st.markdown(f"**Player {i+1} Overall**")
                         overall = st.number_input(
-                            "",
+                            f"Player {i+1} Overall",
                             min_value=0,
                             max_value=99,
                             value=st.session_state.starting_11[i]["overall"],
                             step=1,
                             format="%d",
-                            key=f"player_{i}_overall"
+                            key=f"player_{i}_overall",
+                            label_visibility="collapsed"
                         )
                     with col3:
                         st.markdown(f"**Player {i+1} Wage (p/w)**")
                         wage = st.number_input(
-                            "",
+                            f"Player {i+1} Wage",
                             min_value=0,
                             value=st.session_state.starting_11[i]["wage"],
                             step=1000,
                             format="%d",
-                            key=f"player_{i}_wage"
+                            key=f"player_{i}_wage",
+                            label_visibility="collapsed"
                         )
                     players.append({"position": position, "overall": overall, "wage": wage})
             
