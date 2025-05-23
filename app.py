@@ -151,18 +151,30 @@ st.markdown(
     }
 
     /* Specific fix for Starting 11 form on all devices */
+    [data-testid="stForm"][key="starting_11_form"] {
+        max-width: 900px !important; /* Constrain the form width */
+        margin: 0 auto !important; /* Center the form */
+        padding: 0 1rem !important; /* Add padding to prevent edge overflow */
+    }
+    [data-testid="stForm"][key="starting_11_form"] .stColumns {
+        display: flex !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+    }
     [data-testid="stForm"][key="starting_11_form"] .stColumns > div {
-        width: 33% !important; /* Roughly equal width for each column */
+        flex: 1 !important; /* Equal flex for each column */
+        max-width: 33.33% !important; /* Ensure columns don't exceed 1/3 of the form */
         padding: 0 0.25rem !important;
     }
     [data-testid="stForm"][key="starting_11_form"] .stSelectbox > div > div > select,
     [data-testid="stForm"][key="starting_11_form"] .stNumberInput > div > div > input {
         width: 100% !important;
-        max-width: 120px !important; /* Prevent inputs from stretching too wide */
+        max-width: 120px !important; /* Fixed max width for inputs */
+        box-sizing: border-box !important; /* Ensure padding is included in width */
     }
 
-    /* Enhancements for larger screens (PC/iPad) */
-    @media (min-width: 401px) {
+    /* Enhancements for larger screens (tablet and desktop) */
+    @media (min-width: 768px) {
         .stTabs {
             flex-direction: row;
             justify-content: center;
@@ -203,14 +215,17 @@ st.markdown(
         th, td {
             padding: 0.5rem;
         }
-        /* Adjust Starting 11 columns for larger screens */
+        /* Adjust Starting 11 for larger screens */
+        [data-testid="stForm"][key="starting_11_form"] {
+            max-width: 1000px !important; /* Slightly wider for desktop */
+        }
         [data-testid="stForm"][key="starting_11_form"] .stColumns > div {
-            width: 32% !important; /* Slightly adjusted for larger screens */
+            max-width: 32% !important; /* Fine-tune column width */
             padding: 0 0.5rem !important;
         }
         [data-testid="stForm"][key="starting_11_form"] .stSelectbox > div > div > select,
         [data-testid="stForm"][key="starting_11_form"] .stNumberInput > div > div > input {
-            max-width: 150px !important; /* Slightly larger max-width for iPad */
+            max-width: 150px !important; /* Slightly larger for better visibility */
         }
     }
 
