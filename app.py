@@ -81,7 +81,8 @@ st.markdown(
     .stTextInput > div > div > input,
     .stNumberInput > div > div > input,
     .stSelectbox > div > div > select,
-    .stTextArea > div > div > textarea {
+    .stTextArea > div > div > textarea,
+    .stFileUploader > div > div > input {
         border-radius: 0.5rem;
         border: 1px solid #ced4da !important;
         padding: 0.75rem;
@@ -99,7 +100,8 @@ st.markdown(
     .stNumberInput > label,
     .stSelectbox > label,
     .stCheckbox > label,
-    .stTextArea > label {
+    .stTextArea > label,
+    .stFileUploader > label {
         color: #ffffff !important;
         font-weight: 500;
     }
@@ -138,13 +140,15 @@ st.markdown(
     .streamlit-expanderContent .stNumberInput > label,
     .streamlit-expanderContent .stSelectbox > label,
     .streamlit-expanderContent .stCheckbox > label,
-    .streamlit-expanderContent .stTextArea > label {
+    .streamlit-expanderContent .stTextArea > label,
+    .streamlit-expanderContent .stFileUploader > label {
         color: #000000 !important;
     }
     .streamlit-expanderContent .stTextInput > div > div > input,
     .streamlit-expanderContent .stNumberInput > div > div > input,
     .streamlit-expanderContent .stSelectbox > div > div > select,
-    .streamlit-expanderContent .stTextArea > div > div > textarea {
+    .streamlit-expanderContent .stTextArea > div > div > textarea,
+    .streamlit-expanderContent .stFileUploader > div > div > input {
         color: #000000 !important;
         background-color: #ffffff !important;
     }
@@ -272,7 +276,8 @@ st.markdown(
         .stTextInput > div > div > input,
         .stNumberInput > div > div > input,
         .stSelectbox > div > div > select,
-        .stTextArea > div > div > textarea {
+        .stTextArea > div > div > textarea,
+        .stFileUploader > div > div > input {
             font-size: 1rem;
             padding: 0.6rem;
         }
@@ -303,7 +308,8 @@ st.markdown(
         .stTextInput > div > div > input,
         .stNumberInput > div > div > input,
         .stSelectbox > div > div > select,
-        .stTextArea > div > div > textarea {
+        .stTextArea > div > div > textarea,
+        .stFileUploader > div > div > input {
             font-size: 0.9rem;
             padding: 0.5rem;
             min-height: 40px;
@@ -1098,7 +1104,7 @@ with tab5:
         - **Career Checklist**: Track your signings, sales, and youth promotions to ensure compliance with transfer window rules.
         - **Starting 11**: Input your starting lineup to determine average overall and wage caps.
         - **Transfer Calculators**: Compute minimum selling offers and starting bids for buying players.
-        - **Save/Load**: Use the Save/Load tab to copy or paste your club, player, and checklist data as JSON text.
+        - **Save/Load**: Use the Save/Load tab to copy/paste JSON text or save/load a JSON file with your club, player, and checklist data.
         
         If you enjoy this tool, consider [buying me a coffee](https://buymeacoffee.com/whitespear11).
         """
@@ -1109,8 +1115,8 @@ with tab6:
     st.header("Save/Load Data")
     st.write(
         """
-        Save your progress by copying the JSON text below and pasting it into a file (e.g., team_data.json) or a text editor.
-        Load a previous session by pasting the JSON text into the provided text area and clicking 'Load Data'.
+        Save your progress by copying the JSON text below or downloading it as a file (team_data.json).
+        Load a previous session by pasting JSON text or uploading a JSON file, then clicking 'Load Data'.
         The data includes your club details, starting 11, and career checklist.
         """
     )
@@ -1124,25 +1130,55 @@ with tab6:
             "checklist": st.session_state.checklist
         }
         json_str = json.dumps(combined_data, indent=2)
-        st.text_area(
-            "Copy this JSON text:",
-            value=json_str,
-            height=300,
-            key="save_json",
-            help="Copy this text to your clipboard or save it to a file (e.g., team_data.json)."
-        )
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            st.text_area(
+                "Copy this JSON text or use the button to save as a file:",
+                value=json_str,
+                height=300,
+                key="save_json",
+                help="Copy this text to your clipboard or save it to a file (e.g., team_data.json)."
+            )
+        with col2:
+            st.download_button(
+                label="Save to JSON File",
+                data=json_str,
+                file_name="team_data.json",
+                mime="application/json",
+                key="download_json",
+                use_container_width=True
+            )
     else:
         st.warning("No data to save. Please fill out Club Details, Starting 11, or Career Checklist first.")
 
     # Load Data
     st.subheader("Load Your Data")
-    json_input = st.text_area(
-        "Paste your JSON text here:",
-        value="",
-        height=300,
-        key="load_json",
-        help="Paste the JSON text you previously copied or saved."
-    )
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        json_input = st.text_area(
+            "Paste your JSON text here or use the button to upload a file:",
+            value="",
+            height=300,
+            key="load_json",
+            help="Paste JSON text or upload a file to populate this field, then click 'Load Data'."
+        )
+    with col2:
+        uploaded_file = st.file_uploader(
+            "Upload JSON File",
+            type=["json"],
+            key="upload_json",
+            help="Upload a team_data.json file to populate the text area."
+        )
+        if uploaded_file:
+            try:
+                json_content = uploaded_file.read().decode("utf-8")
+                # Update the text area by setting the session state directly
+                st.session_state.load_json = json_content
+                st.success("File uploaded successfully. Click 'Load Data' to apply.")
+            except json.JSONDecodeError:
+                st.error("Invalid JSON file uploaded. Please upload a valid JSON file.")
+            except Exception as e:
+                st.error(f"Error reading file: {str(e)}")
     if st.button("Load Data", key="load_data_button"):
         if json_input:
             try:
@@ -1238,11 +1274,11 @@ with tab6:
                 else:
                     st.error("Invalid JSON format or data. Ensure 'club_details' and 'starting_11' are correctly formatted.")
             except json.JSONDecodeError:
-                st.error("Invalid JSON text. Please paste valid JSON data.")
+                st.error("Invalid JSON text. Please paste or upload valid JSON data.")
             except Exception as e:
                 st.error(f"An error occurred while loading data: {str(e)}")
         else:
-            st.warning("Please paste JSON text to load.")
+            st.warning("Please paste JSON text or upload a file to load.")
 
 # Close the wrapper div
 st.markdown("</div>", unsafe_allow_html=True)
