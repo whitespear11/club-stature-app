@@ -1181,25 +1181,23 @@ with tab6:
             "Upload JSON File",
             type=["json"],
             key="upload_json",
-            help="Upload a team_data.json file to preview its content."
+            help="Upload a team_data.json file to use its content."
         )
         if uploaded_file:
             try:
                 json_content = uploaded_file.read().decode("utf-8")
                 st.session_state.uploaded_json_content = json_content
-                st.success("File uploaded successfully. Preview below and click 'Apply Uploaded JSON' to use.")
+                st.success("File uploaded successfully. Click 'Apply Uploaded JSON' to use.")
             except json.JSONDecodeError:
                 st.error("Invalid JSON file uploaded. Please upload a valid JSON file.")
             except Exception as e:
                 st.error(f"Error reading file: {str(e)}")
 
         if st.session_state.uploaded_json_content:
-            st.subheader("Uploaded JSON Preview")
-            st.code(st.session_state.uploaded_json_content, language="json")
             if st.button("Apply Uploaded JSON", key="apply_uploaded_json"):
                 # Set the content to be applied in the next run
                 st.session_state.apply_json_content = st.session_state.uploaded_json_content
-                st.session_state.uploaded_json_content = ""  # Clear preview
+                st.session_state.uploaded_json_content = ""  # Clear uploaded content
                 st.rerun()
 
     # Reset apply_json_content after loading to allow manual edits
