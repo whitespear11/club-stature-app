@@ -25,8 +25,9 @@ st.markdown(
     }
     /* Main content container */
     .main {
-        max-width: 100%;
-        padding: 0 5px; /* Reduced padding for tighter fit on narrow screens */
+        max-width: 100vw; /* Use viewport width to prevent overflow */
+        padding: 0; /* Remove padding to fit narrow screens */
+        margin: 0 auto; /* Center content */
         box-sizing: border-box;
     }
     /* Button styling */
@@ -37,10 +38,11 @@ st.markdown(
         padding: 0.75rem 1rem;
         border-radius: 0.25rem;
         font-weight: bold;
-        min-width: 100px; /* Reduced for portrait */
+        min-width: 100px;
         font-size: 16px;
-        width: 100%; /* Full width in portrait */
+        width: 100%;
         margin-bottom: 5px;
+        display: block; /* Ensure buttons stack */
     }
     button[kind="primary"]:hover {
         background-color: #218838;
@@ -55,7 +57,7 @@ st.markdown(
         background-color: #ffffff !important;
         font-size: 16px;
         min-height: 40px;
-        width: 100%; /* Full width for mobile */
+        width: 100%;
         box-sizing: border-box;
         margin-bottom: 5px;
     }
@@ -190,6 +192,9 @@ st.markdown(
         border-collapse: collapse;
         font-size: 14px;
         word-wrap: break-word;
+        margin-left: 0 !important; /* Force left alignment */
+        display: block; /* Allow table to respect container */
+        overflow-x: auto; /* Enable horizontal scroll if needed, but constrain width */
     }
     th, td {
         padding: 0.5rem;
@@ -197,6 +202,7 @@ st.markdown(
         border: 1px solid #34495e;
         word-wrap: break-word;
         max-width: 0;
+        min-width: auto; /* Prevent fixed widths */
     }
     th {
         background-color: #2c3e50;
@@ -246,9 +252,10 @@ st.markdown(
             margin-bottom: 10px !important;
         }
         .main, .streamlit-expanderContent, .stMarkdown p {
-            max-width: 100% !important;
+            max-width: 100vw !important;
             word-wrap: break-word !important;
             overflow-wrap: break-word !important;
+            margin-left: 0 !important;
         }
         button[kind="primary"], button {
             min-width: 80px !important;
@@ -882,7 +889,7 @@ with tab3:
     
     with st.expander("Enter Starting 11 Details", expanded=True):
         with st.form(key="starting_11_form"):
-            st.write("**Position** | **Overall** | **Wage (p/w)**")  # Simplified header
+            st.write("**Position** | **Overall** | **Wage (p/w)**")
             players = []
             for i in range(11):
                 col1, col2, col3 = st.columns([1, 1, 1])
