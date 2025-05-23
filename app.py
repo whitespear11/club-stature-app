@@ -652,12 +652,16 @@ with tab2:
             """,
             unsafe_allow_html=True
         )
-        if st.button("I promoted a youth player"): 
+        if st.button("I promoted a youth player"):
             if st.session_state.checklist["youth_promotions"] < youth_promotion_max:
                 st.session_state.checklist["youth_promotions"] += 1
                 st.rerun()
-            else: st.error("Exceeded youth promotion limit of 3!")
-        if st.session_state.checklist["youth_promotions"] > 0: if st.button("Remove Youth Promotion"): st.session_state.checklist["youth_promotions"] -= 1; st.rerun()
+            else:
+                st.error("Exceeded youth promotion limit of 3!")
+        if st.session_state.checklist["youth_promotions"] > 0:
+            if st.button("Remove Youth Promotion"):
+                st.session_state.checklist["youth_promotions"] -= 1
+                st.rerun()
 
 # Tab 3: Starting 11
 with tab3:
