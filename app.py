@@ -3,10 +3,24 @@ import math
 import json
 import io
 
-# Add viewport meta tag with iOS safe area support
+# Add viewport meta tag with enhanced iOS and mobile support
 st.markdown(
     """
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <script>
+        // Detect mobile devices based on user agent and screen width
+        if (/Mobi|Android/i.test(navigator.userAgent) && window.innerWidth <= 400) {
+            document.body.classList.add('mobile');
+        }
+        // Listen for orientation changes or resize to reapply detection
+        window.addEventListener('resize', () => {
+            if (/Mobi|Android/i.test(navigator.userAgent) && window.innerWidth <= 400) {
+                document.body.classList.add('mobile');
+            } else {
+                document.body.classList.remove('mobile');
+            }
+        });
+    </script>
     """,
     unsafe_allow_html=True
 )
@@ -22,7 +36,7 @@ st.markdown(
         box-sizing: border-box !important;
     }
 
-    /* Default styles for PC and iPad (screens > 400px) */
+    /* Default styles for PC and iPad (non-mobile devices) */
     [data-testid="stApp"] {
         width: 100vw !important;
         overflow-x: hidden !important;
@@ -48,103 +62,105 @@ st.markdown(
         box-sizing: border-box;
     }
 
-    /* Mobile-specific styles (screens ≤ 400px) */
-    @media (max-width: 400px) {
-        [data-testid="stApp"] {
-            width: 100vw !important;
-            overflow-x: hidden !important;
-            margin-left: 0 !important;
-        }
-        [data-testid="stVerticalBlock"] {
-            width: 100vw !important;
-            max-width: 100vw !important;
-            margin-left: 0 !important;
-            padding-left: 0 !important;
-            transform: translateX(0) !important;
-            left: 0 !important;
-        }
+    /* Mobile-specific styles (applied via JavaScript detection) */
+    body.mobile [data-testid="stApp"] {
+        width: 100vw !important;
+        overflow-x: hidden !important;
+        margin-left: 0 !important;
+        padding-left: 0 !important;
+    }
+    body.mobile [data-testid="stVerticalBlock"] {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        margin-left: 0 !important;
+        padding-left: 0 !important;
+        transform: translateX(0) !important;
+        left: 0 !important;
+        position: relative !important;
+    }
+    body.mobile .app-wrapper {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow-x: auto !important; /* Fallback for accessibility */
+        position: relative !important;
+        left: 0 !important;
+        transform: translateX(0) !important;
+        padding-top: env(safe-area-inset-top, 0) !important;
+        padding-left: env(safe-area-inset-left, 0) !important;
+    }
+    body.mobile [data-testid="stVerticalBlock"] > div {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        margin-left: 0 !important;
+        padding-left: 0 !important;
+        transform: translateX(0) !important;
+        left: 0 !important;
+        position: relative !important;
+    }
+    body.mobile .stTabs {
+        flex-direction: column;
+        padding: 0.25rem 0;
+    }
+    body.mobile .stTabs [data-baseweb="tab"] {
+        font-size: 1rem;
+        padding: 0.5rem;
+        margin: 0 0.1rem 0.25rem 0.1rem;
+        min-width: 100% !important;
+        text-align: center;
+    }
+    body.mobile .stMarkdown h2, body.mobile .stMarkdown h3 {
+        font-size: 1.2rem;
+        margin: 0.5rem 0;
+    }
+    body.mobile .streamlit-expanderHeader {
+        font-size: 1rem;
+        padding: 0.25rem;
+    }
+    body.mobile .stTextInput > div > div > input, 
+    body.mobile .stNumberInput > div > div > input, 
+    body.mobile .stSelectbox > div > div > select {
+        font-size: 14px;
+        min-height: 35px;
+        width: 100% !important;
+        margin: 0 0 0.25rem 0;
+    }
+    body.mobile .custom-progress-container {
+        margin: 5px 0;
+    }
+    body.mobile .custom-progress-bar {
+        height: 15px;
+    }
+    body.mobile table {
+        font-size: 12px;
+        width: 100% !important;
+    }
+    body.mobile th, body.mobile td {
+        padding: 0.3rem;
+        min-width: 50px;
+    }
+    body.mobile .stColumns > div {
+        width: 100% !important;
+        margin-bottom: 10px !important;
+        margin-left: 0 !important;
+    }
+    body.mobile .main, body.mobile .streamlit-expanderContent, body.mobile .stMarkdown p {
+        max-width: 100vw !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        margin-left: 0 !important;
+        padding-left: 0 !important;
+    }
+    body.mobile button[kind="primary"], body.mobile button {
+        min-width: 80px !important;
+        width: 100% !important;
+        margin: 0 0 0.25rem 0;
+    }
+    body.mobile @supports (-webkit-overflow-scrolling: touch) {
         .app-wrapper {
-            width: 100vw !important;
-            max-width: 100vw !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            overflow-x: auto !important; /* Fallback for accessibility */
-            position: relative !important;
-            left: 0 !important;
-            transform: translateX(0) !important;
             padding-top: env(safe-area-inset-top, 0) !important;
             padding-left: env(safe-area-inset-left, 0) !important;
-        }
-        [data-testid="stVerticalBlock"] > div {
-            width: 100vw !important;
-            max-width: 100vw !important;
-            margin-left: 0 !important;
-            padding-left: 0 !important;
-            transform: translateX(0) !important;
-            left: 0 !important;
-        }
-        .stTabs {
-            flex-direction: column;
-            padding: 0.25rem 0;
-        }
-        .stTabs [data-baseweb="tab"] {
-            font-size: 1rem;
-            padding: 0.5rem;
-            margin: 0 0.1rem 0.25rem 0.1rem;
-            min-width: 100% !important;
-            text-align: center;
-        }
-        .stMarkdown h2, .stMarkdown h3 {
-            font-size: 1.2rem;
-            margin: 0.5rem 0;
-        }
-        .streamlit-expanderHeader {
-            font-size: 1rem;
-            padding: 0.25rem;
-        }
-        .stTextInput > div > div > input, .stNumberInput > div > div > input, .stSelectbox > div > div > select {
-            font-size: 14px;
-            min-height: 35px;
-            width: 100% !important;
-            margin: 0 0 0.25rem 0;
-        }
-        .custom-progress-container {
-            margin: 5px 0;
-        }
-        .custom-progress-bar {
-            height: 15px;
-        }
-        table {
-            font-size: 12px;
-            width: 100% !important;
-        }
-        th, td {
-            padding: 0.3rem;
-            min-width: 50px;
-        }
-        .stColumns > div {
-            width: 100% !important;
-            margin-bottom: 10px !important;
-            margin-left: 0 !important;
-        }
-        .main, .streamlit-expanderContent, .stMarkdown p {
-            max-width: 100vw !important;
-            word-wrap: break-word !important;
-            overflow-wrap: break-word !important;
-            margin-left: 0 !important;
-            padding-left: 0 !important;
-        }
-        button[kind="primary"], button {
-            min-width: 80px !important;
-            width: 100% !important;
-            margin: 0 0 0.25rem 0;
-        }
-        /* iOS safe area adjustment */
-        @supports (-webkit-overflow-scrolling: touch) {
-            .app-wrapper {
-                padding-top: env(safe-area-inset-top, 0) !important;
-                padding-left: env(safe-area-inset-left, 0) !important;
-            }
         }
     }
 
