@@ -11,38 +11,42 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Apply custom CSS with enhanced mobile optimizations for portrait
+# Apply custom CSS with enhanced mobile optimizations and wrapper div
 st.markdown(
     """
     <style>
-    /* Target Streamlit's root elements to remove default margins/padding */
-    [data-testid="stApp"] {
+    /* Global reset to eliminate all default margins and padding */
+    * {
         margin: 0 !important;
         padding: 0 !important;
+        box-sizing: border-box !important;
+    }
+    /* Target Streamlit's root elements */
+    [data-testid="stApp"] {
         width: 100vw !important;
         overflow-x: hidden !important;
     }
     [data-testid="stVerticalBlock"] {
-        margin: 0 !important;
-        padding: 0 !important;
         width: 100% !important;
         max-width: 100vw !important;
-    }
-    /* Ensure the entire app is touch-friendly and prevents overflow */
-    html, body {
-        width: 100%;
         overflow-x: hidden !important;
-        font-family: 'Arial', sans-serif;
+    }
+    /* Custom wrapper div to enforce layout */
+    .app-wrapper {
+        width: 100vw !important;
+        max-width: 100% !important;
         margin: 0 !important;
         padding: 0 !important;
+        overflow-x: hidden !important;
+        display: block !important;
     }
     /* Main content container */
     .main {
         max-width: 100vw;
         padding: 0;
         margin: 0;
-        box-sizing: border-box;
         width: 100%;
+        box-sizing: border-box;
     }
     /* Button styling */
     button[kind="primary"], button {
@@ -106,7 +110,7 @@ st.markdown(
     }
     .streamlit-expanderContent {
         background-color: #ffffff;
-        padding: 0.5rem; /* Reduced padding */
+        padding: 0.5rem;
         color: #000000 !important;
         width: 100%;
         box-sizing: border-box;
@@ -206,24 +210,24 @@ st.markdown(
         font-weight: bold;
         color: #ffffff;
     }
-    /* Table styling for mobile */
+    /* Table styling for mobile with tighter control */
     table {
-        width: 100%;
-        max-width: 100%; /* Ensure table doesn't exceed container */
+        width: auto !important;
+        max-width: 100% !important;
         border-collapse: collapse;
         font-size: 14px;
         word-wrap: break-word;
         margin-left: 0 !important;
-        display: block;
+        display: inline-block !important;
         box-sizing: border-box;
+        overflow-x: auto; /* Allow controlled scrolling if needed */
     }
     th, td {
         padding: 0.5rem;
         text-align: left;
         border: 1px solid #34495e;
         word-wrap: break-word;
-        max-width: none; /* Remove max-width to allow natural sizing */
-        min-width: 60px; /* Minimum width to ensure readability */
+        min-width: 60px;
         box-sizing: border-box;
     }
     th {
@@ -267,7 +271,7 @@ st.markdown(
         }
         th, td {
             padding: 0.3rem;
-            min-width: 50px; /* Adjusted for smaller screens */
+            min-width: 50px;
         }
         /* Force columns to stack in portrait */
         .stColumns > div {
@@ -316,6 +320,7 @@ st.markdown(
         background-color: transparent !important;
     }
     </style>
+    <div class="app-wrapper">
     """,
     unsafe_allow_html=True
 )
@@ -464,6 +469,9 @@ if "scout_rating_display" not in st.session_state:
 # App title
 st.title("FIFA Realistic Toolkit")
 
+# Wrap all content in the custom div
+st.markdown('<div class="app-wrapper">', unsafe_allow_html=True)
+
 # Create tabs with Save/Load as the last tab
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["Club Details", "Career Checklist", "Starting 11", "Transfer Calculators", "Help/Info", "Save/Load"])
 
@@ -606,7 +614,7 @@ with tab2:
         summer_bench_total_max = summer_bench_max + summer_starting_extra
         st.markdown(
             """
-            <table style="width:100%; border-collapse: collapse; margin-bottom: 1rem;">
+            <table style="width:auto; border-collapse: collapse; margin-bottom: 1rem;">
                 <tr style="background-color: #2c3e50; color: white;">
                     <th>Category</th>
                     <th>Current Count</th>
@@ -738,7 +746,7 @@ with tab2:
         winter_bench_total_max = winter_bench_max + winter_starting_extra
         st.markdown(
             """
-            <table style="width:100%; border-collapse: collapse; margin-bottom: 1rem;">
+            <table style="width:auto; border-collapse: collapse; margin-bottom: 1rem;">
                 <tr style="background-color: #2c3e50; color: white;">
                     <th>Category</th>
                     <th>Current Count</th>
@@ -865,7 +873,7 @@ with tab2:
         youth_promotion_max = 3
         st.markdown(
             """
-            <table style="width:100%; border-collapse: collapse; margin-bottom: 1rem;">
+            <table style="width:auto; border-collapse: collapse; margin-bottom: 1rem;">
                 <tr style="background-color: #2c3e50; color: white;">
                     <th>Category</th>
                     <th>Current Count</th>
@@ -1222,3 +1230,6 @@ with tab6:
             key="download_club",
             use_container_width=True
         )
+
+# Close the wrapper div
+st.markdown("</div>", unsafe_allow_html=True)
