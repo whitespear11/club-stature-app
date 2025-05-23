@@ -6,12 +6,12 @@ import io
 # Add viewport meta tag for better mobile scaling
 st.markdown(
     """
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     """,
     unsafe_allow_html=True
 )
 
-# Apply custom CSS with enhanced mobile optimizations
+# Apply custom CSS with enhanced mobile optimizations for portrait
 st.markdown(
     """
     <style>
@@ -26,7 +26,7 @@ st.markdown(
     /* Main content container */
     .main {
         max-width: 100%;
-        padding: 0 10px; /* Add padding for mobile screens */
+        padding: 0 5px; /* Reduced padding for tighter fit on narrow screens */
         box-sizing: border-box;
     }
     /* Button styling */
@@ -37,8 +37,10 @@ st.markdown(
         padding: 0.75rem 1rem;
         border-radius: 0.25rem;
         font-weight: bold;
-        min-width: 120px;
+        min-width: 100px; /* Reduced for portrait */
         font-size: 16px;
+        width: 100%; /* Full width in portrait */
+        margin-bottom: 5px;
     }
     button[kind="primary"]:hover {
         background-color: #218838;
@@ -53,8 +55,9 @@ st.markdown(
         background-color: #ffffff !important;
         font-size: 16px;
         min-height: 40px;
-        width: 100%; /* Ensure full width on mobile */
+        width: 100%; /* Full width for mobile */
         box-sizing: border-box;
+        margin-bottom: 5px;
     }
     /* Ensure selectbox options are readable */
     .stSelectbox > div > div > select > option {
@@ -99,12 +102,13 @@ st.markdown(
         color: #000000 !important;
         font-size: 16px;
         width: 100%;
+        margin-bottom: 5px;
     }
     .streamlit-expanderContent label, 
     .streamlit-expanderContent p {
         color: #000000 !important;
         font-size: 16px;
-        word-wrap: break-word; /* Ensure text wraps */
+        word-wrap: break-word;
         max-width: 100%;
     }
     /* Success and error messages */
@@ -116,6 +120,7 @@ st.markdown(
         font-size: 16px;
         word-wrap: break-word;
         max-width: 100%;
+        margin-bottom: 5px;
     }
     /* Tab styling - Improved with mobile optimization */
     .stTabs {
@@ -124,7 +129,7 @@ st.markdown(
         background-color: #1a2526;
         padding: 0.5rem 0;
         border-bottom: none;
-        flex-wrap: wrap; /* Allow tabs to wrap on small screens */
+        flex-wrap: wrap;
         width: 100%;
     }
     .stTabs [data-baseweb="tab"] {
@@ -141,6 +146,7 @@ st.markdown(
         min-width: 80px;
         text-align: center;
         box-sizing: border-box;
+        margin-bottom: 5px;
     }
     .stTabs [data-baseweb="tab"]:hover {
         background-color: #34495e;
@@ -183,14 +189,14 @@ st.markdown(
         width: 100%;
         border-collapse: collapse;
         font-size: 14px;
-        word-wrap: break-word; /* Ensure text wraps in tables */
+        word-wrap: break-word;
     }
     th, td {
         padding: 0.5rem;
         text-align: left;
         border: 1px solid #34495e;
         word-wrap: break-word;
-        max-width: 0; /* Allow wrapping */
+        max-width: 0;
     }
     th {
         background-color: #2c3e50;
@@ -200,13 +206,13 @@ st.markdown(
         background-color: #34495e;
         color: white;
     }
-    /* Mobile-specific adjustments */
-    @media (max-width: 600px) {
+    /* Mobile-specific adjustments for portrait (narrow screens) */
+    @media (max-width: 400px) {
         .stTabs [data-baseweb="tab"] {
             font-size: 1rem;
-            padding: 0.5rem 0.75rem;
+            padding: 0.5rem 0.5rem;
             margin: 0 0.1rem;
-            min-width: 60px;
+            min-width: 50px;
         }
         .stMarkdown h2, .stMarkdown h3 {
             font-size: 1.2rem;
@@ -234,11 +240,19 @@ st.markdown(
         th, td {
             padding: 0.3rem;
         }
-        /* Force content to fit screen */
+        /* Force columns to stack in portrait */
+        .stColumns > div {
+            width: 100% !important;
+            margin-bottom: 10px !important;
+        }
         .main, .streamlit-expanderContent, .stMarkdown p {
-            max-width: 100%;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
+            max-width: 100% !important;
+            word-wrap: break-word !important;
+            overflow-wrap: break-word !important;
+        }
+        button[kind="primary"], button {
+            min-width: 80px !important;
+            width: 100% !important;
         }
     }
     /* Set background color of all tab content areas to transparent */
@@ -868,14 +882,7 @@ with tab3:
     
     with st.expander("Enter Starting 11 Details", expanded=True):
         with st.form(key="starting_11_form"):
-            col1, col2, col3 = st.columns([1, 1, 1])
-            with col1:
-                st.write("**Position**")
-            with col2:
-                st.write("**Overall**")
-            with col3:
-                st.write("**Wage (p/w)**")
-            
+            st.write("**Position** | **Overall** | **Wage (p/w)**")  # Simplified header
             players = []
             for i in range(11):
                 col1, col2, col3 = st.columns([1, 1, 1])
