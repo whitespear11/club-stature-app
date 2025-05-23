@@ -888,19 +888,12 @@ with tab3:
     
     with st.expander("Enter Starting 11 Details", expanded=True):
         with st.form(key="starting_11_form"):
-            col1, col2, col3 = st.columns([1, 1, 1])
-            with col1:
-                st.write("**Position**")
-            with col2:
-                st.write("**Overall**")
-            with col3:
-                st.write("**Wage (p/w)**")
-            
             players = []
             for i in range(11):
                 with st.container():
                     col1, col2, col3 = st.columns([1, 1, 1])
                     with col1:
+                        st.markdown(f"**Player {i+1} Position**")
                         position = st.selectbox(
                             "",
                             player_positions,
@@ -908,6 +901,7 @@ with tab3:
                             key=f"player_{i}_position"
                         )
                     with col2:
+                        st.markdown(f"**Player {i+1} Overall**")
                         overall = st.number_input(
                             "",
                             min_value=0,
@@ -918,6 +912,7 @@ with tab3:
                             key=f"player_{i}_overall"
                         )
                     with col3:
+                        st.markdown(f"**Player {i+1} Wage (p/w)**")
                         wage = st.number_input(
                             "",
                             min_value=0,
