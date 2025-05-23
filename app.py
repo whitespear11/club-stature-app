@@ -464,6 +464,8 @@ if "scout_rating_display" not in st.session_state:
     st.session_state.scout_rating_display = None
 if "uploaded_json_content" not in st.session_state:
     st.session_state.uploaded_json_content = ""
+if "apply_json_content" not in st.session_state:
+    st.session_state.apply_json_content = ""
 
 # Initialize session state for Career Checklist
 if "checklist" not in st.session_state:
@@ -1166,9 +1168,10 @@ with tab6:
     st.subheader("Load Your Data")
     col1, col2 = st.columns([3, 1])
     with col1:
+        # Use apply_json_content as the default value for the text area
         json_input = st.text_area(
             "Paste your JSON text here or apply uploaded file content:",
-            value="",
+            value=st.session_state.apply_json_content,
             height=300,
             key="load_json",
             help="Paste JSON text or click 'Apply Uploaded JSON' to use uploaded file content, then click 'Load Data'."
@@ -1194,15 +1197,14 @@ with tab6:
             st.subheader("Uploaded JSON Preview")
             st.code(st.session_state.uploaded_json_content, language="json")
             if st.button("Apply Uploaded JSON", key="apply_uploaded_json"):
-                # Update the text area indirectly by setting a flag
-                st.session_state.load_json_content = st.session_state.uploaded_json_content
+                # Set the content to be applied in the next run
+                st.session_state.apply_json_content = st.session_state.uploaded_json_content
+                st.session_state.uploaded_json_content = ""  # Clear preview
                 st.rerun()
 
-    # Update text area content if flagged
-    if "load_json_content" in st.session_state:
-        st.session_state.load_json = st.session_state.load_json_content
-        del st.session_state.load_json_content
-        st.session_state.uploaded_json_content = ""
+    # Reset apply_json_content after loading to allow manual edits
+    if st.session_state.apply_json_content and json_input != st.session_state.apply_json_content:
+        st.session_state.apply_json_content = ""
 
     if st.button("Load Data", key="load_data_button"):
         if json_input:
@@ -1295,6 +1297,8 @@ with tab6:
                         f"Stature: {calculate_score(loaded_data['club_details']['league'], loaded_data['club_details']['country'], loaded_data['club_details']['european'], league_tiers):.1f}"
                     )
                     st.info("Data loaded successfully. Visit the 'Club Details' and 'Starting 11' tabs to view or edit the loaded data.")
+                    # Clear apply_json_content to allow new input
+                    st.session_state.apply_json_content = ""
                     st.rerun()
                 else:
                     st.error("Invalid JSON format or data. Ensure 'club_details' and 'starting_11' are correctly formatted.")
