@@ -253,6 +253,16 @@ st.markdown(
     th {
         background-color: #2c3e50 !important;
     }
+    /* Load message styling */
+    .load-message {
+        background-color: #34495e !important;
+        color: #ffffff !important;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.25rem;
+        margin-top: 0.5rem;
+        font-size: 0.9rem;
+        text-align: center;
+    }
     /* Ensure tab content is consistent with dark theme */
     div[data-testid="stVerticalBlock"] > div {
         background-color: #1a2526 !important;
@@ -299,6 +309,9 @@ st.markdown(
         table {
             font-size: 0.9rem;
         }
+        .load-message {
+            font-size: 1rem;
+        }
     }
 
     /* Mobile optimizations */
@@ -334,6 +347,10 @@ st.markdown(
         }
         th, td {
             padding: 0.5rem;
+        }
+        .load-message {
+            font-size: 0.8rem;
+            padding: 0.4rem 0.6rem;
         }
         /* Stack columns vertically on mobile */
         .stColumns > div {
@@ -466,6 +483,8 @@ if "uploaded_json_content" not in st.session_state:
     st.session_state.uploaded_json_content = ""
 if "apply_json_content" not in st.session_state:
     st.session_state.apply_json_content = ""
+if "show_load_message" not in st.session_state:
+    st.session_state.show_load_message = False
 
 # Initialize session state for Career Checklist
 if "checklist" not in st.session_state:
@@ -1198,114 +1217,119 @@ with tab6:
                 # Set the content to be applied in the next run
                 st.session_state.apply_json_content = st.session_state.uploaded_json_content
                 st.session_state.uploaded_json_content = ""  # Clear uploaded content
+                st.session_state.show_load_message = True  # Show the load message
                 st.rerun()
 
-    # Reset apply_json_content after loading to allow manual edits
-    if st.session_state.apply_json_content and json_input != st.session_state.apply_json_content:
-        st.session_state.apply_json_content = ""
-
-    if st.button("Load Data", key="load_data_button"):
-        if json_input:
-            try:
-                loaded_data = json.loads(json_input)
-                # Validate club_details
-                club_valid = (
-                    isinstance(loaded_data.get("club_details"), dict) and
-                    all(key in loaded_data["club_details"] for key in ["name", "league", "country", "european"]) and
-                    isinstance(loaded_data["club_details"]["name"], str) and
-                    loaded_data["club_details"]["league"] in league_tiers and
-                    loaded_data["club_details"]["country"] in country_prestige and
-                    isinstance(loaded_data["club_details"]["european"], bool)
-                )
-                # Validate starting_11
-                starting_11_valid = (
-                    isinstance(loaded_data.get("starting_11"), list) and
-                    len(loaded_data["starting_11"]) == 11 and
-                    all(
-                        isinstance(player, dict) and
-                        all(key in player for key in ["position", "overall", "wage"]) and
-                        player["position"] in player_positions and
-                        isinstance(player["overall"], int) and
-                        0 <= player["overall"] <= 99 and
-                        isinstance(player["wage"], int) and
-                        player["wage"] >= 0
-                        for player in loaded_data["starting_11"]
+        if st.button("Load Data", key="load_data_button"):
+            st.session_state.show_load_message = False  # Clear the message
+            if json_input:
+                try:
+                    loaded_data = json.loads(json_input)
+                    # Validate club_details
+                    club_valid = (
+                        isinstance(loaded_data.get("club_details"), dict) and
+                        all(key in loaded_data["club_details"] for key in ["name", "league", "country", "european"]) and
+                        isinstance(loaded_data["club_details"]["name"], str) and
+                        loaded_data["club_details"]["league"] in league_tiers and
+                        loaded_data["club_details"]["country"] in country_prestige and
+                        isinstance(loaded_data["club_details"]["european"], bool)
                     )
-                )
-                # Validate checklist
-                checklist_valid = (
-                    isinstance(loaded_data.get("checklist"), dict) and
-                    "summer" in loaded_data["checklist"] and
-                    "winter" in loaded_data["checklist"] and
-                    "youth_promotions" in loaded_data["checklist"] and
-                    isinstance(loaded_data["checklist"]["summer"], dict) and
-                    isinstance(loaded_data["checklist"]["winter"], dict) and
-                    isinstance(loaded_data["checklist"]["youth_promotions"], int) and
-                    loaded_data["checklist"]["youth_promotions"] >= 0 and
-                    all(
-                        key in loaded_data["checklist"]["summer"]
-                        for key in ["starting_signings", "bench_signings", "reserve_signings", "loans", "starting_sold"]
-                    ) and
-                    all(
-                        key in loaded_data["checklist"]["winter"]
-                        for key in ["starting_signings", "bench_signings", "reserve_signings", "loans", "starting_sold"]
-                    ) and
-                    all(
-                        isinstance(loaded_data["checklist"]["summer"][key], int) and
-                        loaded_data["checklist"]["summer"][key] >= 0
-                        for key in loaded_data["checklist"]["summer"]
-                    ) and
-                    all(
-                        isinstance(loaded_data["checklist"]["winter"][key], int) and
-                        loaded_data["checklist"]["winter"][key] >= 0
-                        for key in loaded_data["checklist"]["winter"]
+                    # Validate starting_11
+                    starting_11_valid = (
+                        isinstance(loaded_data.get("starting_11"), list) and
+                        len(loaded_data["starting_11"]) == 11 and
+                        all(
+                            isinstance(player, dict) and
+                            all(key in player for key in ["position", "overall", "wage"]) and
+                            player["position"] in player_positions and
+                            isinstance(player["overall"], int) and
+                            0 <= player["overall"] <= 99 and
+                            isinstance(player["wage"], int) and
+                            player["wage"] >= 0
+                            for player in loaded_data["starting_11"]
+                        )
                     )
-                )
-                if club_valid and starting_11_valid:
-                    st.session_state.club_details = loaded_data["club_details"]
-                    st.session_state.starting_11 = loaded_data["starting_11"]
-                    if checklist_valid:
-                        st.session_state.checklist = loaded_data["checklist"]
+                    # Validate checklist
+                    checklist_valid = (
+                        isinstance(loaded_data.get("checklist"), dict) and
+                        "summer" in loaded_data["checklist"] and
+                        "winter" in loaded_data["checklist"] and
+                        "youth_promotions" in loaded_data["checklist"] and
+                        isinstance(loaded_data["checklist"]["summer"], dict) and
+                        isinstance(loaded_data["checklist"]["winter"], dict) and
+                        isinstance(loaded_data["checklist"]["youth_promotions"], int) and
+                        loaded_data["checklist"]["youth_promotions"] >= 0 and
+                        all(
+                            key in loaded_data["checklist"]["summer"]
+                            for key in ["starting_signings", "bench_signings", "reserve_signings", "loans", "starting_sold"]
+                        ) and
+                        all(
+                            key in loaded_data["checklist"]["winter"]
+                            for key in ["starting_signings", "bench_signings", "reserve_signings", "loans", "starting_sold"]
+                        ) and
+                        all(
+                            isinstance(loaded_data["checklist"]["summer"][key], int) and
+                            loaded_data["checklist"]["summer"][key] >= 0
+                            for key in loaded_data["checklist"]["summer"]
+                        ) and
+                        all(
+                            isinstance(loaded_data["checklist"]["winter"][key], int) and
+                            loaded_data["checklist"]["winter"][key] >= 0
+                            for key in loaded_data["checklist"]["winter"]
+                        )
+                    )
+                    if club_valid and starting_11_valid:
+                        st.session_state.club_details = loaded_data["club_details"]
+                        st.session_state.starting_11 = loaded_data["starting_11"]
+                        if checklist_valid:
+                            st.session_state.checklist = loaded_data["checklist"]
+                        else:
+                            st.session_state.checklist = {
+                                "summer": {
+                                    "starting_signings": 0,
+                                    "bench_signings": 0,
+                                    "reserve_signings": 0,
+                                    "loans": 0,
+                                    "starting_sold": 0
+                                },
+                                "winter": {
+                                    "starting_signings": 0,
+                                    "bench_signings": 0,
+                                    "reserve_signings": 0,
+                                    "loans": 0,
+                                    "starting_sold": 0
+                                },
+                                "youth_promotions": 0
+                            }
+                            st.warning("Checklist data invalid or missing; reset to defaults.")
+                        total_overall = sum(player["overall"] for player in loaded_data["starting_11"])
+                        st.session_state.average_team_overall = math.floor(total_overall / 11)
+                        st.success(
+                            f"Club data loaded: {loaded_data['club_details']['name'] or 'None'}, "
+                            f"{loaded_data['club_details']['league']}, "
+                            f"{loaded_data['club_details']['country']}, "
+                            f"European: {loaded_data['club_details']['european']}. "
+                            f"Stature: {calculate_score(loaded_data['club_details']['league'], loaded_data['club_details']['country'], loaded_data['club_details']['european'], league_tiers):.1f}"
+                        )
+                        st.info("Data loaded successfully. Visit the 'Club Details' and 'Starting 11' tabs to view or edit the loaded data.")
+                        # Clear apply_json_content to allow new input
+                        st.session_state.apply_json_content = ""
+                        st.rerun()
                     else:
-                        st.session_state.checklist = {
-                            "summer": {
-                                "starting_signings": 0,
-                                "bench_signings": 0,
-                                "reserve_signings": 0,
-                                "loans": 0,
-                                "starting_sold": 0
-                            },
-                            "winter": {
-                                "starting_signings": 0,
-                                "bench_signings": 0,
-                                "reserve_signings": 0,
-                                "loans": 0,
-                                "starting_sold": 0
-                            },
-                            "youth_promotions": 0
-                        }
-                        st.warning("Checklist data invalid or missing; reset to defaults.")
-                    total_overall = sum(player["overall"] for player in loaded_data["starting_11"])
-                    st.session_state.average_team_overall = math.floor(total_overall / 11)
-                    st.success(
-                        f"Club data loaded: {loaded_data['club_details']['name'] or 'None'}, "
-                        f"{loaded_data['club_details']['league']}, "
-                        f"{loaded_data['club_details']['country']}, "
-                        f"European: {loaded_data['club_details']['european']}. "
-                        f"Stature: {calculate_score(loaded_data['club_details']['league'], loaded_data['club_details']['country'], loaded_data['club_details']['european'], league_tiers):.1f}"
-                    )
-                    st.info("Data loaded successfully. Visit the 'Club Details' and 'Starting 11' tabs to view or edit the loaded data.")
-                    # Clear apply_json_content to allow new input
-                    st.session_state.apply_json_content = ""
-                    st.rerun()
-                else:
-                    st.error("Invalid JSON format or data. Ensure 'club_details' and 'starting_11' are correctly formatted.")
-            except json.JSONDecodeError:
-                st.error("Invalid JSON text. Please paste or upload valid JSON data.")
-            except Exception as e:
-                st.error(f"An error occurred while loading data: {str(e)}")
-        else:
-            st.warning("Please paste JSON text or apply uploaded file content to load.")
+                        st.error("Invalid JSON format or data. Ensure 'club_details' and 'starting_11' are correctly formatted.")
+                except json.JSONDecodeError:
+                    st.error("Invalid JSON text. Please paste or upload valid JSON data.")
+                except Exception as e:
+                    st.error(f"An error occurred while loading data: {str(e)}")
+            else:
+                st.warning("Please paste JSON text or apply uploaded file content to load.")
+
+        # Show the "Click here to load data" message if applicable
+        if st.session_state.show_load_message:
+            st.markdown(
+                '<div class="load-message">Click here to load data</div>',
+                unsafe_allow_html=True
+            )
 
 # Close the wrapper div
 st.markdown("</div>", unsafe_allow_html=True)
