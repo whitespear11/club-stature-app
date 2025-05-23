@@ -11,7 +11,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Apply custom CSS with enhanced mobile optimizations, iOS fix, and wrapper div
+# Apply custom CSS with mobile detection and dual UI
 st.markdown(
     """
     <style>
@@ -21,7 +21,8 @@ st.markdown(
         padding: 0 !important;
         box-sizing: border-box !important;
     }
-    /* Target Streamlit's root elements */
+
+    /* Default styles for PC and iPad (screens > 400px) */
     [data-testid="stApp"] {
         width: 100vw !important;
         overflow-x: hidden !important;
@@ -31,29 +32,14 @@ st.markdown(
         max-width: 100vw !important;
         overflow-x: hidden !important;
     }
-    /* Custom wrapper div to enforce layout with iOS fix */
     .app-wrapper {
         width: 100vw !important;
         max-width: 100% !important;
         margin: 0 !important;
         padding: 0 !important;
-        overflow-x: auto !important; /* Fallback for accessibility */
+        overflow-x: hidden !important;
         display: block !important;
-        position: relative !important;
-        left: 0 !important;
-        transform: translateX(0) !important;
     }
-    /* Force tab content alignment */
-    [data-testid="stVerticalBlock"] > div {
-        width: 100% !important;
-        max-width: 100vw !important;
-        margin-left: 0 !important;
-        padding-left: 0 !important;
-        transform: translateX(0) !important;
-        left: 0 !important;
-        position: relative !important;
-    }
-    /* Main content container */
     .main {
         max-width: 100vw;
         padding: 0;
@@ -61,7 +47,108 @@ st.markdown(
         width: 100%;
         box-sizing: border-box;
     }
-    /* Button styling */
+
+    /* Mobile-specific styles (screens ≤ 400px) */
+    @media (max-width: 400px) {
+        [data-testid="stApp"] {
+            width: 100vw !important;
+            overflow-x: hidden !important;
+            margin-left: 0 !important;
+        }
+        [data-testid="stVerticalBlock"] {
+            width: 100vw !important;
+            max-width: 100vw !important;
+            margin-left: 0 !important;
+            padding-left: 0 !important;
+            transform: translateX(0) !important;
+            left: 0 !important;
+        }
+        .app-wrapper {
+            width: 100vw !important;
+            max-width: 100vw !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow-x: auto !important; /* Fallback for accessibility */
+            position: relative !important;
+            left: 0 !important;
+            transform: translateX(0) !important;
+            padding-top: env(safe-area-inset-top, 0) !important;
+            padding-left: env(safe-area-inset-left, 0) !important;
+        }
+        [data-testid="stVerticalBlock"] > div {
+            width: 100vw !important;
+            max-width: 100vw !important;
+            margin-left: 0 !important;
+            padding-left: 0 !important;
+            transform: translateX(0) !important;
+            left: 0 !important;
+        }
+        .stTabs {
+            flex-direction: column;
+            padding: 0.25rem 0;
+        }
+        .stTabs [data-baseweb="tab"] {
+            font-size: 1rem;
+            padding: 0.5rem;
+            margin: 0 0.1rem 0.25rem 0.1rem;
+            min-width: 100% !important;
+            text-align: center;
+        }
+        .stMarkdown h2, .stMarkdown h3 {
+            font-size: 1.2rem;
+            margin: 0.5rem 0;
+        }
+        .streamlit-expanderHeader {
+            font-size: 1rem;
+            padding: 0.25rem;
+        }
+        .stTextInput > div > div > input, .stNumberInput > div > div > input, .stSelectbox > div > div > select {
+            font-size: 14px;
+            min-height: 35px;
+            width: 100% !important;
+            margin: 0 0 0.25rem 0;
+        }
+        .custom-progress-container {
+            margin: 5px 0;
+        }
+        .custom-progress-bar {
+            height: 15px;
+        }
+        table {
+            font-size: 12px;
+            width: 100% !important;
+        }
+        th, td {
+            padding: 0.3rem;
+            min-width: 50px;
+        }
+        .stColumns > div {
+            width: 100% !important;
+            margin-bottom: 10px !important;
+            margin-left: 0 !important;
+        }
+        .main, .streamlit-expanderContent, .stMarkdown p {
+            max-width: 100vw !important;
+            word-wrap: break-word !important;
+            overflow-wrap: break-word !important;
+            margin-left: 0 !important;
+            padding-left: 0 !important;
+        }
+        button[kind="primary"], button {
+            min-width: 80px !important;
+            width: 100% !important;
+            margin: 0 0 0.25rem 0;
+        }
+        /* iOS safe area adjustment */
+        @supports (-webkit-overflow-scrolling: touch) {
+            .app-wrapper {
+                padding-top: env(safe-area-inset-top, 0) !important;
+                padding-left: env(safe-area-inset-left, 0) !important;
+            }
+        }
+    }
+
+    /* Shared styles (applies to all devices) */
     button[kind="primary"], button {
         background-color: #28a745;
         color: white;
@@ -79,7 +166,6 @@ st.markdown(
         background-color: #218838;
         color: white;
     }
-    /* Input field styling */
     .stTextInput > div > div > input, .stNumberInput > div > div > input, .stSelectbox > div > div > select {
         border-radius: 0.25rem;
         border: 1px solid #ced4da;
@@ -92,13 +178,11 @@ st.markdown(
         box-sizing: border-box;
         margin-bottom: 5px;
     }
-    /* Ensure selectbox options are readable */
     .stSelectbox > div > div > select > option {
         color: #000000 !important;
         background-color: #ffffff !important;
         font-size: 16px;
     }
-    /* Section headers */
     .stMarkdown h2, .stMarkdown h3 {
         color: #1e3a8a;
         font-weight: 600;
@@ -106,7 +190,6 @@ st.markdown(
         margin-bottom: 0.5rem;
         font-size: 1.5rem;
     }
-    /* Expander styling */
     .streamlit-expander {
         border: 1px solid #e2e8f0;
         border-radius: 0.25rem;
@@ -129,7 +212,6 @@ st.markdown(
         box-sizing: border-box;
         margin-left: 0 !important;
     }
-    /* Ensure form elements inside expanders are visible */
     .streamlit-expanderContent .stTextInput, 
     .streamlit-expanderContent .stNumberInput, 
     .streamlit-expanderContent .stSelectbox, 
@@ -146,7 +228,6 @@ st.markdown(
         word-wrap: break-word;
         max-width: 100%;
     }
-    /* Success and error messages */
     .stSuccess, .stError, .stWarning {
         background-color: #d4edda;
         color: #155724;
@@ -158,7 +239,6 @@ st.markdown(
         margin-bottom: 5px;
         margin-left: 0 !important;
     }
-    /* Tab styling - Improved with mobile optimization */
     .stTabs {
         display: flex;
         justify-content: center;
@@ -196,12 +276,10 @@ st.markdown(
         border-bottom: none;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
-    /* Override any remaining dark green backgrounds or borders in the tab area */
     .stTabs, .stTabs [data-baseweb="tab"], .stTabs [data-baseweb="tab"][aria-selected="true"] {
         border-color: transparent !important;
         background-color: #2c3e50 !important;
     }
-    /* Custom progress bar styling with mobile responsiveness */
     .custom-progress-container {
         width: 100%;
         background-color: #e0e0e0;
@@ -214,7 +292,6 @@ st.markdown(
         height: 20px;
         transition: width 0.3s ease, background-color 0.3s ease;
     }
-    /* Checklist styling */
     .checklist-section {
         margin-bottom: 1rem;
         margin-left: 0 !important;
@@ -223,7 +300,6 @@ st.markdown(
         font-weight: bold;
         color: #ffffff;
     }
-    /* Table styling for mobile with tighter control */
     table {
         width: auto !important;
         max-width: 100% !important;
@@ -233,7 +309,7 @@ st.markdown(
         margin-left: 0 !important;
         display: inline-block !important;
         box-sizing: border-box;
-        overflow-x: auto; /* Allow controlled scrolling if needed */
+        overflow-x: auto;
     }
     th, td {
         padding: 0.5rem;
@@ -251,64 +327,9 @@ st.markdown(
         background-color: #34495e;
         color: white;
     }
-    /* Mobile-specific adjustments for portrait (narrow screens) */
-    @media (max-width: 400px) {
-        .stTabs [data-baseweb="tab"] {
-            font-size: 1rem;
-            padding: 0.5rem 0.5rem;
-            margin: 0 0.1rem;
-            min-width: 50px;
-        }
-        .stMarkdown h2, .stMarkdown h3 {
-            font-size: 1.2rem;
-        }
-        .streamlit-expanderHeader {
-            font-size: 1rem;
-        }
-        .stTextInput > div > div > input, .stNumberInput > div > div > input, .stSelectbox > div > div > select {
-            font-size: 14px;
-            min-height: 35px;
-        }
-        .stSuccess, .stError, .stWarning {
-            font-size: 14px;
-            padding: 0.5rem;
-        }
-        .custom-progress-container {
-            margin: 5px 0;
-        }
-        .custom-progress-bar {
-            height: 15px;
-        }
-        table {
-            font-size: 12px;
-        }
-        th, td {
-            padding: 0.3rem;
-            min-width: 50px;
-        }
-        /* Force columns to stack in portrait */
-        .stColumns > div {
-            width: 100% !important;
-            margin-bottom: 10px !important;
-            margin-left: 0 !important;
-        }
-        .main, .streamlit-expanderContent, .stMarkdown p {
-            max-width: 100vw !important;
-            word-wrap: break-word !important;
-            overflow-wrap: break-word !important;
-            margin-left: 0 !important;
-            padding-left: 0 !important;
-        }
-        button[kind="primary"], button {
-            min-width: 80px !important;
-            width: 100% !important;
-        }
-    }
-    /* Set background color of all tab content areas to transparent */
     div[data-testid="stVerticalBlock"] > div {
         background-color: transparent !important;
     }
-    /* Ensure text readability across all tab content */
     div[data-testid="stVerticalBlock"] > div .stMarkdown,
     div[data-testid="stVerticalBlock"] > div .stMarkdown p,
     div[data-testid="stVerticalBlock"] > div .stMarkdown h2,
@@ -325,17 +346,9 @@ st.markdown(
         max-width: 100%;
         margin-left: 0 !important;
     }
-    /* Override any inherited blue background for all tab content */
     div[data-testid="stVerticalBlock"] > div,
     div[data-testid="stVerticalBlock"] > div .streamlit-expanderContent {
         background-color: transparent !important;
-    }
-    /* iOS safe area adjustment */
-    @supports (-webkit-overflow-scrolling: touch) {
-        .app-wrapper {
-            padding-top: env(safe-area-inset-top, 0) !important;
-            padding-left: env(safe-area-inset-left, 0) !important;
-        }
     }
     </style>
     <div class="app-wrapper">
