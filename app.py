@@ -105,6 +105,15 @@ st.markdown(
         color: #ffffff !important;
         font-weight: 500;
     }
+    /* Code block styling for uploaded JSON preview */
+    .stCodeBlock, .stCodeBlock pre, .stCodeBlock code {
+        background-color: #2c3e50 !important;
+        color: #ffffff !important;
+        border: 1px solid #ced4da !important;
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        font-size: 0.9rem;
+    }
     /* Section headers */
     .stMarkdown h2, .stMarkdown h3 {
         color: #1e3a8a !important;
@@ -453,6 +462,8 @@ if "club_details" not in st.session_state:
     }
 if "scout_rating_display" not in st.session_state:
     st.session_state.scout_rating_display = None
+if "uploaded_json_content" not in st.session_state:
+    st.session_state.uploaded_json_content = ""
 
 # Initialize session state for Career Checklist
 if "checklist" not in st.session_state:
@@ -573,543 +584,13 @@ with tab1:
                 message = f"Scout Star Rating: {scout_rating} stars. Can only assign to local continent."
             elif league == "Third Division":
                 scout_rating = 4
-                message = f"Scout Star Rating: {scout_rating} stars. Can only assign to local country and neighbouring countries."
-            else:  # Fourth Division
-                scout_rating = 2
-                message = f"Scout Star Rating: {scout_rating} stars. Can only assign to local country."
-            st.session_state.scout_rating_display = message
-            st.rerun()
+                message = f"Scout Star Rating: {scout_rating} stars. Can only assign Juliet also offers a similar tool: [Streamlit](https://streamlit.io/) - a Python-based web app framework that makes it easy to create web apps for data science and machine learning.
 
-# Tab 2: Career Checklist
-with tab2:
-    st.header("Career Checklist")
-    st.write("Track your signings, sales, and youth promotions to stay within the guidelines.")
+Here's how you can fix the JSON file upload issue in your Streamlit app:
 
-    # Reset button for the checklist
-    if st.button("Reset for New Season", key="reset_checklist"):
-        st.session_state.checklist = {
-            "summer": {
-                "starting_signings": 0,
-                "bench_signings": 0,
-                "reserve_signings": 0,
-                "loans": 0,
-                "starting_sold": 0
-            },
-            "winter": {
-                "starting_signings": 0,
-                "bench_signings": 0,
-                "reserve_signings": 0,
-                "loans": 0,
-                "starting_sold": 0
-            },
-            "youth_promotions": 0
-        }
-        st.session_state.pop("summer_signing_category", None)
-        st.session_state.pop("winter_signing_category", None)
-        st.session_state.pop("summer_loan_mode", None)
-        st.session_state.pop("winter_loan_mode", None)
-        st.success("Checklist reset for the new season!")
-        st.rerun()
+1. First, let's modify the Save/Load tab to handle file uploads without directly modifying the text area widget's session state. Here's the corrected version of the Save/Load tab section:
 
-    # Summer Window
-    with st.expander("Summer Window", expanded=True):
-        st.subheader("Summer Window Guidelines")
-        
-        # Tally display as a table
-        summer_starting_max = 2
-        summer_bench_max = 2
-        summer_reserve_max = 3
-        summer_loan_max = 3
-        summer_starting_extra = 1 if st.session_state.checklist["summer"]["starting_sold"] >= 2 else 0
-        summer_starting_total_max = summer_starting_max + summer_starting_extra
-        summer_bench_total_max = summer_bench_max + summer_starting_extra
-        st.markdown(
-            """
-            <table style="width:100%; border-collapse: collapse; margin-bottom: 1rem;">
-                <tr style="background-color: #2c3e50; color: white;">
-                    <th>Category</th>
-                    <th>Current Count</th>
-                    <th>Max Limit</th>
-                </tr>
-                <tr style="background-color: #34495e; color: white;">
-                    <td>First Team Signings</td>
-                    <td>{}</td>
-                    <td>{}</td>
-                </tr>
-                <tr style="background-color: #34495e; color: white;">
-                    <td>Bench Signings</td>
-                    <td>{}</td>
-                    <td>{}</td>
-                </tr>
-                <tr style="background-color: #34495e; color: white;">
-                    <td>Reserve Signings</td>
-                    <td>{}</td>
-                    <td>{}</td>
-                </tr>
-                <tr style="background-color: #34495e; color: white;">
-                    <td>Loans</td>
-                    <td>{}</td>
-                    <td>{}</td>
-                </tr>
-                <tr style="background-color: #34495e; color: white;">
-                    <td>Starting Players Sold</td>
-                    <td>{}</td>
-                    <td>-</td>
-                </tr>
-            </table>
-            """.format(
-                st.session_state.checklist["summer"]["starting_signings"],
-                summer_starting_total_max,
-                st.session_state.checklist["summer"]["bench_signings"],
-                summer_bench_total_max,
-                st.session_state.checklist["summer"]["reserve_signings"],
-                summer_reserve_max,
-                st.session_state.checklist["summer"]["loans"],
-                summer_loan_max,
-                st.session_state.checklist["summer"]["starting_sold"]
-            ),
-            unsafe_allow_html=True
-        )
-        if summer_starting_extra:
-            st.markdown("*Extra signing unlocked (2 starting players sold)!*")
-
-        # Signing question and category buttons
-        if st.button("Did you make a signing?", key="summer_signing_question"):
-            st.session_state["summer_signing_mode"] = True
-            st.rerun()
-        if st.session_state.get("summer_signing_mode", False):
-            with st.container():
-                col1, col2, col3 = st.columns([1, 1, 1])
-                with col1:
-                    if st.button("First Team Player", key="summer_starting_add"):
-                        st.session_state["summer_signing_category"] = "starting"
-                        st.session_state["summer_loan_mode"] = True
-                        st.session_state["summer_signing_mode"] = False
-                        st.rerun()
-                with col2:
-                    if st.button("Bench Player", key="summer_bench_add"):
-                        st.session_state["summer_signing_category"] = "bench"
-                        st.session_state["summer_loan_mode"] = True
-                        st.session_state["summer_signing_mode"] = False
-                        st.rerun()
-                with col3:
-                    if st.button("Reserve Player", key="summer_reserve_add"):
-                        st.session_state["summer_signing_category"] = "reserve"
-                        st.session_state["summer_loan_mode"] = True
-                        st.session_state["summer_signing_mode"] = False
-                        st.rerun()
-        if st.session_state.get("summer_loan_mode", False):
-            st.write("Is this a loan?")
-            with st.container():
-                col1, col2 = st.columns([1, 1])
-                with col1:
-                    if st.button("Yes", key="summer_loan_yes"):
-                        if st.session_state.checklist["summer"]["loans"] < summer_loan_max:
-                            if st.session_state["summer_signing_category"] == "starting" and st.session_state.checklist["summer"]["starting_signings"] < summer_starting_total_max:
-                                st.session_state.checklist["summer"]["starting_signings"] += 1
-                                st.session_state.checklist["summer"]["loans"] += 1
-                            elif st.session_state["summer_signing_category"] == "bench" and st.session_state.checklist["summer"]["bench_signings"] < summer_bench_total_max:
-                                st.session_state.checklist["summer"]["bench_signings"] += 1
-                                st.session_state.checklist["summer"]["loans"] += 1
-                            elif st.session_state["summer_signing_category"] == "reserve" and st.session_state.checklist["summer"]["reserve_signings"] < summer_reserve_max:
-                                st.session_state.checklist["summer"]["reserve_signings"] += 1
-                                st.session_state.checklist["summer"]["loans"] += 1
-                            else:
-                                st.error(f"Exceeded {st.session_state['summer_signing_category']} signings limit!")
-                        else:
-                            st.error("Exceeded loan limit!")
-                        st.session_state.pop("summer_signing_category", None)
-                        st.session_state.pop("summer_loan_mode", None)
-                        st.rerun()
-                with col2:
-                    if st.button("No", key="summer_loan_no"):
-                        if st.session_state["summer_signing_category"] == "starting" and st.session_state.checklist["summer"]["starting_signings"] < summer_starting_total_max:
-                            st.session_state.checklist["summer"]["starting_signings"] += 1
-                        elif st.session_state["summer_signing_category"] == "bench" and st.session_state.checklist["summer"]["bench_signings"] < summer_bench_total_max:
-                            st.session_state.checklist["summer"]["bench_signings"] += 1
-                        elif st.session_state["summer_signing_category"] == "reserve" and st.session_state.checklist["summer"]["reserve_signings"] < summer_reserve_max:
-                            st.session_state.checklist["summer"]["reserve_signings"] += 1
-                        else:
-                            st.error(f"Exceeded {st.session_state['summer_signing_category']} signings limit!")
-                        st.session_state.pop("summer_signing_category", None)
-                        st.session_state.pop("summer_loan_mode", None)
-                        st.rerun()
-
-        # Starting Players Sold
-        st.markdown('<div class="checklist-section"><strong>Starting Players Sold (Unlocks Extra Signing at 2)</strong></div>', unsafe_allow_html=True)
-        if st.button("Add Sold Player", key="summer_sale_add"):
-            st.session_state.checklist["summer"]["starting_sold"] += 1
-            st.rerun()
-        if st.session_state.checklist["summer"]["starting_sold"] > 0:
-            if st.button("Remove Sold Player", key="summer_sale_remove"):
-                st.session_state.checklist["summer"]["starting_sold"] -= 1
-                st.rerun()
-
-    # Winter Window
-    with st.expander("Winter Window", expanded=False):
-        st.subheader("Winter Window Guidelines")
-        
-        # Tally display as a table
-        winter_starting_max = 1
-        winter_bench_max = 1
-        winter_reserve_max = 2
-        winter_loan_max = 1
-        winter_starting_extra = 1 if st.session_state.checklist["winter"]["starting_sold"] >= 2 else 0
-        winter_starting_total_max = winter_starting_max + winter_starting_extra
-        winter_bench_total_max = winter_bench_max + winter_starting_extra
-        st.markdown(
-            """
-            <table style="width:100%; border-collapse: collapse; margin-bottom: 1rem;">
-                <tr style="background-color: #2c3e50; color: white;">
-                    <th>Category</th>
-                    <th>Current Count</th>
-                    <th>Max Limit</th>
-                </tr>
-                <tr style="background-color: #34495e; color: white;">
-                    <td>First Team Signings</td>
-                    <td>{}</td>
-                    <td>{}</td>
-                </tr>
-                <tr style="background-color: #34495e; color: white;">
-                    <td>Bench Signings</td>
-                    <td>{}</td>
-                    <td>{}</td>
-                </tr>
-                <tr style="background-color: #34495e; color: white;">
-                    <td>Reserve Signings</td>
-                    <td>{}</td>
-                    <td>{}</td>
-                </tr>
-                <tr style="background-color: #34495e; color: white;">
-                    <td>Loans</td>
-                    <td>{}</td>
-                    <td>{}</td>
-                </tr>
-                <tr style="background-color: #34495e; color: white;">
-                    <td>Starting Players Sold</td>
-                    <td>{}</td>
-                    <td>-</td>
-                </tr>
-            </table>
-            """.format(
-                st.session_state.checklist["winter"]["starting_signings"],
-                winter_starting_total_max,
-                st.session_state.checklist["winter"]["bench_signings"],
-                winter_bench_total_max,
-                st.session_state.checklist["winter"]["reserve_signings"],
-                winter_reserve_max,
-                st.session_state.checklist["winter"]["loans"],
-                winter_loan_max,
-                st.session_state.checklist["winter"]["starting_sold"]
-            ),
-            unsafe_allow_html=True
-        )
-        if winter_starting_extra:
-            st.markdown("*Extra signing unlocked (2 starting players sold)!*")
-
-        # Signing question and category buttons
-        if st.button("Did you make a signing?", key="winter_signing_question"):
-            st.session_state["winter_signing_mode"] = True
-            st.rerun()
-        if st.session_state.get("winter_signing_mode", False):
-            with st.container():
-                col1, col2, col3 = st.columns([1, 1, 1])
-                with col1:
-                    if st.button("First Team Player", key="winter_starting_add"):
-                        st.session_state["winter_signing_category"] = "starting"
-                        st.session_state["winter_loan_mode"] = True
-                        st.session_state["winter_signing_mode"] = False
-                        st.rerun()
-                with col2:
-                    if st.button("Bench Player", key="winter_bench_add"):
-                        st.session_state["winter_signing_category"] = "bench"
-                        st.session_state["winter_loan_mode"] = True
-                        st.session_state["winter_signing_mode"] = False
-                        st.rerun()
-                with col3:
-                    if st.button("Reserve Player", key="winter_reserve_add"):
-                        st.session_state["winter_signing_category"] = "reserve"
-                        st.session_state["winter_loan_mode"] = True
-                        st.session_state["winter_signing_mode"] = False
-                        st.rerun()
-        if st.session_state.get("winter_loan_mode", False):
-            st.write("Is this a loan?")
-            with st.container():
-                col1, col2 = st.columns([1, 1])
-                with col1:
-                    if st.button("Yes", key="winter_loan_yes"):
-                        if st.session_state.checklist["winter"]["loans"] < winter_loan_max:
-                            if st.session_state["winter_signing_category"] == "starting" and st.session_state.checklist["winter"]["starting_signings"] < winter_starting_total_max:
-                                st.session_state.checklist["winter"]["starting_signings"] += 1
-                                st.session_state.checklist["winter"]["loans"] += 1
-                            elif st.session_state["winter_signing_category"] == "bench" and st.session_state.checklist["winter"]["bench_signings"] < winter_bench_total_max:
-                                st.session_state.checklist["winter"]["bench_signings"] += 1
-                                st.session_state.checklist["winter"]["loans"] += 1
-                            elif st.session_state["winter_signing_category"] == "reserve" and st.session_state.checklist["winter"]["reserve_signings"] < winter_reserve_max:
-                                st.session_state.checklist["winter"]["reserve_signings"] += 1
-                                st.session_state.checklist["winter"]["loans"] += 1
-                            else:
-                                st.error(f"Exceeded {st.session_state['winter_signing_category']} signings limit!")
-                        else:
-                            st.error("Exceeded loan limit!")
-                        st.session_state.pop("winter_signing_category", None)
-                        st.session_state.pop("winter_loan_mode", None)
-                        st.rerun()
-                with col2:
-                    if st.button("No", key="winter_loan_no"):
-                        if st.session_state["winter_signing_category"] == "starting" and st.session_state.checklist["winter"]["starting_signings"] < winter_starting_total_max:
-                            st.session_state.checklist["winter"]["starting_signings"] += 1
-                        elif st.session_state["winter_signing_category"] == "bench" and st.session_state.checklist["winter"]["bench_signings"] < winter_bench_total_max:
-                            st.session_state.checklist["winter"]["bench_signings"] += 1
-                        elif st.session_state["winter_signing_category"] == "reserve" and st.session_state.checklist["winter"]["reserve_signings"] < winter_reserve_max:
-                            st.session_state.checklist["winter"]["reserve_signings"] += 1
-                        else:
-                            st.error(f"Exceeded {st.session_state['winter_signing_category']} signings limit!")
-                        st.session_state.pop("winter_signing_category", None)
-                        st.session_state.pop("winter_loan_mode", None)
-                        st.rerun()
-
-        # Starting Players Sold
-        st.markdown('<div class="checklist-section"><strong>Starting Players Sold (Unlocks Extra Signing at 2)</strong></div>', unsafe_allow_html=True)
-        if st.button("Add Sold Player", key="winter_sale_add"):
-            st.session_state.checklist["winter"]["starting_sold"] += 1
-            st.rerun()
-        if st.session_state.checklist["winter"]["starting_sold"] > 0:
-            if st.button("Remove Sold Player", key="winter_sale_remove"):
-                st.session_state.checklist["winter"]["starting_sold"] -= 1
-                st.rerun()
-
-    # Youth Academy
-    with st.expander("Youth Academy", expanded=False):
-        st.subheader("Youth Academy Guidelines")
-        st.write("A total of 3 players can be promoted to the senior team.")
-        
-        # Tally display as a table
-        youth_promotion_max = 3
-        st.markdown(
-            """
-            <table style="width:100%; border-collapse: collapse; margin-bottom: 1rem;">
-                <tr style="background-color: #2c3e50; color: white;">
-                    <th>Category</th>
-                    <th>Current Count</th>
-                    <th>Max Limit</th>
-                </tr>
-                <tr style="background-color: #34495e; color: white;">
-                    <td>Youth Promotions</td>
-                    <td>{}</td>
-                    <td>{}</td>
-                </tr>
-            </table>
-            """.format(
-                st.session_state.checklist["youth_promotions"],
-                youth_promotion_max
-            ),
-            unsafe_allow_html=True
-        )
-        
-        # Promotion button
-        if st.button("I promoted a youth player", key="youth_promotion_add"):
-            if st.session_state.checklist["youth_promotions"] < youth_promotion_max:
-                st.session_state.checklist["youth_promotions"] += 1
-                st.rerun()
-            else:
-                st.error("Exceeded youth promotion limit of 3!")
-        if st.session_state.checklist["youth_promotions"] > 0:
-            if st.button("Remove Youth Promotion", key="youth_promotion_remove"):
-                st.session_state.checklist["youth_promotions"] -= 1
-                st.rerun()
-
-# Tab 3: Starting 11
-with tab3:
-    st.header("Starting 11 Calculator")
-    st.write("Enter your starting 11 to calculate team average overall and wage cap. Use the Save/Load tab to save your data.")
-    
-    # Progress indicator for starting 11
-    valid_players = sum(1 for player in st.session_state.starting_11 if player["overall"] > 0) / 11
-    starting_11_progress_percentage = int(valid_players * 100)
-    starting_11_progress_color = "#28a745" if valid_players == 1 else "#3498db"
-    st.markdown(
-        f"""
-        <div style="margin-bottom: 5px;">Starting 11 Completion: {starting_11_progress_percentage}%</div>
-        <div class="custom-progress-container">
-            <div class="custom-progress-bar" style="width: {starting_11_progress_percentage}%; background-color: {starting_11_progress_color};"></div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-    
-    with st.expander("Enter Starting 11 Details", expanded=True):
-        with st.form(key="starting_11_form"):
-            players = []
-            for i in range(11):
-                with st.container():
-                    col1, col2, col3 = st.columns([1, 1, 1])
-                    with col1:
-                        st.markdown(f"**Player {i+1} Position**")
-                        position = st.selectbox(
-                            f"Player {i+1} Position",
-                            player_positions,
-                            index=player_positions.index(st.session_state.starting_11[i]["position"]),
-                            key=f"player_{i}_position",
-                            label_visibility="collapsed"
-                        )
-                    with col2:
-                        st.markdown(f"**Player {i+1} Overall**")
-                        overall = st.number_input(
-                            f"Player {i+1} Overall",
-                            min_value=0,
-                            max_value=99,
-                            value=st.session_state.starting_11[i]["overall"],
-                            step=1,
-                            format="%d",
-                            key=f"player_{i}_overall",
-                            label_visibility="collapsed"
-                        )
-                    with col3:
-                        st.markdown(f"**Player {i+1} Wage (p/w)**")
-                        wage = st.number_input(
-                            f"Player {i+1} Wage",
-                            min_value=0,
-                            value=st.session_state.starting_11[i]["wage"],
-                            step=1000,
-                            format="%d",
-                            key=f"player_{i}_wage",
-                            label_visibility="collapsed"
-                        )
-                    players.append({"position": position, "overall": overall, "wage": wage})
-            
-            submit_starting_11 = st.form_submit_button("Calculate Team Overall")
-    
-    if submit_starting_11:
-        if all(player["overall"] >= 0 and player["wage"] >= 0 for player in players):
-            st.session_state.starting_11 = players
-            total_overall = sum(player["overall"] for player in players)
-            average_overall = math.floor(total_overall / 11)
-            st.session_state.average_team_overall = average_overall
-            max_signing_overall = average_overall + 2
-            max_wage = max(player["wage"] for player in players)
-            wage_cap = int(max_wage * 1.2)
-            st.success(f"Average Team Overall: {average_overall}")
-            st.success(f"Sign players with overall {max_signing_overall} or below.")
-            st.success(f"Wage Cap: {wage_cap:,} p/w")
-        else:
-            st.error("All player overalls and wages must be non-negative.")
-
-# Tab 4: Transfer Calculators
-with tab4:
-    st.header("Transfer Calculators")
-    
-    # Selling Transfer Calculator
-    with st.expander("Selling Transfer Calculator", expanded=False):
-        with st.form(key="selling_transfer_form"):
-            st.subheader("Offering Club Details")
-            club2_name_sell = st.text_input("Offering Club Name (Optional)", key="club2_name_sell")
-            club2_league_sell = st.selectbox("Offering Club League", list(league_tiers.keys()), key="club2_league_sell")
-            club2_country_sell = st.selectbox("Offering Club Country", list(country_prestige.keys()), key="club2_country_sell")
-            club2_european_sell = st.checkbox("Offering Club in European Competitions", key="club2_european_sell")
-            
-            st.subheader("Transfer Details")
-            player_value_sell = st.number_input(
-                "Player Value",
-                min_value=0.0,
-                step=1000.0,
-                format="%.2f",
-                key="player_value_sell",
-                help="Enter value without commas, e.g., 1000000"
-            )
-            is_young_sell = st.checkbox("Player Aged 16-21", key="is_young_sell")
-            submit_selling_transfer = st.form_submit_button("Calculate Selling Offer")
-        
-        if submit_selling_transfer:
-            if player_value_sell > 0:
-                club_details = st.session_state.club_details
-                score1 = calculate_score(club_details["league"], club_details["country"], club_details["european"], league_tiers)
-                score2 = calculate_score(club2_league_sell, club2_country_sell, club2_european_sell, league_tiers)
-                stature_diff = score2 - score1
-                display_name1 = club_details["name"] if club_details["name"] else "Your Club"
-                display_name2 = club2_name_sell if club2_name_sell else "Offering Club"
-                st.write(f"**{display_name1}**: {club_details['league']}, {club_details['country']}, European: {club_details['european']}")
-                st.write(f"**Stature Score**: {score1:.1f}")
-                st.write(f"**{display_name2}**: {club2_league_sell}, {club2_country_sell}, European: {club2_european_sell}")
-                st.write(f"**Stature Score**: {score2:.1f}")
-                if score1 > score2:
-                    st.success(f"{display_name1} has higher stature by {score1 - score2:.1f}.")
-                elif score2 > score1:
-                    st.warning(f"{display_name2} has higher stature by {score2 - score1:.1f}.")
-                else:
-                    st.info("Clubs have equal stature.")
-                minimum_offer = calculate_minimum_offer(player_value_sell, stature_diff, is_young_sell)
-                minimum_offer = math.ceil(minimum_offer / 1000) * 1000
-                st.success(f"Accept offers from {display_name2} of {minimum_offer:,.0f} or higher.")
-            else:
-                st.error("Player value must be greater than 0.")
-
-    # Buying Transfer Calculator
-    with st.expander("Buying Transfer Calculator", expanded=False):
-        with st.form(key="buying_transfer_form"):
-            st.subheader("Player Details")
-            player_value_buy = st.number_input(
-                "Player Value",
-                min_value=0.0,
-                step=1000.0,
-                format="%.2f",
-                key="player_value_buy",
-                help="Enter value without commas, e.g., 1000000"
-            )
-            player_overall_buy = st.number_input(
-                "Player Overall",
-                min_value=0,
-                max_value=99,
-                step=1,
-                format="%d",
-                key="player_overall_buy"
-            )
-            player_age_buy = st.number_input(
-                "Player Age",
-                min_value=16,
-                max_value=40,
-                step=1,
-                format="%d",
-                key="player_age_buy"
-            )
-            submit_buying_transfer = st.form_submit_button("Calculate Bid and Wage")
-        
-        if submit_buying_transfer:
-            if player_value_buy > 0 and player_overall_buy > 0:
-                if st.session_state.average_team_overall is not None and player_overall_buy > st.session_state.average_team_overall + 2:
-                    st.warning("Player's overall is too high. Sign players with lower overall or update Starting 11.")
-                starting_bid, is_accurate = calculate_starting_bid(
-                    player_value_buy, player_overall_buy, player_age_buy, st.session_state.average_team_overall
-                )
-                starting_bid = math.ceil(starting_bid / 1000) * 1000
-                st.success(f"Start your bid at {starting_bid:,.0f}.")
-                if not is_accurate:
-                    st.warning("Bid uses default markup. Calculate Starting 11 average for accuracy.")
-                wage, wage_error = calculate_proportional_wage(player_overall_buy, st.session_state.starting_11)
-                if wage is not None:
-                    st.success(f"Minimum Wage: {wage:,} p/w")
-                else:
-                    st.warning(f"Wage error: {wage_error}")
-            else:
-                st.error("Player value and overall must be greater than 0.")
-
-# Tab 5: Help/Info
-with tab5:
-    st.header("Help & Info")
-    st.write(
-        """
-        **FIFA Realistic Toolkit** helps you manage your FIFA career mode with realistic transfer and wage guidelines.
-        
-        - **Club Details**: Enter your club's league, country, and European status to calculate stature and determine maximum scout ratings.
-        - **Career Checklist**: Track your signings, sales, and youth promotions to ensure compliance with transfer window rules.
-        - **Starting 11**: Input your starting lineup to determine average overall and wage caps.
-        - **Transfer Calculators**: Compute minimum selling offers and starting bids for buying players.
-        - **Save/Load**: Use the Save/Load tab to copy/paste JSON text or save/load a JSON file with your club, player, and checklist data.
-        
-        If you enjoy this tool, consider [buying me a coffee](https://buymeacoffee.com/whitespear11).
-        """
-    )
-
+```python
 # Tab 6: Save/Load
 with tab6:
     st.header("Save/Load Data")
@@ -1156,29 +637,43 @@ with tab6:
     col1, col2 = st.columns([3, 1])
     with col1:
         json_input = st.text_area(
-            "Paste your JSON text here or use the button to upload a file:",
+            "Paste your JSON text here or apply uploaded file content:",
             value="",
             height=300,
             key="load_json",
-            help="Paste JSON text or upload a file to populate this field, then click 'Load Data'."
+            help="Paste JSON text or click 'Apply Uploaded JSON' to use uploaded file content, then click 'Load Data'."
         )
     with col2:
         uploaded_file = st.file_uploader(
             "Upload JSON File",
             type=["json"],
             key="upload_json",
-            help="Upload a team_data.json file to populate the text area."
+            help="Upload a team_data.json file to preview its content."
         )
         if uploaded_file:
             try:
                 json_content = uploaded_file.read().decode("utf-8")
-                # Update the text area by setting the session state directly
-                st.session_state.load_json = json_content
-                st.success("File uploaded successfully. Click 'Load Data' to apply.")
+                st.session_state.uploaded_json_content = json_content
+                st.success("File uploaded successfully. Preview below and click 'Apply Uploaded JSON' to use.")
             except json.JSONDecodeError:
                 st.error("Invalid JSON file uploaded. Please upload a valid JSON file.")
             except Exception as e:
                 st.error(f"Error reading file: {str(e)}")
+
+        if st.session_state.uploaded_json_content:
+            st.subheader("Uploaded JSON Preview")
+            st.code(st.session_state.uploaded_json_content, language="json")
+            if st.button("Apply Uploaded JSON", key="apply_uploaded_json"):
+                # Update the text area indirectly by setting a flag
+                st.session_state.load_json_content = st.session_state.uploaded_json_content
+                st.rerun()
+
+    # Update text area content if flagged
+    if "load_json_content" in st.session_state:
+        st.session_state.load_json = st.session_state.load_json_content
+        del st.session_state.load_json_content
+        st.session_state.uploaded_json_content = ""
+
     if st.button("Load Data", key="load_data_button"):
         if json_input:
             try:
@@ -1278,7 +773,165 @@ with tab6:
             except Exception as e:
                 st.error(f"An error occurred while loading data: {str(e)}")
         else:
-            st.warning("Please paste JSON text or upload a file to load.")
+            st.warning("Please paste JSON text or apply uploaded file content to load.")
+```
 
-# Close the wrapper div
-st.markdown("</div>", unsafe_allow_html=True)
+### Key Changes Made
+1. **New Session State Variables**:
+   - Added `st.session_state.uploaded_json_content` to store the uploaded file's content.
+   - Added `st.session_state.load_json_content` as a temporary flag to update the `load_json` text area indirectly.
+
+2. **File Upload Handling**:
+   - When a file is uploaded, its content is stored in `st.session_state.uploaded_json_content`.
+   - The content is displayed in a read-only `st.code` block (styled with `.stCodeBlock` in CSS) for preview.
+   - A new "Apply Uploaded JSON" button sets `st.session_state.load_json_content` and triggers `st.rerun()`.
+
+3. **Text Area Update**:
+   - After `st.rerun()`, the code checks for `st.session_state.load_json_content` and updates `st.session_state.load_json` (the text area's value) with the uploaded content.
+   - The temporary `load_json_content` and `uploaded_json_content` are cleared to prevent repeated updates.
+
+4. **CSS Updates**:
+   - Added `.stCodeBlock`, `.stCodeBlock pre`, `.stCodeBlock code` to style the JSON preview (`#2c3e50` background, white text, rounded borders).
+   - Ensured the preview is readable and matches the dark theme.
+
+5. **UI Adjustments**:
+   - Updated the text area label to "Paste your JSON text here or apply uploaded file content:".
+   - Added a "Uploaded JSON Preview" subheader and `st.code` block to show the uploaded file's content.
+   - The "Apply Uploaded JSON" button is only shown when a file is uploaded and content is available.
+   - Adjusted the layout to keep the file uploader and buttons in a 25% column (`st.columns([3, 1])`).
+
+6. **Instructions Update**:
+   - Modified the tab description to clarify the new process: "Load a previous session by pasting JSON text or uploading a JSON file, then clicking 'Apply Uploaded JSON' and 'Load Data'."
+   - Updated the "Help/Info" tab to reflect the new steps: "Use the Save/Load tab to copy/paste JSON text or upload a JSON file, apply its content, and load your data."
+
+### How It Works
+1. **Saving Data**:
+   - No changes; the "Save Your Data" section still offers a text area to copy JSON and a "Save to JSON File" button to download `team_data.json`.
+
+2. **Loading Data via File**:
+   - Go to the "Save/Load" tab, under "Load Your Data".
+   - Click "Upload JSON File" and select a `.json` file (e.g., `team_data.json`).
+   - If valid, the file's content appears in a preview section ("Uploaded JSON Preview") with a success message: "File uploaded successfully. Preview below and click 'Apply Uploaded JSON' to use."
+   - Click "Apply Uploaded JSON" to populate the editable text area with the file's content.
+   - Click "Load Data" to parse the text area's content and update the app's state.
+   - On success, see a message like "Club data loaded: Test FC..." and check the "Club Details" and "Starting 11" tabs for the loaded data.
+
+3. **Loading Data via Text**:
+   - Paste JSON text directly into the "Paste your JSON text here or apply uploaded file content:" text area.
+   - Click "Load Data" to parse and apply the data (no change from previous behavior).
+
+4. **Error Handling**:
+   - Invalid JSON file: "Invalid JSON file uploaded. Please upload a valid JSON file."
+   - Non-JSON file or other errors: "Error reading file: [error message]."
+   - Invalid JSON text: "Invalid JSON text. Please paste or upload valid JSON data."
+   - Invalid data structure: "Invalid JSON format or data. Ensure 'club_details' and 'starting_11' are correctly formatted."
+   - Empty text area: "Please paste JSON text or apply uploaded file content to load."
+
+### Download Instructions
+To use the updated `app.py`:
+1. Copy the content within the `<xaiArtifact>` tag above.
+2. Paste it into a file named `app.py`, replacing the existing file.
+3. Save the file with a `.py` extension.
+
+Alternatively, use this Python code to generate the file:
+
+```python
+with open("app.py", "w", encoding="utf-8") as f:
+    f.write('''[Paste the content from the <xaiArtifact> tag here]''')
+```
+
+### Testing Recommendations
+1. **File Upload**:
+   - Create a valid `team_data.json` file (e.g., using the "Save to JSON File" button after entering data).
+   - In "Save/Load" > "Load Your Data":
+     - Upload the `team_data.json` file.
+     - Verify the "Uploaded JSON Preview" shows the correct JSON content with a success message.
+     - Click "Apply Uploaded JSON" and confirm the text area populates with the JSON content.
+     - Click "Load Data" and check for a success message (e.g., "Club data loaded: Test FC...").
+     - Verify the "Club Details" and "Starting 11" tabs reflect the loaded data.
+   - Upload an invalid JSON file (e.g., `{"invalid": "data"}`) and confirm the error: "Invalid JSON file uploaded."
+   - Upload a non-JSON file (e.g., a `.txt` file) and confirm an error like "Error reading file: ...".
+
+2. **Text Input**:
+   - Paste valid JSON text into the text area and click "Load Data" to ensure manual input still works.
+   - Paste invalid JSON (e.g., `{club_details: {name: "Test FC"}}`) and confirm: "Invalid JSON text."
+   - Click "Load Data" with an empty text area and confirm: "Please paste JSON text or apply uploaded file content to load."
+
+3. **Stability**:
+   - Repeatedly upload files, click "Apply Uploaded JSON", and "Load Data" to ensure no crashes.
+   - Test rapid uploads and button clicks to confirm session state updates correctly.
+   - Verify `st.rerun()` refreshes the app without errors after applying uploaded JSON.
+
+4. **UI and Accessibility**:
+   - Confirm the "Apply Uploaded JSON" button is styled correctly (green `#28a745`, min-height 44px).
+   - Ensure the JSON preview (`st.code`) is readable (white text on `#2c3e50` background).
+   - Verify the layout is responsive (columns stack vertically on mobile <400px).
+   - Check that all labels (e.g., text area, file uploader) are visible and accessible.
+
+5. **Dark Mode**:
+   - Confirm the app remains in dark mode (`#1a2526` background) across all tabs.
+   - Ensure the JSON preview and text area are styled consistently with the dark theme.
+
+### Example JSON Data
+A valid `team_data.json` file (unchanged from previous versions):
+
+```json
+{
+  "club_details": {
+    "name": "Test FC",
+    "league": "First Division",
+    "country": "England",
+    "european": true
+  },
+  "starting_11": [
+    {"position": "GK", "overall": 80, "wage": 50000},
+    {"position": "LB", "overall": 75, "wage": 30000},
+    {"position": "CB", "overall": 78, "wage": 35000},
+    {"position": "CB", "overall": 77, "wage": 32000},
+    {"position": "RB", "overall": 76, "wage": 31000},
+    {"position": "LM", "overall": 79, "wage": 40000},
+    {"position": "CM", "overall": 80, "wage": 45000},
+    {"position": "CM", "overall": 78, "wage": 38000},
+    {"position": "RM", "overall": 77, "wage": 36000},
+    {"position": "ST", "overall": 82, "wage": 60000},
+    {"position": "ST", "overall": 81, "wage": 55000}
+  ],
+  "checklist": {
+    "summer": {
+      "starting_signings": 1,
+      "bench_signings": 0,
+      "reserve_signings": 0,
+      "loans": 0,
+      "starting_sold": 0
+    },
+    "winter": {
+      "starting_signings": 0,
+      "bench_signings": 0,
+      "reserve_signings": 0,
+      "loans": 0,
+      "starting_sold": 0
+    },
+    "youth_promotions": 0
+  }
+}
+```
+
+### Notes
+- **Why This Fixes the Issue**: By avoiding direct modification of `st.session_state.load_json`, we respect Streamlit's widget state rules. The "Apply Uploaded JSON" button and `st.rerun()` allow the text area to update in a new script run, preventing the `StreamlitAPIException`.
+- **Compatibility**: Existing `team_data.json` files remain compatible, as the JSON structure is unchanged.
+- **Fallback**: The text-based JSON input (paste into text area) remains fully functional, so users can bypass file uploads if issues persist.
+- **Mobile**: The layout (3:1 columns) stacks vertically on narrow screens (<400px), and buttons remain touch-friendly (min-height 44px).
+
+### If Issues Persist
+If you still encounter problems:
+- Share the exact steps (e.g., upload file, click "Apply Uploaded JSON", click "Load Data").
+- Provide the JSON file you're uploading or a sample that reproduces the issue.
+- Share any new error messages or logs from the Streamlit console.
+- Indicate the platform (e.g., local Streamlit, Streamlit Cloud, browser type).
+
+Possible further fixes include:
+- Using a form to manage the text area update.
+- Simplifying to a single text area with manual copy/paste only (removing file upload).
+- Exploring client-side JavaScript for file reading (though Streamlit's sandbox may limit this).
+
+This update should resolve the file upload error while maintaining all functionality. Please test the new version and let me know if it works or if you need additional tweaks!
