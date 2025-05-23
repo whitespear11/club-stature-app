@@ -351,7 +351,6 @@ def calculate_starting_bid(player_value, player_overall, player_age, average_tea
         if average_team_overall is None:
             return player_value * 1.75, False
         elif player_overall > average_team_overall:
-            return player_value 친구
             return player_value * 1.40, True
         elif player_overall == average_team_overall:
             return player_value * 1.30, True
