@@ -479,7 +479,7 @@ with tab2:
         )
         if summer_starting_extra:
             st.markdown("*Extra signing unlocked (2 starting players sold)!*")
-        if st.button("Did you make a signing?"):
+        if st.button("Did you make a signing?", key="summer_signing"):
             st.session_state["summer_signing_mode"] = True
             st.rerun()
         if st.session_state.get("summer_signing_mode", False):
@@ -571,7 +571,7 @@ with tab2:
         )
         if winter_starting_extra:
             st.markdown("*Extra signing unlocked (2 starting players sold)!*")
-        if st.button("Did you make a signing?"):
+        if st.button("Did you make a signing?", key="winter_signing"):
             st.session_state["winter_signing_mode"] = True
             st.rerun()
         if st.session_state.get("winter_signing_mode", False):
