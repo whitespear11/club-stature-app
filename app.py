@@ -15,20 +15,34 @@ st.markdown(
 st.markdown(
     """
     <style>
+    /* Target Streamlit's root elements to remove default margins/padding */
+    [data-testid="stApp"] {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100vw !important;
+        overflow-x: hidden !important;
+    }
+    [data-testid="stVerticalBlock"] {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        max-width: 100vw !important;
+    }
     /* Ensure the entire app is touch-friendly and prevents overflow */
     html, body {
         width: 100%;
-        overflow-x: hidden;
+        overflow-x: hidden !important;
         font-family: 'Arial', sans-serif;
-        margin: 0;
-        padding: 0;
+        margin: 0 !important;
+        padding: 0 !important;
     }
     /* Main content container */
     .main {
-        max-width: 100vw; /* Use viewport width to prevent overflow */
-        padding: 0; /* Remove padding to fit narrow screens */
-        margin: 0 auto; /* Center content */
+        max-width: 100vw;
+        padding: 0;
+        margin: 0;
         box-sizing: border-box;
+        width: 100%;
     }
     /* Button styling */
     button[kind="primary"], button {
@@ -42,7 +56,7 @@ st.markdown(
         font-size: 16px;
         width: 100%;
         margin-bottom: 5px;
-        display: block; /* Ensure buttons stack */
+        display: block;
     }
     button[kind="primary"]:hover {
         background-color: #218838;
@@ -81,6 +95,7 @@ st.markdown(
         border-radius: 0.25rem;
         margin-bottom: 1rem;
         width: 100%;
+        margin-left: 0 !important;
     }
     .streamlit-expanderHeader {
         background-color: #f8fafc;
@@ -91,10 +106,11 @@ st.markdown(
     }
     .streamlit-expanderContent {
         background-color: #ffffff;
-        padding: 1rem;
+        padding: 0.5rem; /* Reduced padding */
         color: #000000 !important;
         width: 100%;
         box-sizing: border-box;
+        margin-left: 0 !important;
     }
     /* Ensure form elements inside expanders are visible */
     .streamlit-expanderContent .stTextInput, 
@@ -123,6 +139,7 @@ st.markdown(
         word-wrap: break-word;
         max-width: 100%;
         margin-bottom: 5px;
+        margin-left: 0 !important;
     }
     /* Tab styling - Improved with mobile optimization */
     .stTabs {
@@ -133,6 +150,7 @@ st.markdown(
         border-bottom: none;
         flex-wrap: wrap;
         width: 100%;
+        margin-left: 0 !important;
     }
     .stTabs [data-baseweb="tab"] {
         font-size: 1.2rem;
@@ -173,6 +191,7 @@ st.markdown(
         border-radius: 5px;
         overflow: hidden;
         margin: 10px 0;
+        margin-left: 0 !important;
     }
     .custom-progress-bar {
         height: 20px;
@@ -181,6 +200,7 @@ st.markdown(
     /* Checklist styling */
     .checklist-section {
         margin-bottom: 1rem;
+        margin-left: 0 !important;
     }
     .checklist-counter {
         font-weight: bold;
@@ -189,20 +209,22 @@ st.markdown(
     /* Table styling for mobile */
     table {
         width: 100%;
+        max-width: 100%; /* Ensure table doesn't exceed container */
         border-collapse: collapse;
         font-size: 14px;
         word-wrap: break-word;
-        margin-left: 0 !important; /* Force left alignment */
-        display: block; /* Allow table to respect container */
-        overflow-x: auto; /* Enable horizontal scroll if needed, but constrain width */
+        margin-left: 0 !important;
+        display: block;
+        box-sizing: border-box;
     }
     th, td {
         padding: 0.5rem;
         text-align: left;
         border: 1px solid #34495e;
         word-wrap: break-word;
-        max-width: 0;
-        min-width: auto; /* Prevent fixed widths */
+        max-width: none; /* Remove max-width to allow natural sizing */
+        min-width: 60px; /* Minimum width to ensure readability */
+        box-sizing: border-box;
     }
     th {
         background-color: #2c3e50;
@@ -245,17 +267,20 @@ st.markdown(
         }
         th, td {
             padding: 0.3rem;
+            min-width: 50px; /* Adjusted for smaller screens */
         }
         /* Force columns to stack in portrait */
         .stColumns > div {
             width: 100% !important;
             margin-bottom: 10px !important;
+            margin-left: 0 !important;
         }
         .main, .streamlit-expanderContent, .stMarkdown p {
             max-width: 100vw !important;
             word-wrap: break-word !important;
             overflow-wrap: break-word !important;
             margin-left: 0 !important;
+            padding-left: 0 !important;
         }
         button[kind="primary"], button {
             min-width: 80px !important;
@@ -265,6 +290,8 @@ st.markdown(
     /* Set background color of all tab content areas to transparent */
     div[data-testid="stVerticalBlock"] > div {
         background-color: transparent !important;
+        margin-left: 0 !important;
+        padding-left: 0 !important;
     }
     /* Ensure text readability across all tab content */
     div[data-testid="stVerticalBlock"] > div .stMarkdown,
@@ -281,6 +308,7 @@ st.markdown(
         color: #ffffff !important;
         word-wrap: break-word;
         max-width: 100%;
+        margin-left: 0 !important;
     }
     /* Override any inherited blue background for all tab content */
     div[data-testid="stVerticalBlock"] > div,
