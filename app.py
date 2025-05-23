@@ -3,19 +3,42 @@ import math
 import json
 import io
 
-# Apply custom CSS with mobile optimizations
+# Add viewport meta tag for better mobile scaling
+st.markdown(
+    """
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    """,
+    unsafe_allow_html=True
+)
+
+# Apply custom CSS with enhanced mobile optimizations
 st.markdown(
     """
     <style>
+    /* Ensure the entire app is touch-friendly and prevents overflow */
+    html, body {
+        width: 100%;
+        overflow-x: hidden;
+        font-family: 'Arial', sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+    /* Main content container */
+    .main {
+        max-width: 100%;
+        padding: 0 10px; /* Add padding for mobile screens */
+        box-sizing: border-box;
+    }
     /* Button styling */
-    button[kind="primary"] {
+    button[kind="primary"], button {
         background-color: #28a745;
         color: white;
         border: none;
-        padding: 0.5rem 1rem;
+        padding: 0.75rem 1rem;
         border-radius: 0.25rem;
         font-weight: bold;
-        min-width: 100px; /* Ensure minimum width for touch */
+        min-width: 120px;
+        font-size: 16px;
     }
     button[kind="primary"]:hover {
         background-color: #218838;
@@ -28,8 +51,10 @@ st.markdown(
         padding: 0.5rem;
         color: #000000 !important;
         background-color: #ffffff !important;
-        font-size: 16px; /* Larger text for mobile */
-        min-height: 40px; /* Ensure touch-friendly height */
+        font-size: 16px;
+        min-height: 40px;
+        width: 100%; /* Ensure full width on mobile */
+        box-sizing: border-box;
     }
     /* Ensure selectbox options are readable */
     .stSelectbox > div > div > select > option {
@@ -43,25 +68,28 @@ st.markdown(
         font-weight: 600;
         margin-top: 1rem;
         margin-bottom: 0.5rem;
-        font-size: 1.5rem; /* Slightly larger for mobile readability */
+        font-size: 1.5rem;
     }
     /* Expander styling */
     .streamlit-expander {
         border: 1px solid #e2e8f0;
         border-radius: 0.25rem;
         margin-bottom: 1rem;
+        width: 100%;
     }
     .streamlit-expanderHeader {
         background-color: #f8fafc;
         padding: 0.5rem;
         font-weight: 500;
         color: #1e3a8a !important;
-        font-size: 1.2rem; /* Larger header for mobile */
+        font-size: 1.2rem;
     }
     .streamlit-expanderContent {
         background-color: #ffffff;
         padding: 1rem;
         color: #000000 !important;
+        width: 100%;
+        box-sizing: border-box;
     }
     /* Ensure form elements inside expanders are visible */
     .streamlit-expanderContent .stTextInput, 
@@ -70,33 +98,24 @@ st.markdown(
     .streamlit-expanderContent .stCheckbox {
         color: #000000 !important;
         font-size: 16px;
+        width: 100%;
     }
     .streamlit-expanderContent label, 
     .streamlit-expanderContent p {
         color: #000000 !important;
-        font-size: 16px; /* Readable on mobile */
+        font-size: 16px;
+        word-wrap: break-word; /* Ensure text wraps */
+        max-width: 100%;
     }
     /* Success and error messages */
-    .stSuccess {
+    .stSuccess, .stError, .stWarning {
         background-color: #d4edda;
         color: #155724;
         padding: 0.75rem;
         border-radius: 0.25rem;
         font-size: 16px;
-    }
-    .stError {
-        background-color: #f8d7da;
-        color: #721c24;
-        padding: 0.75rem;
-        border-radius: 0.25rem;
-        font-size: 16px;
-    }
-    .stWarning {
-        background-color: #fff3cd;
-        color: #856404;
-        padding: 0.75rem;
-        border-radius: 0.25rem;
-        font-size: 16px;
+        word-wrap: break-word;
+        max-width: 100%;
     }
     /* Tab styling - Improved with mobile optimization */
     .stTabs {
@@ -106,6 +125,7 @@ st.markdown(
         padding: 0.5rem 0;
         border-bottom: none;
         flex-wrap: wrap; /* Allow tabs to wrap on small screens */
+        width: 100%;
     }
     .stTabs [data-baseweb="tab"] {
         font-size: 1.2rem;
@@ -118,8 +138,9 @@ st.markdown(
         border-radius: 8px 8px 0 0;
         transition: all 0.3s ease;
         border: none;
-        min-width: 80px; /* Minimum width for touch */
+        min-width: 80px;
         text-align: center;
+        box-sizing: border-box;
     }
     .stTabs [data-baseweb="tab"]:hover {
         background-color: #34495e;
@@ -161,12 +182,15 @@ st.markdown(
     table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 14px; /* Smaller text for tables on mobile */
+        font-size: 14px;
+        word-wrap: break-word; /* Ensure text wraps in tables */
     }
     th, td {
         padding: 0.5rem;
         text-align: left;
         border: 1px solid #34495e;
+        word-wrap: break-word;
+        max-width: 0; /* Allow wrapping */
     }
     th {
         background-color: #2c3e50;
@@ -177,7 +201,7 @@ st.markdown(
         color: white;
     }
     /* Mobile-specific adjustments */
-    @media (max-width: 768px) {
+    @media (max-width: 600px) {
         .stTabs [data-baseweb="tab"] {
             font-size: 1rem;
             padding: 0.5rem 0.75rem;
@@ -210,6 +234,12 @@ st.markdown(
         th, td {
             padding: 0.3rem;
         }
+        /* Force content to fit screen */
+        .main, .streamlit-expanderContent, .stMarkdown p {
+            max-width: 100%;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
     }
     /* Set background color of all tab content areas to transparent */
     div[data-testid="stVerticalBlock"] > div {
@@ -228,6 +258,8 @@ st.markdown(
     div[data-testid="stVerticalBlock"] > div .stError,
     div[data-testid="stVerticalBlock"] > div .stWarning {
         color: #ffffff !important;
+        word-wrap: break-word;
+        max-width: 100%;
     }
     /* Override any inherited blue background for all tab content */
     div[data-testid="stVerticalBlock"] > div,
@@ -1003,13 +1035,13 @@ with tab5:
     st.write(
         """
         **FIFA Realistic Toolkit** helps you manage your FIFA career mode with realistic transfer and wage guidelines.
-        
+
         - **Club Details**: Enter your club's league, country, and European status to calculate stature and determine maximum scout ratings.
         - **Career Checklist**: Track your signings, sales, and youth promotions to ensure compliance with transfer window rules.
         - **Starting 11**: Input your starting lineup to determine average overall and wage caps.
         - **Transfer Calculators**: Compute minimum selling offers and starting bids for buying players.
         - **Save/Load**: Use the Save/Load tab to save or load your club, player, and checklist data.
-        
+
         If you enjoy this tool, consider [buying me a coffee](https://buymeacoffee.com/whitespear11).
         """
     )
