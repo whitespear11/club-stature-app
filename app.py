@@ -3,337 +3,139 @@ import math
 import json
 import io
 
-# Add viewport meta tag with enhanced iOS and mobile support
+# Add viewport meta tag for mobile optimization
 st.markdown(
     """
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <script>
-        // Detect mobile devices based on user agent and screen width
-        if (/Mobi|Android/i.test(navigator.userAgent) && window.innerWidth <= 400) {
-            document.body.classList.add('mobile');
-        }
-        // Listen for orientation changes or resize to reapply detection
-        window.addEventListener('resize', () => {
-            if (/Mobi|Android/i.test(navigator.userAgent) && window.innerWidth <= 400) {
-                document.body.classList.add('mobile');
-            } else {
-                document.body.classList.remove('mobile');
-            }
-        });
-    </script>
     """,
     unsafe_allow_html=True
 )
 
-# Apply custom CSS with mobile detection and dual UI
+# Apply custom CSS with mobile-first design
 st.markdown(
     """
     <style>
-    /* Global reset to eliminate all default margins and padding */
+    /* Global reset and mobile-first base styles */
     * {
         margin: 0 !important;
         padding: 0 !important;
         box-sizing: border-box !important;
     }
-
-    /* Default styles for PC and iPad (non-mobile devices) */
     [data-testid="stApp"] {
         width: 100vw !important;
         overflow-x: hidden !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
     [data-testid="stVerticalBlock"] {
-        width: 100% !important;
+        width: 100vw !important;
         max-width: 100vw !important;
-        overflow-x: hidden !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        transform: translateX(0) !important;
+        left: 0 !important;
     }
     .app-wrapper {
         width: 100vw !important;
-        max-width: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        overflow-x: hidden !important;
-        display: block !important;
-    }
-    .main {
-        max-width: 100vw;
-        padding: 0;
-        margin: 0;
-        width: 100%;
-        box-sizing: border-box;
-    }
-
-    /* Mobile-specific styles (applied via JavaScript detection) */
-    body.mobile [data-testid="stApp"] {
-        width: 100vw !important;
-        overflow-x: hidden !important;
-        margin-left: 0 !important;
-        padding-left: 0 !important;
-    }
-    body.mobile [data-testid="stVerticalBlock"] {
-        width: 100vw !important;
-        max-width: 100vw !important;
-        margin-left: 0 !important;
-        padding-left: 0 !important;
-        transform: translateX(0) !important;
-        left: 0 !important;
-        position: relative !important;
-    }
-    body.mobile .app-wrapper {
-        width: 100vw !important;
         max-width: 100vw !important;
         margin: 0 !important;
         padding: 0 !important;
-        overflow-x: auto !important; /* Fallback for accessibility */
-        position: relative !important;
-        left: 0 !important;
-        transform: translateX(0) !important;
+        overflow-x: hidden !important;
         padding-top: env(safe-area-inset-top, 0) !important;
         padding-left: env(safe-area-inset-left, 0) !important;
     }
-    body.mobile [data-testid="stVerticalBlock"] > div {
-        width: 100vw !important;
+    .main {
+        width: 100% !important;
         max-width: 100vw !important;
-        margin-left: 0 !important;
-        padding-left: 0 !important;
-        transform: translateX(0) !important;
-        left: 0 !important;
-        position: relative !important;
-    }
-    body.mobile .stTabs {
-        flex-direction: column;
-        padding: 0.25rem 0;
-    }
-    body.mobile .stTabs [data-baseweb="tab"] {
-        font-size: 1rem;
-        padding: 0.5rem;
-        margin: 0 0.1rem 0.25rem 0.1rem;
-        min-width: 100% !important;
-        text-align: center;
-    }
-    body.mobile .stMarkdown h2, body.mobile .stMarkdown h3 {
-        font-size: 1.2rem;
-        margin: 0.5rem 0;
-    }
-    body.mobile .streamlit-expanderHeader {
-        font-size: 1rem;
-        padding: 0.25rem;
-    }
-    body.mobile .stTextInput > div > div > input, 
-    body.mobile .stNumberInput > div > div > input, 
-    body.mobile .stSelectbox > div > div > select {
-        font-size: 14px;
-        min-height: 35px;
-        width: 100% !important;
-        margin: 0 0 0.25rem 0;
-    }
-    body.mobile .custom-progress-container {
-        margin: 5px 0;
-    }
-    body.mobile .custom-progress-bar {
-        height: 15px;
-    }
-    body.mobile table {
-        font-size: 12px;
-        width: 100% !important;
-    }
-    body.mobile th, body.mobile td {
-        padding: 0.3rem;
-        min-width: 50px;
-    }
-    body.mobile .stColumns > div {
-        width: 100% !important;
-        margin-bottom: 10px !important;
-        margin-left: 0 !important;
-    }
-    body.mobile .main, body.mobile .streamlit-expanderContent, body.mobile .stMarkdown p {
-        max-width: 100vw !important;
-        word-wrap: break-word !important;
-        overflow-wrap: break-word !important;
-        margin-left: 0 !important;
-        padding-left: 0 !important;
-    }
-    body.mobile button[kind="primary"], body.mobile button {
-        min-width: 80px !important;
-        width: 100% !important;
-        margin: 0 0 0.25rem 0;
-    }
-    body.mobile @supports (-webkit-overflow-scrolling: touch) {
-        .app-wrapper {
-            padding-top: env(safe-area-inset-top, 0) !important;
-            padding-left: env(safe-area-inset-left, 0) !important;
-        }
+        margin: 0 !important;
+        padding: 0 !important;
     }
 
-    /* Shared styles (applies to all devices) */
-    button[kind="primary"], button {
-        background-color: #28a745;
-        color: white;
-        border: none;
-        padding: 0.75rem 1rem;
-        border-radius: 0.25rem;
-        font-weight: bold;
-        min-width: 100px;
-        font-size: 16px;
-        width: 100%;
-        margin-bottom: 5px;
-        display: block;
-    }
-    button[kind="primary"]:hover {
-        background-color: #218838;
-        color: white;
-    }
-    .stTextInput > div > div > input, .stNumberInput > div > div > input, .stSelectbox > div > div > select {
-        border-radius: 0.25rem;
-        border: 1px solid #ced4da;
-        padding: 0.5rem;
-        color: #000000 !important;
-        background-color: #ffffff !important;
-        font-size: 16px;
-        min-height: 40px;
-        width: 100%;
-        box-sizing: border-box;
-        margin-bottom: 5px;
-    }
-    .stSelectbox > div > div > select > option {
-        color: #000000 !important;
-        background-color: #ffffff !important;
-        font-size: 16px;
-    }
-    .stMarkdown h2, .stMarkdown h3 {
-        color: #1e3a8a;
-        font-weight: 600;
-        margin-top: 1rem;
-        margin-bottom: 0.5rem;
-        font-size: 1.5rem;
-    }
-    .streamlit-expander {
-        border: 1px solid #e2e8f0;
-        border-radius: 0.25rem;
-        margin-bottom: 1rem;
-        width: 100%;
-        margin-left: 0 !important;
-    }
-    .streamlit-expanderHeader {
-        background-color: #f8fafc;
-        padding: 0.5rem;
-        font-weight: 500;
-        color: #1e3a8a !important;
-        font-size: 1.2rem;
-    }
-    .streamlit-expanderContent {
-        background-color: #ffffff;
-        padding: 0.5rem;
-        color: #000000 !important;
-        width: 100%;
-        box-sizing: border-box;
-        margin-left: 0 !important;
-    }
-    .streamlit-expanderContent .stTextInput, 
-    .streamlit-expanderContent .stNumberInput, 
-    .streamlit-expanderContent .stSelectbox, 
-    .streamlit-expanderContent .stCheckbox {
-        color: #000000 !important;
-        font-size: 16px;
-        width: 100%;
-        margin-bottom: 5px;
-    }
-    .streamlit-expanderContent label, 
-    .streamlit-expanderContent p {
-        color: #000000 !important;
-        font-size: 16px;
-        word-wrap: break-word;
-        max-width: 100%;
-    }
-    .stSuccess, .stError, .stWarning {
-        background-color: #d4edda;
-        color: #155724;
-        padding: 0.75rem;
-        border-radius: 0.25rem;
-        font-size: 16px;
-        word-wrap: break-word;
-        max-width: 100%;
-        margin-bottom: 5px;
-        margin-left: 0 !important;
-    }
+    /* Mobile-first styles (default for all devices) */
     .stTabs {
-        display: flex;
-        justify-content: center;
-        background-color: #1a2526;
-        padding: 0.5rem 0;
-        border-bottom: none;
-        flex-wrap: wrap;
-        width: 100%;
-        margin-left: 0 !important;
+        flex-direction: column;
+        padding: 0.25rem 0;
+        width: 100% !important;
+        margin: 0 !important;
     }
     .stTabs [data-baseweb="tab"] {
-        font-size: 1.2rem;
-        font-family: 'Arial', sans-serif;
-        font-weight: 600;
-        padding: 0.75rem 1rem;
-        margin: 0 0.25rem;
-        color: #ffffff;
-        background-color: #2c3e50;
-        border-radius: 8px 8px 0 0;
-        transition: all 0.3s ease;
-        border: none;
-        min-width: 80px;
+        font-size: 1rem;
+        padding: 0.75rem;
+        margin: 0 0 0.25rem 0 !important;
+        width: 100% !important;
         text-align: center;
-        box-sizing: border-box;
-        margin-bottom: 5px;
+        background-color: #2c3e50;
+        color: #ffffff;
+        border: none;
+        border-radius: 0.25rem;
     }
     .stTabs [data-baseweb="tab"]:hover {
         background-color: #34495e;
-        color: #ffffff;
-        cursor: pointer;
     }
     .stTabs [data-baseweb="tab"][aria-selected="true"] {
         background-color: #2c3e50;
         color: #ffffff;
-        border-bottom: none;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        box-shadow: none;
     }
-    .stTabs, .stTabs [data-baseweb="tab"], .stTabs [data-baseweb="tab"][aria-selected="true"] {
-        border-color: transparent !important;
-        background-color: #2c3e50 !important;
+    .stMarkdown h2, .stMarkdown h3 {
+        font-size: 1.2rem;
+        margin: 0.5rem 0 !important;
+        color: #1e3a8a;
+    }
+    .streamlit-expander {
+        width: 100% !important;
+        margin: 0.5rem 0 !important;
+        border-radius: 0.25rem;
+    }
+    .streamlit-expanderHeader {
+        font-size: 1rem;
+        padding: 0.5rem;
+        background-color: #f8fafc;
+        color: #1e3a8a !important;
+    }
+    .streamlit-expanderContent {
+        padding: 0.5rem;
+        width: 100% !important;
+    }
+    .stTextInput > div > div > input,
+    .stNumberInput > div > div > input,
+    .stSelectbox > div > div > select {
+        width: 100% !important;
+        font-size: 14px;
+        padding: 0.5rem;
+        margin: 0.25rem 0 !important;
+        min-height: 40px;
+        border-radius: 0.25rem;
+    }
+    button[kind="primary"], button {
+        width: 100% !important;
+        font-size: 16px;
+        padding: 0.75rem;
+        margin: 0.25rem 0 !important;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 0.25rem;
+    }
+    button[kind="primary"]:hover {
+        background-color: #218838;
     }
     .custom-progress-container {
-        width: 100%;
-        background-color: #e0e0e0;
-        border-radius: 5px;
-        overflow: hidden;
-        margin: 10px 0;
-        margin-left: 0 !important;
+        width: 100% !important;
+        margin: 0.5rem 0 !important;
     }
     .custom-progress-bar {
-        height: 20px;
-        transition: width 0.3s ease, background-color 0.3s ease;
-    }
-    .checklist-section {
-        margin-bottom: 1rem;
-        margin-left: 0 !important;
-    }
-    .checklist-counter {
-        font-weight: bold;
-        color: #ffffff;
+        height: 15px;
     }
     table {
-        width: auto !important;
-        max-width: 100% !important;
+        width: 100% !important;
+        font-size: 12px;
         border-collapse: collapse;
-        font-size: 14px;
-        word-wrap: break-word;
-        margin-left: 0 !important;
-        display: inline-block !important;
-        box-sizing: border-box;
-        overflow-x: auto;
+        margin: 0.5rem 0 !important;
     }
     th, td {
-        padding: 0.5rem;
-        text-align: left;
+        padding: 0.3rem;
         border: 1px solid #34495e;
-        word-wrap: break-word;
-        min-width: 60px;
-        box-sizing: border-box;
     }
     th {
         background-color: #2c3e50;
@@ -343,28 +145,61 @@ st.markdown(
         background-color: #34495e;
         color: white;
     }
-    div[data-testid="stVerticalBlock"] > div {
-        background-color: transparent !important;
+    .stColumns > div {
+        width: 100% !important;
+        margin: 0.25rem 0 !important;
     }
-    div[data-testid="stVerticalBlock"] > div .stMarkdown,
-    div[data-testid="stVerticalBlock"] > div .stMarkdown p,
-    div[data-testid="stVerticalBlock"] > div .stMarkdown h2,
-    div[data-testid="stVerticalBlock"] > div .stMarkdown h3,
-    div[data-testid="stVerticalBlock"] > div .streamlit-expanderHeader,
-    div[data-testid="stVerticalBlock"] > div .streamlit-expanderContent,
-    div[data-testid="stVerticalBlock"] > div .streamlit-expanderContent p,
-    div[data-testid="stVerticalBlock"] > div .streamlit-expanderContent label,
-    div[data-testid="stVerticalBlock"] > div .stSuccess,
-    div[data-testid="stVerticalBlock"] > div .stError,
-    div[data-testid="stVerticalBlock"] > div .stWarning {
-        color: #ffffff !important;
-        word-wrap: break-word;
-        max-width: 100%;
-        margin-left: 0 !important;
+
+    /* Enhancements for larger screens (PC/iPad) */
+    @media (min-width: 401px) {
+        .stTabs {
+            flex-direction: row;
+            justify-content: center;
+            padding: 0.5rem 0;
+        }
+        .stTabs [data-baseweb="tab"] {
+            font-size: 1.2rem;
+            padding: 0.75rem 1rem;
+            margin: 0 0.25rem !important;
+            width: auto !important;
+            border-radius: 8px 8px 0 0;
+        }
+        .stMarkdown h2, .stMarkdown h3 {
+            font-size: 1.5rem;
+            margin: 1rem 0 !important;
+        }
+        .streamlit-expanderHeader {
+            font-size: 1.2rem;
+            padding: 0.75rem;
+        }
+        .stTextInput > div > div > input,
+        .stNumberInput > div > div > input,
+        .stSelectbox > div > div > select {
+            font-size: 16px;
+            min-height: 40px;
+        }
+        button[kind="primary"], button {
+            width: auto !important;
+            min-width: 100px;
+            padding: 0.75rem 1rem;
+        }
+        .custom-progress-bar {
+            height: 20px;
+        }
+        table {
+            font-size: 14px;
+        }
+        th, td {
+            padding: 0.5rem;
+        }
     }
-    div[data-testid="stVerticalBlock"] > div,
-    div[data-testid="stVerticalBlock"] > div .streamlit-expanderContent {
-        background-color: transparent !important;
+
+    /* iOS safe area support */
+    @supports (-webkit-overflow-scrolling: touch) {
+        .app-wrapper {
+            padding-top: env(safe-area-inset-top, 0) !important;
+            padding-left: env(safe-area-inset-left, 0) !important;
+        }
     }
     </style>
     <div class="app-wrapper">
@@ -525,14 +360,9 @@ tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["Club Details", "Career Checklist"
 # Tab 1: Club Details
 with tab1:
     st.header("Your Club Details")
-    st.write(
-        """
-        Welcome to the FIFA Realistic Toolkit! Enter your club details below to calculate team stature and guide transfers.
-        Use the Save/Load tab to save or upload your data.
-        """
-    )
+    st.write("Enter your club details below to calculate team stature and guide transfers. Use the Save/Load tab to save or upload your data.")
     
-    # Progress indicator for club details with clarification
+    # Progress indicator for club details
     def is_field_valid(value, field_type):
         if field_type == "league" and value in league_tiers:
             return True
@@ -554,7 +384,7 @@ with tab1:
     club_progress_color = "#28a745" if club_progress == 1 else "#3498db"
     st.markdown(
         f"""
-        <div style="margin-bottom: 5px;">Club Details Completion: {club_progress_percentage}%</div>
+        <div>Club Details Completion: {club_progress_percentage}%</div>
         <div class="custom-progress-container">
             <div class="custom-progress-bar" style="width: {club_progress_percentage}%; background-color: {club_progress_color};"></div>
         </div>
@@ -571,19 +401,9 @@ with tab1:
     with st.expander("Enter Club Details", expanded=True):
         with st.form(key="club_details_form"):
             club_name = st.text_input("Club Name", key="club_name")
-            club_league = st.selectbox(
-                "League/Division",
-                list(league_tiers.keys()),
-                index=list(league_tiers.keys()).index(st.session_state.form_league),
-                key="form_league"
-            )
-            club_country = st.selectbox(
-                "Country",
-                list(country_prestige.keys()),
-                index=list(country_prestige.keys()).index(st.session_state.club_country),
-                key="club_country"
-            )
-            club_european = st.checkbox("Participates in European Competitions (e.g., Champions League)", key="club_european")
+            club_league = st.selectbox("League/Division", list(league_tiers.keys()), index=list(league_tiers.keys()).index(st.session_state.form_league), key="form_league")
+            club_country = st.selectbox("Country", list(country_prestige.keys()), index=list(country_prestige.keys()).index(st.session_state.club_country), key="club_country")
+            club_european = st.checkbox("Participates in European Competitions", key="club_european")
             submit_club_details = st.form_submit_button("Save Club Details")
 
         if submit_club_details:
@@ -595,7 +415,6 @@ with tab1:
             }
             st.session_state.club_details_updated = False
             st.session_state.pending_club_details = None
-            # Calculate scout star rating
             league = st.session_state.club_details["league"]
             european = st.session_state.club_details["european"]
             if league == "First Division" and european:
@@ -621,23 +440,11 @@ with tab2:
     st.header("Career Checklist")
     st.write("Track your signings, sales, and youth promotions to stay within the guidelines.")
 
-    # Reset button for the checklist
-    if st.button("Reset for New Season", key="reset_checklist"):
+    # Reset button
+    if st.button("Reset for New Season"):
         st.session_state.checklist = {
-            "summer": {
-                "starting_signings": 0,
-                "bench_signings": 0,
-                "reserve_signings": 0,
-                "loans": 0,
-                "starting_sold": 0
-            },
-            "winter": {
-                "starting_signings": 0,
-                "bench_signings": 0,
-                "reserve_signings": 0,
-                "loans": 0,
-                "starting_sold": 0
-            },
+            "summer": {"starting_signings": 0, "bench_signings": 0, "reserve_signings": 0, "loans": 0, "starting_sold": 0},
+            "winter": {"starting_signings": 0, "bench_signings": 0, "reserve_signings": 0, "loans": 0, "starting_sold": 0},
             "youth_promotions": 0
         }
         st.session_state.pop("summer_signing_category", None)
@@ -650,8 +457,6 @@ with tab2:
     # Summer Window
     with st.expander("Summer Window", expanded=True):
         st.subheader("Summer Window Guidelines")
-        
-        # Tally display as a table
         summer_starting_max = 2
         summer_bench_max = 2
         summer_reserve_max = 3
@@ -660,84 +465,48 @@ with tab2:
         summer_starting_total_max = summer_starting_max + summer_starting_extra
         summer_bench_total_max = summer_bench_max + summer_starting_extra
         st.markdown(
-            """
-            <table style="width:auto; border-collapse: collapse; margin-bottom: 1rem;">
-                <tr style="background-color: #2c3e50; color: white;">
-                    <th>Category</th>
-                    <th>Current Count</th>
-                    <th>Max Limit</th>
-                </tr>
-                <tr style="background-color: #34495e; color: white;">
-                    <td>First Team Signings</td>
-                    <td>{}</td>
-                    <td>{}</td>
-                </tr>
-                <tr style="background-color: #34495e; color: white;">
-                    <td>Bench Signings</td>
-                    <td>{}</td>
-                    <td>{}</td>
-                </tr>
-                <tr style="background-color: #34495e; color: white;">
-                    <td>Reserve Signings</td>
-                    <td>{}</td>
-                    <td>{}</td>
-                </tr>
-                <tr style="background-color: #34495e; color: white;">
-                    <td>Loans</td>
-                    <td>{}</td>
-                    <td>{}</td>
-                </tr>
-                <tr style="background-color: #34495e; color: white;">
-                    <td>Starting Players Sold</td>
-                    <td>{}</td>
-                    <td>-</td>
-                </tr>
+            f"""
+            <table>
+                <tr><th>Category</th><th>Current</th><th>Max</th></tr>
+                <tr><td>First Team Signings</td><td>{st.session_state.checklist['summer']['starting_signings']}</td><td>{summer_starting_total_max}</td></tr>
+                <tr><td>Bench Signings</td><td>{st.session_state.checklist['summer']['bench_signings']}</td><td>{summer_bench_total_max}</td></tr>
+                <tr><td>Reserve Signings</td><td>{st.session_state.checklist['summer']['reserve_signings']}</td><td>{summer_reserve_max}</td></tr>
+                <tr><td>Loans</td><td>{st.session_state.checklist['summer']['loans']}</td><td>{summer_loan_max}</td></tr>
+                <tr><td>Starting Players Sold</td><td>{st.session_state.checklist['summer']['starting_sold']}</td><td>-</td></tr>
             </table>
-            """.format(
-                st.session_state.checklist["summer"]["starting_signings"],
-                summer_starting_total_max,
-                st.session_state.checklist["summer"]["bench_signings"],
-                summer_bench_total_max,
-                st.session_state.checklist["summer"]["reserve_signings"],
-                summer_reserve_max,
-                st.session_state.checklist["summer"]["loans"],
-                summer_loan_max,
-                st.session_state.checklist["summer"]["starting_sold"]
-            ),
+            """,
             unsafe_allow_html=True
         )
         if summer_starting_extra:
             st.markdown("*Extra signing unlocked (2 starting players sold)!*")
-
-        # Signing question and category buttons
-        if st.button("Did you make a signing?", key="summer_signing_question"):
+        if st.button("Did you make a signing?"):
             st.session_state["summer_signing_mode"] = True
             st.rerun()
         if st.session_state.get("summer_signing_mode", False):
-            col1, col2, col3 = st.columns([1, 1, 1])
+            col1, col2, col3 = st.columns(3)
             with col1:
-                if st.button("First Team Player", key="summer_starting_add"):
+                if st.button("First Team"):
                     st.session_state["summer_signing_category"] = "starting"
                     st.session_state["summer_loan_mode"] = True
                     st.session_state["summer_signing_mode"] = False
                     st.rerun()
             with col2:
-                if st.button("Bench Player", key="summer_bench_add"):
+                if st.button("Bench Player"):
                     st.session_state["summer_signing_category"] = "bench"
                     st.session_state["summer_loan_mode"] = True
                     st.session_state["summer_signing_mode"] = False
                     st.rerun()
             with col3:
-                if st.button("Reserve Player", key="summer_reserve_add"):
+                if st.button("Reserve Player"):
                     st.session_state["summer_signing_category"] = "reserve"
                     st.session_state["summer_loan_mode"] = True
                     st.session_state["summer_signing_mode"] = False
                     st.rerun()
         if st.session_state.get("summer_loan_mode", False):
             st.write("Is this a loan?")
-            col1, col2 = st.columns([1, 1])
+            col1, col2 = st.columns(2)
             with col1:
-                if st.button("Yes", key="summer_loan_yes"):
+                if st.button("Yes"):
                     if st.session_state.checklist["summer"]["loans"] < summer_loan_max:
                         if st.session_state["summer_signing_category"] == "starting" and st.session_state.checklist["summer"]["starting_signings"] < summer_starting_total_max:
                             st.session_state.checklist["summer"]["starting_signings"] += 1
@@ -756,7 +525,7 @@ with tab2:
                     st.session_state.pop("summer_loan_mode", None)
                     st.rerun()
             with col2:
-                if st.button("No", key="summer_loan_no"):
+                if st.button("No"):
                     if st.session_state["summer_signing_category"] == "starting" and st.session_state.checklist["summer"]["starting_signings"] < summer_starting_total_max:
                         st.session_state.checklist["summer"]["starting_signings"] += 1
                     elif st.session_state["summer_signing_category"] == "bench" and st.session_state.checklist["summer"]["bench_signings"] < summer_bench_total_max:
@@ -768,22 +537,18 @@ with tab2:
                     st.session_state.pop("summer_signing_category", None)
                     st.session_state.pop("summer_loan_mode", None)
                     st.rerun()
-
-        # Starting Players Sold
-        st.markdown('<div class="checklist-section"><strong>Starting Players Sold (Unlocks Extra Signing at 2)</strong></div>', unsafe_allow_html=True)
-        if st.button("Add Sold Player", key="summer_sale_add"):
+        st.markdown("<strong>Starting Players Sold (Unlocks Extra Signing at 2)</strong>", unsafe_allow_html=True)
+        if st.button("Add Sold Player"):
             st.session_state.checklist["summer"]["starting_sold"] += 1
             st.rerun()
         if st.session_state.checklist["summer"]["starting_sold"] > 0:
-            if st.button("Remove Sold Player", key="summer_sale_remove"):
+            if st.button("Remove Sold Player"):
                 st.session_state.checklist["summer"]["starting_sold"] -= 1
                 st.rerun()
 
     # Winter Window
-    with st.expander("Winter Window", expanded=False):
+    with st.expander("Winter Window"):
         st.subheader("Winter Window Guidelines")
-        
-        # Tally display as a table
         winter_starting_max = 1
         winter_bench_max = 1
         winter_reserve_max = 2
@@ -792,84 +557,48 @@ with tab2:
         winter_starting_total_max = winter_starting_max + winter_starting_extra
         winter_bench_total_max = winter_bench_max + winter_starting_extra
         st.markdown(
-            """
-            <table style="width:auto; border-collapse: collapse; margin-bottom: 1rem;">
-                <tr style="background-color: #2c3e50; color: white;">
-                    <th>Category</th>
-                    <th>Current Count</th>
-                    <th>Max Limit</th>
-                </tr>
-                <tr style="background-color: #34495e; color: white;">
-                    <td>First Team Signings</td>
-                    <td>{}</td>
-                    <td>{}</td>
-                </tr>
-                <tr style="background-color: #34495e; color: white;">
-                    <td>Bench Signings</td>
-                    <td>{}</td>
-                    <td>{}</td>
-                </tr>
-                <tr style="background-color: #34495e; color: white;">
-                    <td>Reserve Signings</td>
-                    <td>{}</td>
-                    <td>{}</td>
-                </tr>
-                <tr style="background-color: #34495e; color: white;">
-                    <td>Loans</td>
-                    <td>{}</td>
-                    <td>{}</td>
-                </tr>
-                <tr style="background-color: #34495e; color: white;">
-                    <td>Starting Players Sold</td>
-                    <td>{}</td>
-                    <td>-</td>
-                </tr>
+            f"""
+            <table>
+                <tr><th>Category</th><th>Current</th><th>Max</th></tr>
+                <tr><td>First Team Signings</td><td>{st.session_state.checklist['winter']['starting_signings']}</td><td>{winter_starting_total_max}</td></tr>
+                <tr><td>Bench Signings</td><td>{st.session_state.checklist['winter']['bench_signings']}</td><td>{winter_bench_total_max}</td></tr>
+                <tr><td>Reserve Signings</td><td>{st.session_state.checklist['winter']['reserve_signings']}</td><td>{winter_reserve_max}</td></tr>
+                <tr><td>Loans</td><td>{st.session_state.checklist['winter']['loans']}</td><td>{winter_loan_max}</td></tr>
+                <tr><td>Starting Players Sold</td><td>{st.session_state.checklist['winter']['starting_sold']}</td><td>-</td></tr>
             </table>
-            """.format(
-                st.session_state.checklist["winter"]["starting_signings"],
-                winter_starting_total_max,
-                st.session_state.checklist["winter"]["bench_signings"],
-                winter_bench_total_max,
-                st.session_state.checklist["winter"]["reserve_signings"],
-                winter_reserve_max,
-                st.session_state.checklist["winter"]["loans"],
-                winter_loan_max,
-                st.session_state.checklist["winter"]["starting_sold"]
-            ),
+            """,
             unsafe_allow_html=True
         )
         if winter_starting_extra:
             st.markdown("*Extra signing unlocked (2 starting players sold)!*")
-
-        # Signing question and category buttons
-        if st.button("Did you make a signing?", key="winter_signing_question"):
+        if st.button("Did you make a signing?"):
             st.session_state["winter_signing_mode"] = True
             st.rerun()
         if st.session_state.get("winter_signing_mode", False):
-            col1, col2, col3 = st.columns([1, 1, 1])
+            col1, col2, col3 = st.columns(3)
             with col1:
-                if st.button("First Team Player", key="winter_starting_add"):
+                if st.button("First Team"):
                     st.session_state["winter_signing_category"] = "starting"
                     st.session_state["winter_loan_mode"] = True
                     st.session_state["winter_signing_mode"] = False
                     st.rerun()
             with col2:
-                if st.button("Bench Player", key="winter_bench_add"):
+                if st.button("Bench Player"):
                     st.session_state["winter_signing_category"] = "bench"
                     st.session_state["winter_loan_mode"] = True
                     st.session_state["winter_signing_mode"] = False
                     st.rerun()
             with col3:
-                if st.button("Reserve Player", key="winter_reserve_add"):
+                if st.button("Reserve Player"):
                     st.session_state["winter_signing_category"] = "reserve"
                     st.session_state["winter_loan_mode"] = True
                     st.session_state["winter_signing_mode"] = False
                     st.rerun()
         if st.session_state.get("winter_loan_mode", False):
             st.write("Is this a loan?")
-            col1, col2 = st.columns([1, 1])
+            col1, col2 = st.columns(2)
             with col1:
-                if st.button("Yes", key="winter_loan_yes"):
+                if st.button("Yes"):
                     if st.session_state.checklist["winter"]["loans"] < winter_loan_max:
                         if st.session_state["winter_signing_category"] == "starting" and st.session_state.checklist["winter"]["starting_signings"] < winter_starting_total_max:
                             st.session_state.checklist["winter"]["starting_signings"] += 1
@@ -888,7 +617,7 @@ with tab2:
                     st.session_state.pop("winter_loan_mode", None)
                     st.rerun()
             with col2:
-                if st.button("No", key="winter_loan_no"):
+                if st.button("No"):
                     if st.session_state["winter_signing_category"] == "starting" and st.session_state.checklist["winter"]["starting_signings"] < winter_starting_total_max:
                         st.session_state.checklist["winter"]["starting_signings"] += 1
                     elif st.session_state["winter_signing_category"] == "bench" and st.session_state.checklist["winter"]["bench_signings"] < winter_bench_total_max:
@@ -900,69 +629,48 @@ with tab2:
                     st.session_state.pop("winter_signing_category", None)
                     st.session_state.pop("winter_loan_mode", None)
                     st.rerun()
-
-        # Starting Players Sold
-        st.markdown('<div class="checklist-section"><strong>Starting Players Sold (Unlocks Extra Signing at 2)</strong></div>', unsafe_allow_html=True)
-        if st.button("Add Sold Player", key="winter_sale_add"):
+        st.markdown("<strong>Starting Players Sold (Unlocks Extra Signing at 2)</strong>", unsafe_allow_html=True)
+        if st.button("Add Sold Player"):
             st.session_state.checklist["winter"]["starting_sold"] += 1
             st.rerun()
         if st.session_state.checklist["winter"]["starting_sold"] > 0:
-            if st.button("Remove Sold Player", key="winter_sale_remove"):
+            if st.button("Remove Sold Player"):
                 st.session_state.checklist["winter"]["starting_sold"] -= 1
                 st.rerun()
 
     # Youth Academy
-    with st.expander("Youth Academy", expanded=False):
+    with st.expander("Youth Academy"):
         st.subheader("Youth Academy Guidelines")
         st.write("A total of 3 players can be promoted to the senior team.")
-        
-        # Tally display as a table
         youth_promotion_max = 3
         st.markdown(
-            """
-            <table style="width:auto; border-collapse: collapse; margin-bottom: 1rem;">
-                <tr style="background-color: #2c3e50; color: white;">
-                    <th>Category</th>
-                    <th>Current Count</th>
-                    <th>Max Limit</th>
-                </tr>
-                <tr style="background-color: #34495e; color: white;">
-                    <td>Youth Promotions</td>
-                    <td>{}</td>
-                    <td>{}</td>
-                </tr>
+            f"""
+            <table>
+                <tr><th>Category</th><th>Current</th><th>Max</th></tr>
+                <tr><td>Youth Promotions</td><td>{st.session_state.checklist['youth_promotions']}</td><td>{youth_promotion_max}</td></tr>
             </table>
-            """.format(
-                st.session_state.checklist["youth_promotions"],
-                youth_promotion_max
-            ),
+            """,
             unsafe_allow_html=True
         )
-        
-        # Promotion button
-        if st.button("I promoted a youth player", key="youth_promotion_add"):
+        if st.button("I promoted a youth player"): 
             if st.session_state.checklist["youth_promotions"] < youth_promotion_max:
                 st.session_state.checklist["youth_promotions"] += 1
                 st.rerun()
-            else:
-                st.error("Exceeded youth promotion limit of 3!")
-        if st.session_state.checklist["youth_promotions"] > 0:
-            if st.button("Remove Youth Promotion", key="youth_promotion_remove"):
-                st.session_state.checklist["youth_promotions"] -= 1
-                st.rerun()
+            else: st.error("Exceeded youth promotion limit of 3!")
+        if st.session_state.checklist["youth_promotions"] > 0: if st.button("Remove Youth Promotion"): st.session_state.checklist["youth_promotions"] -= 1; st.rerun()
 
 # Tab 3: Starting 11
 with tab3:
     st.header("Starting 11 Calculator")
     st.write("Enter your starting 11 to calculate team average overall and wage cap. Use the Save/Load tab to save your data.")
     
-    # Progress indicator for starting 11
+    # Progress indicator
     valid_players = sum(1 for player in st.session_state.starting_11 if player["overall"] > 0) / 11
     starting_11_progress_percentage = int(valid_players * 100)
     starting_11_progress_color = "#28a745" if valid_players == 1 else "#3498db"
     st.markdown(
         f"""
-        <div style="margin-bottom: 5px;">Starting 11 Completion: {starting_11_progress_percentage}%</div>
+        <div>Starting 11 Completion: {starting_11_progress_percentage}%</div>
         <div class="custom-progress-container">
             <div class="custom-progress-bar" style="width: {starting_11_progress_percentage}%; background-color: {starting_11_progress_color};"></div>
         </div>
@@ -975,47 +683,16 @@ with tab3:
             st.write("**Position** | **Overall** | **Wage (p/w)**")
             players = []
             for i in range(11):
-                col1, col2, col3 = st.columns([1, 1, 1])
-                with col1:
-                    position = st.selectbox(
-                        "",
-                        player_positions,
-                        index=player_positions.index(st.session_state.get(f"player_{i}_position", st.session_state.starting_11[i]["position"])),
-                        key=f"player_{i}_position"
-                    )
-                with col2:
-                    overall = st.number_input(
-                        "",
-                        min_value=0,
-                        max_value=99,
-                        value=st.session_state.get(f"player_{i}_overall", st.session_state.starting_11[i]["overall"]),
-                        step=1,
-                        format="%d",
-                        key=f"player_{i}_overall"
-                    )
-                with col3:
-                    wage = st.number_input(
-                        "",
-                        min_value=0,
-                        value=st.session_state.get(f"player_{i}_wage", st.session_state.starting_11[i]["wage"]),
-                        step=1000,
-                        format="%d",
-                        key=f"player_{i}_wage"
-                    )
+                col1, col2, col3 = st.columns(3)
+                with col1: position = st.selectbox("", player_positions, index=player_positions.index(st.session_state.starting_11[i]["position"]), key=f"player_{i}_position")
+                with col2: overall = st.number_input("", min_value=0, max_value=99, value=st.session_state.starting_11[i]["overall"], step=1, key=f"player_{i}_overall")
+                with col3: wage = st.number_input("", min_value=0, value=st.session_state.starting_11[i]["wage"], step=1000, key=f"player_{i}_wage")
                 players.append({"position": position, "overall": overall, "wage": wage})
-            
             submit_starting_11 = st.form_submit_button("Calculate Team Overall")
     
     if submit_starting_11:
         if all(player["overall"] >= 0 and player["wage"] >= 0 for player in players):
             st.session_state.starting_11 = players
-            for i in range(11):
-                for key in [f"player_{i}_position", f"player_{i}_overall", f"player_{i}_wage"]:
-                    st.session_state.pop(key, None)
-            for i, player in enumerate(players):
-                st.session_state[f"player_{i}_position"] = player["position"]
-                st.session_state[f"player_{i}_overall"] = player["overall"]
-                st.session_state[f"player_{i}_wage"] = player["wage"]
             total_overall = sum(player["overall"] for player in players)
             average_overall = math.floor(total_overall / 11)
             st.session_state.average_team_overall = average_overall
@@ -1033,23 +710,15 @@ with tab4:
     st.header("Transfer Calculators")
     
     # Selling Transfer Calculator
-    with st.expander("Selling Transfer Calculator", expanded=False):
+    with st.expander("Selling Transfer Calculator"):
         with st.form(key="selling_transfer_form"):
             st.subheader("Offering Club Details")
             club2_name_sell = st.text_input("Offering Club Name (Optional)", key="club2_name_sell")
             club2_league_sell = st.selectbox("Offering Club League", list(league_tiers.keys()), key="club2_league_sell")
             club2_country_sell = st.selectbox("Offering Club Country", list(country_prestige.keys()), key="club2_country_sell")
             club2_european_sell = st.checkbox("Offering Club in European Competitions", key="club2_european_sell")
-            
             st.subheader("Transfer Details")
-            player_value_sell = st.number_input(
-                "Player Value",
-                min_value=0.0,
-                step=1000.0,
-                format="%.2f",
-                key="player_value_sell",
-                help="Enter value without commas, e.g., 1000000"
-            )
+            player_value_sell = st.number_input("Player Value", min_value=0.0, step=1000.0, format="%.2f", key="player_value_sell")
             is_young_sell = st.checkbox("Player Aged 16–21", key="is_young_sell")
             submit_selling_transfer = st.form_submit_button("Calculate Selling Offer")
         
@@ -1061,16 +730,13 @@ with tab4:
                 stature_diff = score2 - score1
                 display_name1 = club_details["name"] if club_details["name"] else "Your Club"
                 display_name2 = club2_name_sell if club2_name_sell else "Offering Club"
-                st.write(f"**{display_name1}**: {club_details['league']}, {club_details['country']}, European: {club_details['european']}")
-                st.write(f"**Stature Score**: {score1:.1f}")
-                st.write(f"**{display_name2}**: {club2_league_sell}, {club2_country_sell}, European: {club2_european_sell}")
-                st.write(f"**Stature Score**: {score2:.1f}")
-                if score1 > score2:
-                    st.success(f"{display_name1} has higher stature by {score1 - score2:.1f}.")
-                elif score2 > score1:
-                    st.warning(f"{display_name2} has higher stature by {score2 - score1:.1f}.")
-                else:
-                    st.info("Clubs have equal stature.")
+                st.write(f"{display_name1}: {club_details['league']}, {club_details['country']}, European: {club_details['european']}")
+                st.write(f"Stature Score: {score1:.1f}")
+                st.write(f"{display_name2}: {club2_league_sell}, {club2_country_sell}, European: {club2_european_sell}")
+                st.write(f"Stature Score: {score2:.1f}")
+                if score1 > score2: st.success(f"{display_name1} has higher stature by {score1 - score2:.1f}.")
+                elif score2 > score1: st.warning(f"{display_name2} has higher stature by {score2 - score1:.1f}.")
+                else: st.info("Clubs have equal stature.")
                 minimum_offer = calculate_minimum_offer(player_value_sell, stature_diff, is_young_sell)
                 minimum_offer = math.ceil(minimum_offer / 1000) * 1000
                 st.success(f"Accept offers from {display_name2} of {minimum_offer:,.0f} or higher.")
@@ -1078,51 +744,25 @@ with tab4:
                 st.error("Player value must be greater than 0.")
 
     # Buying Transfer Calculator
-    with st.expander("Buying Transfer Calculator", expanded=False):
+    with st.expander("Buying Transfer Calculator"):
         with st.form(key="buying_transfer_form"):
             st.subheader("Player Details")
-            player_value_buy = st.number_input(
-                "Player Value",
-                min_value=0.0,
-                step=1000.0,
-                format="%.2f",
-                key="player_value_buy",
-                help="Enter value without commas, e.g., 1000000"
-            )
-            player_overall_buy = st.number_input(
-                "Player Overall",
-                min_value=0,
-                max_value=99,
-                step=1,
-                format="%d",
-                key="player_overall_buy"
-            )
-            player_age_buy = st.number_input(
-                "Player Age",
-                min_value=16,
-                max_value=40,
-                step=1,
-                format="%d",
-                key="player_age_buy"
-            )
+            player_value_buy = st.number_input("Player Value", min_value=0.0, step=1000.0, format="%.2f", key="player_value_buy")
+            player_overall_buy = st.number_input("Player Overall", min_value=0, max_value=99, step=1, key="player_overall_buy")
+            player_age_buy = st.number_input("Player Age", min_value=16, max_value=40, step=1, key="player_age_buy")
             submit_buying_transfer = st.form_submit_button("Calculate Bid and Wage")
         
         if submit_buying_transfer:
             if player_value_buy > 0 and player_overall_buy > 0:
-                if st.session_state.average_team_overall is not None and player_overall_buy > st.session_state.average_team_overall + 2:
+                if st.session_state.average_team_overall and player_overall_buy > st.session_state.average_team_overall + 2:
                     st.warning("Player's overall is too high. Sign players with lower overall or update Starting 11.")
-                starting_bid, is_accurate = calculate_starting_bid(
-                    player_value_buy, player_overall_buy, player_age_buy, st.session_state.average_team_overall
-                )
+                starting_bid, is_accurate = calculate_starting_bid(player_value_buy, player_overall_buy, player_age_buy, st.session_state.average_team_overall)
                 starting_bid = math.ceil(starting_bid / 1000) * 1000
                 st.success(f"Start your bid at {starting_bid:,.0f}.")
-                if not is_accurate:
-                    st.warning("Bid uses default markup. Calculate Starting 11 average for accuracy.")
+                if not is_accurate: st.warning("Bid uses default markup. Calculate Starting 11 average for accuracy.")
                 wage, wage_error = calculate_proportional_wage(player_overall_buy, st.session_state.starting_11)
-                if wage is not None:
-                    st.success(f"Minimum Wage: {wage:,} p/w")
-                else:
-                    st.warning(f"Wage error: {wage_error}")
+                if wage: st.success(f"Minimum Wage: {wage:,} p/w")
+                else: st.warning(f"Wage error: {wage_error}")
             else:
                 st.error("Player value and overall must be greater than 0.")
 
@@ -1133,150 +773,46 @@ with tab5:
         """
         **FIFA Realistic Toolkit** helps you manage your FIFA career mode with realistic transfer and wage guidelines.
 
-        - **Club Details**: Enter your club's league, country, and European status to calculate stature and determine maximum scout ratings.
-        - **Career Checklist**: Track your signings, sales, and youth promotions to ensure compliance with transfer window rules.
-        - **Starting 11**: Input your starting lineup to determine average overall and wage caps.
-        - **Transfer Calculators**: Compute minimum selling offers and starting bids for buying players.
-        - **Save/Load**: Use the Save/Load tab to save or load your club, player, and checklist data.
+        - **Club Details**: Enter your club's league, country, and European status to calculate stature and scout ratings.
+        - **Career Checklist**: Track signings, sales, and youth promotions.
+        - **Starting 11**: Input your lineup for average overall and wage caps.
+        - **Transfer Calculators**: Compute selling offers and buying bids.
+        - **Save/Load**: Save or load your data.
 
-        If you enjoy this tool, consider [buying me a coffee](https://buymeacoffee.com/whitespear11).
+        Support me at [buymeacoffee.com/whitespear11](https://buymeacoffee.com/whitespear11).
         """
     )
 
 # Tab 6: Save/Load
 with tab6:
     st.header("Save/Load Data")
-    st.write(
-        """
-        Save your progress or load a previous session to continue where you left off. The saved file includes your club details, starting 11, and career checklist data.
-        """
-    )
-
-    # File uploader
-    uploaded_file = st.file_uploader("Upload Club, Starting 11, and Checklist JSON", type=["json"], key="combined_upload")
-    if st.session_state.get("combined_upload") is not None:
-        st.warning("Clear the uploaded file before editing form fields.")
+    st.write("Save your progress or load a previous session.")
+    uploaded_file = st.file_uploader("Upload Club, Starting 11, and Checklist JSON", type=["json"])
     if uploaded_file:
         try:
             loaded_data = json.load(uploaded_file)
-            # Validate club_details
-            club_valid = (
-                isinstance(loaded_data.get("club_details"), dict) and
-                all(key in loaded_data["club_details"] for key in ["name", "league", "country", "european"]) and
-                isinstance(loaded_data["club_details"]["name"], str) and
-                loaded_data["club_details"]["league"] in league_tiers and
-                loaded_data["club_details"]["country"] in country_prestige and
-                isinstance(loaded_data["club_details"]["european"], bool)
-            )
-            # Validate starting_11
-            starting_11_valid = (
-                isinstance(loaded_data.get("starting_11"), list) and
-                len(loaded_data["starting_11"]) == 11 and
-                all(
-                    isinstance(player, dict) and
-                    all(key in player for key in ["position", "overall", "wage"]) and
-                    player["position"] in player_positions and
-                    isinstance(player["overall"], int) and
-                    0 <= player["overall"] <= 99 and
-                    isinstance(player["wage"], int) and
-                    player["wage"] >= 0
-                    for player in loaded_data["starting_11"]
-                )
-            )
-            # Validate checklist
-            checklist_valid = (
-                isinstance(loaded_data.get("checklist"), dict) and
-                "summer" in loaded_data["checklist"] and
-                "winter" in loaded_data["checklist"] and
-                "youth_promotions" in loaded_data["checklist"] and
-                isinstance(loaded_data["checklist"]["summer"], dict) and
-                isinstance(loaded_data["checklist"]["winter"], dict) and
-                isinstance(loaded_data["checklist"]["youth_promotions"], int) and
-                loaded_data["checklist"]["youth_promotions"] >= 0 and
-                all(
-                    key in loaded_data["checklist"]["summer"]
-                    for key in ["starting_signings", "bench_signings", "reserve_signings", "loans", "starting_sold"]
-                ) and
-                all(
-                    key in loaded_data["checklist"]["winter"]
-                    for key in ["starting_signings", "bench_signings", "reserve_signings", "loans", "starting_sold"]
-                ) and
-                all(
-                    isinstance(loaded_data["checklist"]["summer"][key], int) and
-                    loaded_data["checklist"]["summer"][key] >= 0
-                    for key in loaded_data["checklist"]["summer"]
-                ) and
-                all(
-                    isinstance(loaded_data["checklist"]["winter"][key], int) and
-                    loaded_data["checklist"]["winter"][key] >= 0
-                    for key in loaded_data["checklist"]["winter"]
-                )
-            )
+            club_valid = isinstance(loaded_data.get("club_details"), dict) and all(k in loaded_data["club_details"] for k in ["name", "league", "country", "european"]) and loaded_data["club_details"]["league"] in league_tiers and loaded_data["club_details"]["country"] in country_prestige and isinstance(loaded_data["club_details"]["european"], bool)
+            starting_11_valid = isinstance(loaded_data.get("starting_11"), list) and len(loaded_data["starting_11"]) == 11 and all(isinstance(p, dict) and all(k in p for k in ["position", "overall", "wage"]) and p["position"] in player_positions and isinstance(p["overall"], int) and 0 <= p["overall"] <= 99 and isinstance(p["wage"], int) and p["wage"] >= 0 for p in loaded_data["starting_11"])
             if club_valid and starting_11_valid:
                 st.session_state.club_details = loaded_data["club_details"]
                 st.session_state.starting_11 = loaded_data["starting_11"]
-                if checklist_valid:
-                    st.session_state.checklist = loaded_data["checklist"]
-                else:
-                    # Reset checklist if invalid or not present
-                    st.session_state.checklist = {
-                        "summer": {
-                            "starting_signings": 0,
-                            "bench_signings": 0,
-                            "reserve_signings": 0,
-                            "loans": 0,
-                            "starting_sold": 0
-                        },
-                        "winter": {
-                            "starting_signings": 0,
-                            "bench_signings": 0,
-                            "reserve_signings": 0,
-                            "loans": 0,
-                            "starting_sold": 0
-                        },
-                        "youth_promotions": 0
-                    }
-                    st.warning("Checklist data invalid or missing; reset to defaults.")
+                st.session_state.checklist = loaded_data.get("checklist", {"summer": {"starting_signings": 0, "bench_signings": 0, "reserve_signings": 0, "loans": 0, "starting_sold": 0}, "winter": {"starting_signings": 0, "bench_signings": 0, "reserve_signings": 0, "loans": 0, "starting_sold": 0}, "youth_promotions": 0})
                 st.session_state.club_details_updated = True
-                st.session_state.pending_club_details = None
                 st.session_state["club_name"] = loaded_data["club_details"]["name"]
                 st.session_state["form_league"] = loaded_data["club_details"]["league"]
                 st.session_state["club_country"] = loaded_data["club_details"]["country"]
                 st.session_state["club_european"] = loaded_data["club_details"]["european"]
-                for i, player in enumerate(loaded_data["starting_11"]):
-                    st.session_state[f"player_{i}_position"] = player["position"]
-                    st.session_state[f"player_{i}_overall"] = player["overall"]
-                    st.session_state[f"player_{i}_wage"] = player["wage"]
-                total_overall = sum(player["overall"] for player in loaded_data["starting_11"])
+                for i, p in enumerate(loaded_data["starting_11"]): st.session_state[f"player_{i}_position"] = p["position"]; st.session_state[f"player_{i}_overall"] = p["overall"]; st.session_state[f"player_{i}_wage"] = p["wage"]
+                total_overall = sum(p["overall"] for p in loaded_data["starting_11"])
                 st.session_state.average_team_overall = math.floor(total_overall / 11)
-                st.success(
-                    f"Club data loaded: {loaded_data['club_details']['name'] or 'None'}, "
-                    f"{loaded_data['club_details']['league']}, "
-                    f"{loaded_data['club_details']['country']}, "
-                    f"European: {loaded_data['club_details']['european']}. "
-                    f"Stature: {calculate_score(loaded_data['club_details']['league'], loaded_data['club_details']['country'], loaded_data['club_details']['european'], league_tiers):.1f}"
-                )
+                st.success(f"Data loaded: {loaded_data['club_details']['name'] or 'None'}, {loaded_data['club_details']['league']}, {loaded_data['club_details']['country']}, European: {loaded_data['club_details']['european']}")
             else:
-                st.error("Invalid JSON format or data for club_details or starting_11.")
+                st.error("Invalid JSON format.")
         except json.JSONDecodeError:
             st.error("Invalid JSON file.")
-
-    # Download button
     if st.session_state.club_details and st.session_state.starting_11 and st.session_state.checklist:
-        combined_data = {
-            "club_details": st.session_state.club_details,
-            "starting_11": st.session_state.starting_11,
-            "checklist": st.session_state.checklist
-        }
-        json_str = json.dumps(combined_data, indent=2)
-        st.download_button(
-            label="Save Club, Starting 11, and Checklist Data",
-            data=json_str,
-            file_name="team_data.json",
-            mime="application/json",
-            key="download_club",
-            use_container_width=True
-        )
+        combined_data = {"club_details": st.session_state.club_details, "starting_11": st.session_state.starting_11, "checklist": st.session_state.checklist}
+        st.download_button("Save Data", json.dumps(combined_data, indent=2), "team_data.json", "application/json")
 
 # Close the wrapper div
 st.markdown("</div>", unsafe_allow_html=True)
