@@ -194,15 +194,18 @@ st.markdown(
         flex-direction: column;
         padding: 0.25rem 0;
         width: 100% !important;
+        max-width: 100% !important;
         margin: 0 !important;
         background-color: #1a2526 !important;
         border-bottom: none;
+        overflow-x: hidden !important;
     }
     .stTabs [data-baseweb="tab"] {
         font-size: 1rem;
         padding: 0.75rem;
         margin: 0 0 0.25rem 0 !important;
         width: 100% !important;
+        max-width: 100% !important;
         text-align: center;
         background-color: #2c3e50 !important;
         color: #ffffff !important;
@@ -210,6 +213,7 @@ st.markdown(
         border-radius: 0.25rem;
         min-height: 44px;
         transition: background-color 0.3s ease;
+        box-sizing: border-box;
     }
     .stTabs [data-baseweb="tab"]:hover {
         background-color: #34495e !important;
@@ -222,6 +226,14 @@ st.markdown(
     }
     .stTabs, .stTabs [data-baseweb="tab"], .stTabs [data-baseweb="tab"][aria-selected="true"] {
         border-color: transparent !important;
+    }
+    /* Tab bar wrapper to enforce clipping */
+    div[data-testid="stTabs"] {
+        overflow-x: hidden !important;
+        width: 100% !important;
+        max-width: 100vw !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
     /* Custom progress bar */
     .custom-progress-container {
@@ -280,12 +292,16 @@ st.markdown(
             flex-direction: row;
             justify-content: center;
             padding: 0.5rem 0;
+            width: 100% !important;
+            max-width: 100% !important;
+            overflow-x: hidden !important;
         }
         .stTabs [data-baseweb="tab"] {
             font-size: 1.2rem;
             padding: 0.75rem 1rem;
             margin: 0 0.25rem !important;
             width: auto !important;
+            max-width: none !important;
             border-radius: 8px 8px 0 0;
         }
         button[kind="primary"] {
@@ -316,10 +332,19 @@ st.markdown(
 
     /* Mobile optimizations */
     @media (max-width: 400px) {
+        .stTabs {
+            flex-direction: column;
+            padding: 0.25rem 0;
+            width: 100% !important;
+            max-width: 100% !important;
+            overflow-x: hidden !important;
+        }
         .stTabs [data-baseweb="tab"] {
             font-size: 0.9rem;
             padding: 0.5rem;
             margin: 0 0 0.2rem 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
             min-height: 40px;
         }
         button[kind="primary"] {
