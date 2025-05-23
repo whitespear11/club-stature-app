@@ -688,9 +688,12 @@ with tab3:
             players = []
             for i in range(11):
                 col1, col2, col3 = st.columns(3)
-                with col1: position = st.selectbox("", player_positions, index=player_positions.index(st.session_state.starting_11[i]["position"]), key=f"player_{i}_position")
-                with col2: overall = st.number_input("", min_value=0, max_value=99, value=st.session_state.starting_11[i]["overall"], step=1, key=f"player_{i}_overall")
-                with col3: wage = st.number_input("", min_value=0, value=st.session_state.starting_11[i]["wage"], step=1000, key=f"player_{i}_wage")
+                with col1: 
+                    position = st.selectbox("", player_positions, index=player_positions.index(st.session_state.starting_11[i]["position"]), key=f"player_{i}_position")
+                with col2: 
+                    overall = st.number_input("Overall", min_value=0, max_value=99, value=st.session_state.starting_11[i]["overall"], step=None, key=f"player_{i}_overall")
+                with col3: 
+                    wage = st.number_input("Wage (p/w)", min_value=0, value=st.session_state.starting_11[i]["wage"], step=None, key=f"player_{i}_wage")
                 players.append({"position": position, "overall": overall, "wage": wage})
             submit_starting_11 = st.form_submit_button("Calculate Team Overall")
     
