@@ -11,15 +11,30 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Apply custom CSS with touch-friendly tabs and responsive styling
+# Apply custom CSS to force dark mode and ensure text visibility
 st.markdown(
     """
     <style>
+    /* Force dark mode and disable browser theme interference */
+    :root {
+        color-scheme: dark !important;
+        --background-color: #1a2526 !important;
+        --secondary-background-color: #2c3e50 !important;
+        --text-color: #ffffff !important;
+        --primary-color: #28a745 !important;
+    }
+    @media (prefers-color-scheme: light), (prefers-color-scheme: dark) {
+        :root {
+            color-scheme: dark !important;
+            forced-colors: none !important;
+        }
+    }
+
     /* Base styles for all devices */
     body {
         font-family: 'Arial', sans-serif;
-        background-color: #1a2526;
-        color: #ffffff;
+        background-color: #1a2526 !important;
+        color: #ffffff !important;
         margin: 0;
         padding: 0;
     }
@@ -31,12 +46,26 @@ st.markdown(
         overflow-x: hidden !important;
         padding-top: env(safe-area-inset-top, 0) !important;
         padding-left: env(safe-area-inset-left, 0) !important;
+        background-color: #1a2526 !important;
+        color: #ffffff !important;
+    }
+    /* Ensure all text elements have explicit colors */
+    * {
+        color: #ffffff !important;
+        background-color: transparent !important;
+    }
+    p, h1, h2, h3, h4, h5, h6, label, span, div, a {
+        color: #ffffff !important;
+    }
+    /* Override Streamlit's default light theme elements */
+    [data-testid="stAppViewContainer"], [data-testid="stVerticalBlock"] {
+        background-color: #1a2526 !important;
     }
     /* Button styling */
     button[kind="primary"] {
-        background-color: #28a745;
-        color: white;
-        border: none;
+        background-color: #28a745 !important;
+        color: #ffffff !important;
+        border: none !important;
         padding: 0.75rem 1.5rem;
         border-radius: 0.5rem;
         font-weight: bold;
@@ -46,14 +75,14 @@ st.markdown(
         transition: background-color 0.3s ease;
     }
     button[kind="primary"]:hover {
-        background-color: #218838;
+        background-color: #218838 !important;
     }
     /* Input field styling */
     .stTextInput > div > div > input,
     .stNumberInput > div > div > input,
     .stSelectbox > div > div > select {
         border-radius: 0.5rem;
-        border: 1px solid #ced4da;
+        border: 1px solid #ced4da !important;
         padding: 0.75rem;
         color: #000000 !important;
         background-color: #ffffff !important;
@@ -64,58 +93,84 @@ st.markdown(
         color: #000000 !important;
         background-color: #ffffff !important;
     }
+    /* Ensure input labels are visible */
+    .stTextInput > label,
+    .stNumberInput > label,
+    .stSelectbox > label,
+    .stCheckbox > label {
+        color: #ffffff !important;
+        font-weight: 500;
+    }
     /* Section headers */
     .stMarkdown h2, .stMarkdown h3 {
-        color: #1e3a8a;
+        color: #1e3a8a !important;
         font-weight: 600;
         margin: 1rem 0 0.5rem;
     }
     /* Expander styling */
     .streamlit-expander {
-        border: 1px solid #e2e8f0;
+        border: 1px solid #e2e8f0 !important;
         border-radius: 0.5rem;
         margin-bottom: 1rem;
+        background-color: transparent !important;
     }
     .streamlit-expanderHeader {
-        background-color: #f8fafc;
+        background-color: #f8fafc !important;
         padding: 0.75rem;
         font-weight: 500;
         color: #1e3a8a !important;
         font-size: 1.1rem;
     }
     .streamlit-expanderContent {
-        background-color: #ffffff;
+        background-color: #ffffff !important;
         padding: 1rem;
         color: #000000 !important;
     }
-    .streamlit-expanderContent .stTextInput,
-    .streamlit-expanderContent .stNumberInput,
-    .streamlit-expanderContent .stSelectbox,
-    .streamlit-expanderContent .stCheckbox {
+    .streamlit-expanderContent p,
+    .streamlit-expanderContent label,
+    .streamlit-expanderContent span,
+    .streamlit-expanderContent div {
         color: #000000 !important;
     }
-    .streamlit-expanderContent label,
-    .streamlit-expanderContent p {
+    .streamlit-expanderContent .stTextInput > label,
+    .streamlit-expanderContent .stNumberInput > label,
+    .streamlit-expanderContent .stSelectbox > label,
+    .streamlit-expanderContent .stCheckbox > label {
         color: #000000 !important;
+    }
+    .streamlit-expanderContent .stTextInput > div > div > input,
+    .streamlit-expanderContent .stNumberInput > div > div > input,
+    .streamlit-expanderContent .stSelectbox > div > div > select {
+        color: #000000 !important;
+        background-color: #ffffff !important;
     }
     /* Success and error messages */
     .stSuccess {
-        background-color: #d4edda;
-        color: #155724;
+        background-color: #d4edda !important;
+        color: #155724 !important;
         padding: 0.75rem;
         border-radius: 0.5rem;
+    }
+    .stSuccess p, .stSuccess span {
+        color: #155724 !important;
     }
     .stError {
-        background-color: #f8d7da;
-        color: #721c24;
+        background-color: #f8d7da !important;
+        color: #721c24 !important;
         padding: 0.75rem;
         border-radius: 0.5rem;
     }
+    .stError p, .stError span {
+        color: #721c24 !important;
+    }
     .stWarning {
-        background-color: #fff3cd;
-        color: #856404;
+        background-color: #fff3cd !important;
+        color: #856404 !important;
         padding: 0.75rem;
         border-radius: 0.5rem;
+    }
+    .stWarning p, .stWarning span {
+        color: #856404 !important;
     }
     /* Mobile-first tab styling */
     .stTabs {
@@ -123,7 +178,7 @@ st.markdown(
         padding: 0.25rem 0;
         width: 100% !important;
         margin: 0 !important;
-        background-color: #1a2526;
+        background-color: #1a2526 !important;
         border-bottom: none;
     }
     .stTabs [data-baseweb="tab"] {
@@ -132,20 +187,20 @@ st.markdown(
         margin: 0 0 0.25rem 0 !important;
         width: 100% !important;
         text-align: center;
-        background-color: #2c3e50;
-        color: #ffffff;
-        border: none;
+        background-color: #2c3e50 !important;
+        color: #ffffff !important;
+        border: none !important;
         border-radius: 0.25rem;
         min-height: 44px;
         transition: background-color 0.3s ease;
     }
     .stTabs [data-baseweb="tab"]:hover {
-        background-color: #34495e;
-        cursor: pointer;
+        background-color: #34495e !important;
+        color: #ffffff !important;
     }
     .stTabs [data-baseweb="tab"][aria-selected="true"] {
-        background-color: #2c3e50;
-        color: #ffffff;
+        background-color: #2c3e50 !important;
+        color: #ffffff !important;
         box-shadow: none;
     }
     .stTabs, .stTabs [data-baseweb="tab"], .stTabs [data-baseweb="tab"][aria-selected="true"] {
@@ -154,7 +209,7 @@ st.markdown(
     /* Custom progress bar */
     .custom-progress-container {
         width: 100%;
-        background-color: #e0e0e0;
+        background-color: #e0e0e0 !important;
         border-radius: 5px;
         overflow: hidden;
         margin: 0.5rem 0;
@@ -171,31 +226,25 @@ st.markdown(
         width: 100%;
         border-collapse: collapse;
         font-size: 0.9rem;
+        background-color: #34495e !important;
     }
     th, td {
         padding: 0.75rem;
         text-align: left;
+        color: #ffffff !important;
     }
-    /* Ensure tab content is transparent */
+    th {
+        background-color: #2c3e50 !important;
+    }
+    /* Ensure tab content is consistent with dark theme */
     div[data-testid="stVerticalBlock"] > div {
-        background-color: transparent !important;
+        background-color: #1a2526 !important;
     }
     div[data-testid="stVerticalBlock"] > div .stMarkdown,
     div[data-testid="stVerticalBlock"] > div .stMarkdown p,
     div[data-testid="stVerticalBlock"] > div .stMarkdown h2,
-    div[data-testid="stVerticalBlock"] > div .stMarkdown h3,
-    div[data-testid="stVerticalBlock"] > div .streamlit-expanderHeader,
-    div[data-testid="stVerticalBlock"] > div .streamlit-expanderContent,
-    div[data-testid="stVerticalBlock"] > div .streamlit-expanderContent p,
-    div[data-testid="stVerticalBlock"] > div .streamlit-expanderContent label,
-    div[data-testid="stVerticalBlock"] > div .stSuccess,
-    div[data-testid="stVerticalBlock"] > div .stError,
-    div[data-testid="stVerticalBlock"] > div .stWarning {
+    div[data-testid="stVerticalBlock"] > div .stMarkdown h3 {
         color: #ffffff !important;
-    }
-    div[data-testid="stVerticalBlock"] > div,
-    div[data-testid="stVerticalBlock"] > div .streamlit-expanderContent {
-        background-color: transparent !important;
     }
 
     /* Enhancements for larger screens (PC/iPad) */
