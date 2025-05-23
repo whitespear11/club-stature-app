@@ -441,7 +441,7 @@ with tab2:
     st.write("Track your signings, sales, and youth promotions to stay within the guidelines.")
 
     # Reset button
-    if st.button("Reset for New Season"):
+    if st.button("Reset for New Season", key="reset_season"):
         st.session_state.checklist = {
             "summer": {"starting_signings": 0, "bench_signings": 0, "reserve_signings": 0, "loans": 0, "starting_sold": 0},
             "winter": {"starting_signings": 0, "bench_signings": 0, "reserve_signings": 0, "loans": 0, "starting_sold": 0},
@@ -485,19 +485,19 @@ with tab2:
         if st.session_state.get("summer_signing_mode", False):
             col1, col2, col3 = st.columns(3)
             with col1:
-                if st.button("First Team"):
+                if st.button("First Team", key="summer_first_team"):
                     st.session_state["summer_signing_category"] = "starting"
                     st.session_state["summer_loan_mode"] = True
                     st.session_state["summer_signing_mode"] = False
                     st.rerun()
             with col2:
-                if st.button("Bench Player"):
+                if st.button("Bench Player", key="summer_bench"):
                     st.session_state["summer_signing_category"] = "bench"
                     st.session_state["summer_loan_mode"] = True
                     st.session_state["summer_signing_mode"] = False
                     st.rerun()
             with col3:
-                if st.button("Reserve Player"):
+                if st.button("Reserve Player", key="summer_reserve"):
                     st.session_state["summer_signing_category"] = "reserve"
                     st.session_state["summer_loan_mode"] = True
                     st.session_state["summer_signing_mode"] = False
@@ -506,7 +506,7 @@ with tab2:
             st.write("Is this a loan?")
             col1, col2 = st.columns(2)
             with col1:
-                if st.button("Yes"):
+                if st.button("Yes", key="summer_loan_yes"):
                     if st.session_state.checklist["summer"]["loans"] < summer_loan_max:
                         if st.session_state["summer_signing_category"] == "starting" and st.session_state.checklist["summer"]["starting_signings"] < summer_starting_total_max:
                             st.session_state.checklist["summer"]["starting_signings"] += 1
@@ -525,7 +525,7 @@ with tab2:
                     st.session_state.pop("summer_loan_mode", None)
                     st.rerun()
             with col2:
-                if st.button("No"):
+                if st.button("No", key="summer_loan_no"):
                     if st.session_state["summer_signing_category"] == "starting" and st.session_state.checklist["summer"]["starting_signings"] < summer_starting_total_max:
                         st.session_state.checklist["summer"]["starting_signings"] += 1
                     elif st.session_state["summer_signing_category"] == "bench" and st.session_state.checklist["summer"]["bench_signings"] < summer_bench_total_max:
@@ -538,11 +538,11 @@ with tab2:
                     st.session_state.pop("summer_loan_mode", None)
                     st.rerun()
         st.markdown("<strong>Starting Players Sold (Unlocks Extra Signing at 2)</strong>", unsafe_allow_html=True)
-        if st.button("Add Sold Player"):
+        if st.button("Add Sold Player", key="add_sold_summer"):
             st.session_state.checklist["summer"]["starting_sold"] += 1
             st.rerun()
         if st.session_state.checklist["summer"]["starting_sold"] > 0:
-            if st.button("Remove Sold Player"):
+            if st.button("Remove Sold Player", key="remove_sold_summer"):
                 st.session_state.checklist["summer"]["starting_sold"] -= 1
                 st.rerun()
 
@@ -577,19 +577,19 @@ with tab2:
         if st.session_state.get("winter_signing_mode", False):
             col1, col2, col3 = st.columns(3)
             with col1:
-                if st.button("First Team"):
+                if st.button("First Team", key="winter_first_team"):
                     st.session_state["winter_signing_category"] = "starting"
                     st.session_state["winter_loan_mode"] = True
                     st.session_state["winter_signing_mode"] = False
                     st.rerun()
             with col2:
-                if st.button("Bench Player"):
+                if st.button("Bench Player", key="winter_bench"):
                     st.session_state["winter_signing_category"] = "bench"
                     st.session_state["winter_loan_mode"] = True
                     st.session_state["winter_signing_mode"] = False
                     st.rerun()
             with col3:
-                if st.button("Reserve Player"):
+                if st.button("Reserve Player", key="winter_reserve"):
                     st.session_state["winter_signing_category"] = "reserve"
                     st.session_state["winter_loan_mode"] = True
                     st.session_state["winter_signing_mode"] = False
@@ -598,7 +598,7 @@ with tab2:
             st.write("Is this a loan?")
             col1, col2 = st.columns(2)
             with col1:
-                if st.button("Yes"):
+                if st.button("Yes", key="winter_loan_yes"):
                     if st.session_state.checklist["winter"]["loans"] < winter_loan_max:
                         if st.session_state["winter_signing_category"] == "starting" and st.session_state.checklist["winter"]["starting_signings"] < winter_starting_total_max:
                             st.session_state.checklist["winter"]["starting_signings"] += 1
@@ -617,7 +617,7 @@ with tab2:
                     st.session_state.pop("winter_loan_mode", None)
                     st.rerun()
             with col2:
-                if st.button("No"):
+                if st.button("No", key="winter_loan_no"):
                     if st.session_state["winter_signing_category"] == "starting" and st.session_state.checklist["winter"]["starting_signings"] < winter_starting_total_max:
                         st.session_state.checklist["winter"]["starting_signings"] += 1
                     elif st.session_state["winter_signing_category"] == "bench" and st.session_state.checklist["winter"]["bench_signings"] < winter_bench_total_max:
@@ -630,11 +630,11 @@ with tab2:
                     st.session_state.pop("winter_loan_mode", None)
                     st.rerun()
         st.markdown("<strong>Starting Players Sold (Unlocks Extra Signing at 2)</strong>", unsafe_allow_html=True)
-        if st.button("Add Sold Player"):
+        if st.button("Add Sold Player", key="add_sold_winter"):
             st.session_state.checklist["winter"]["starting_sold"] += 1
             st.rerun()
         if st.session_state.checklist["winter"]["starting_sold"] > 0:
-            if st.button("Remove Sold Player"):
+            if st.button("Remove Sold Player", key="remove_sold_winter"):
                 st.session_state.checklist["winter"]["starting_sold"] -= 1
                 st.rerun()
 
@@ -652,14 +652,14 @@ with tab2:
             """,
             unsafe_allow_html=True
         )
-        if st.button("I promoted a youth player"):
+        if st.button("I promoted a youth player", key="promote_youth"):
             if st.session_state.checklist["youth_promotions"] < youth_promotion_max:
                 st.session_state.checklist["youth_promotions"] += 1
                 st.rerun()
             else:
                 st.error("Exceeded youth promotion limit of 3!")
         if st.session_state.checklist["youth_promotions"] > 0:
-            if st.button("Remove Youth Promotion"):
+            if st.button("Remove Youth Promotion", key="remove_youth"):
                 st.session_state.checklist["youth_promotions"] -= 1
                 st.rerun()
 
