@@ -3,7 +3,7 @@ import math
 import json
 import io
 
-# Add viewport meta tag for better mobile scaling
+# Add viewport meta tag with iOS safe area support
 st.markdown(
     """
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -11,7 +11,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Apply custom CSS with enhanced mobile optimizations and wrapper div
+# Apply custom CSS with enhanced mobile optimizations, iOS fix, and wrapper div
 st.markdown(
     """
     <style>
@@ -31,14 +31,27 @@ st.markdown(
         max-width: 100vw !important;
         overflow-x: hidden !important;
     }
-    /* Custom wrapper div to enforce layout */
+    /* Custom wrapper div to enforce layout with iOS fix */
     .app-wrapper {
         width: 100vw !important;
         max-width: 100% !important;
         margin: 0 !important;
         padding: 0 !important;
-        overflow-x: hidden !important;
+        overflow-x: auto !important; /* Fallback for accessibility */
         display: block !important;
+        position: relative !important;
+        left: 0 !important;
+        transform: translateX(0) !important;
+    }
+    /* Force tab content alignment */
+    [data-testid="stVerticalBlock"] > div {
+        width: 100% !important;
+        max-width: 100vw !important;
+        margin-left: 0 !important;
+        padding-left: 0 !important;
+        transform: translateX(0) !important;
+        left: 0 !important;
+        position: relative !important;
     }
     /* Main content container */
     .main {
@@ -294,8 +307,6 @@ st.markdown(
     /* Set background color of all tab content areas to transparent */
     div[data-testid="stVerticalBlock"] > div {
         background-color: transparent !important;
-        margin-left: 0 !important;
-        padding-left: 0 !important;
     }
     /* Ensure text readability across all tab content */
     div[data-testid="stVerticalBlock"] > div .stMarkdown,
@@ -318,6 +329,13 @@ st.markdown(
     div[data-testid="stVerticalBlock"] > div,
     div[data-testid="stVerticalBlock"] > div .streamlit-expanderContent {
         background-color: transparent !important;
+    }
+    /* iOS safe area adjustment */
+    @supports (-webkit-overflow-scrolling: touch) {
+        .app-wrapper {
+            padding-top: env(safe-area-inset-top, 0) !important;
+            padding-left: env(safe-area-inset-left, 0) !important;
+        }
     }
     </style>
     <div class="app-wrapper">
