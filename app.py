@@ -1582,4 +1582,12 @@ with tab6:
                         ) and
                         all(
                             key in loaded_data["checklist"]["winter"]
-                            for key in ["starting_signings
+                            for key in ["starting_signings", "bench_signings", "reserve_signings", "loans", "starting_sold"]
+                        ) and
+                        all(
+                            isinstance(loaded_data["checklist"]["summer"][key], int) and
+                            loaded_data["checklist"]["summer"][key] >= 0
+                            for key in loaded_data["checklist"]["summer"]
+                        ) and
+                        all(
+                            isinstance(loaded_data["check
