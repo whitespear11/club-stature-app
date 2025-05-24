@@ -1582,4 +1582,4 @@ with tab6:
                         ) and
                         all(
                             key in loaded_data["checklist"]["winter"]
-                            for key in ["starting_signings", "bench_signings", "reserve_signings", "loans
+                            for key in ["starting_signings
