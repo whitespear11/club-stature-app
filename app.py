@@ -1144,7 +1144,8 @@ with tab3:
     # Real-time feedback
     total_overall = sum(player["overall"] for player in st.session_state.starting_11)
     avg_overall = math.floor(total_overall / 11) if total_overall > 0 else 0
-    max_wage = max(player["wage"] for player in st.session_state.starting_11 if player["wage"] > 0) or 0
+    valid_wages = [player["wage"] for player in st.session_state.starting_11 if player["wage"] > 0]
+    max_wage = max(valid_wages) if valid_wages else 0
     wage_cap = int(max_wage * 1.2)
     st.info(f"Current Average Overall: {avg_overall} | Wage Cap: {wage_cap:,} p/w")
 
@@ -1577,16 +1578,4 @@ with tab6:
                             f"{loaded_data['club_details']['league']}, "
                             f"{loaded_data['club_details']['country']}, "
                             f"European: {loaded_data['club_details']['european']}. "
-                            f"Stature: {score:.1f}"
-                        )
-                        st.session_state.analytics["save_load"] += 1
-                        st.rerun()
-                    else:
-                        st.error("Invalid JSON format or data. Ensure 'club_details' and 'starting_11' are correctly formatted.")
-                except json.JSONDecodeError:
-                    st.error("Invalid JSON text. Please paste valid JSON data.")
-            else:
-                st.warning("Please paste JSON text or upload a file to load.")
-
-# Close wrapper div
-st.markdown("</div>", unsafe_allow_html=True)
+                            f"Stature: {score:.1f
