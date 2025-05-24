@@ -1142,12 +1142,17 @@ with tab3:
     )
     
     # Real-time feedback
-    total_overall = sum(player["overall"] for player in st.session_state.starting_11)
-    avg_overall = math.floor(total_overall / 11) if total_overall > 0 else 0
-    valid_wages = [player["wage"] for player in st.session_state.starting_11 if player["wage"] > 0]
-    max_wage = max(valid_wages) if valid_wages else 0
-    wage_cap = int(max_wage * 1.2)
-    st.info(f"Current Average Overall: {avg_overall} | Wage Cap: {wage_cap:,} p/w")
+    if st.session_state.starting_11 and len(st.session_state.starting_11) == 11:
+        total_overall = sum(player["overall"] for player in st.session_state.starting_11)
+        avg_overall = math.floor(total_overall / 11) if total_overall > 0 else 0
+        valid_wages = [player["wage"] for player in st.session_state.starting_11 if player.get("wage", 0) > 0]
+        max_wage = max(valid_wages) if valid_wages else 0
+        wage_cap = int(max_wage * 1.2)
+        st.info(f"Current Average Overall: {avg_overall} | Wage Cap: {wage_cap:,} p/w")
+    else:
+        st.warning("Starting 11 data is incomplete. Please enter all player details.")
+        avg_overall = 0
+        wage_cap = 0
 
     with st.expander("Enter Starting 11 Details", expanded=True):
         edited_starting_11 = st.data_editor(
@@ -1535,47 +1540,4 @@ with tab6:
                     )
                     checklist_valid = (
                         isinstance(loaded_data.get("checklist"), dict) and
-                        "summer" in loaded_data["checklist"] and
-                        "winter" in loaded_data["checklist"] and
-                        "youth_promotions" in loaded_data["checklist"] and
-                        isinstance(loaded_data["checklist"]["summer"], dict) and
-                        isinstance(loaded_data["checklist"]["winter"], dict) and
-                        isinstance(loaded_data["checklist"]["youth_promotions"], int) and
-                        loaded_data["checklist"]["youth_promotions"] >= 0 and
-                        all(
-                            key in loaded_data["checklist"]["summer"]
-                            for key in ["starting_signings", "bench_signings", "reserve_signings", "loans", "starting_sold"]
-                        ) and
-                        all(
-                            key in loaded_data["checklist"]["winter"]
-                            for key in ["starting_signings", "bench_signings", "reserve_signings", "loans", "starting_sold"]
-                        ) and
-                        all(
-                            isinstance(loaded_data["checklist"]["summer"][key], int) and
-                            loaded_data["checklist"]["summer"][key] >= 0
-                            for key in loaded_data["checklist"]["summer"]
-                        ) and
-                        all(
-                            isinstance(loaded_data["checklist"]["winter"][key], int) and
-                            loaded_data["checklist"]["winter"][key] >= 0
-                            for key in loaded_data["checklist"]["winter"]
-                        )
-                    )
-                    if club_valid and starting_11_valid:
-                        st.session_state.club_details = loaded_data["club_details"]
-                        st.session_state.starting_11 = loaded_data["starting_11"]
-                        st.session_state.checklist = loaded_data.get("checklist", st.session_state.checklist)
-                        total_overall = sum(player["overall"] for player in loaded_data["starting_11"])
-                        st.session_state.average_team_overall = math.floor(total_overall / 11)
-                        score = calculate_score(
-                            loaded_data["club_details"]["league"],
-                            loaded_data["club_details"]["country"],
-                            loaded_data["club_details"]["european"],
-                            league_tiers
-                        )
-                        st.success(
-                            f"Club data loaded: {loaded_data['club_details']['name'] or 'None'}, "
-                            f"{loaded_data['club_details']['league']}, "
-                            f"{loaded_data['club_details']['country']}, "
-                            f"European: {loaded_data['club_details']['european']}. "
-                            f"Stature: {score:.1f
+                        "summer" in loaded_data["check
