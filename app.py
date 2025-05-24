@@ -1560,4 +1560,17 @@ with tab6:
                             isinstance(player, dict) and
                             all(key in player for key in ["position", "overall", "wage"]) and
                             player["position"] in player_positions and
-                            isinstance(player["overall"], int)
+                            isinstance(player["overall"], int) and
+                            0 <= player["overall"] <= 99 and
+                            isinstance(player["wage"], int) and
+                            player["wage"] >= 0
+                            for player in loaded_data["starting_11"]
+                        )
+                    )
+                    checklist_valid = (
+                        isinstance(loaded_data.get("checklist"), dict) and
+                        "summer" in loaded_data["checklist"] and
+                        "winter" in loaded_data["checklist"] and
+                        "youth_promotions" in loaded_data["checklist"] and
+                        isinstance(loaded_data["checklist"]["summer"], dict) and
+                        isinstance(loaded_data["checklist"]["winter"],
