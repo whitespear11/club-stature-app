@@ -1560,34 +1560,4 @@ with tab6:
                             isinstance(player, dict) and
                             all(key in player for key in ["position", "overall", "wage"]) and
                             player["position"] in player_positions and
-                            isinstance(player["overall"], int) and
-                            0 <= player["overall"] <= 99 and
-                            isinstance(player["wage"], int) and
-                            player["wage"] >= 0
-                            for player in loaded_data["starting_11"]
-                        )
-                    )
-                    checklist_valid = (
-                        isinstance(loaded_data.get("checklist"), dict) and
-                        "summer" in loaded_data["checklist"] and
-                        "winter" in loaded_data["checklist"] and
-                        "youth_promotions" in loaded_data["checklist"] and
-                        isinstance(loaded_data["checklist"]["summer"], dict) and
-                        isinstance(loaded_data["checklist"]["winter"], dict) and
-                        isinstance(loaded_data["checklist"]["youth_promotions"], int) and
-                        loaded_data["checklist"]["youth_promotions"] >= 0 and
-                        all(
-                            key in loaded_data["checklist"]["summer"]
-                            for key in ["starting_signings", "bench_signings", "reserve_signings", "loans", "starting_sold"]
-                        ) and
-                        all(
-                            key in loaded_data["checklist"]["winter"]
-                            for key in ["starting_signings", "bench_signings", "reserve_signings", "loans", "starting_sold"]
-                        ) and
-                        all(
-                            isinstance(loaded_data["checklist"]["summer"][key], int) and
-                            loaded_data["checklist"]["summer"][key] >= 0
-                            for key in loaded_data["checklist"]["summer"]
-                        ) and
-                        all(
-                            isinstance(loaded_data["check
+                            isinstance(player["overall"], int)
