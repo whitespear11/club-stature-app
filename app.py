@@ -1281,12 +1281,120 @@ with tab4:
                 stature_diff = score2 - score1
                 display_name1 = club_details["name"] if club_details["name"] else "Your Club"
                 display_name2 = club2_name_sell if club2_name_sell else "Offering Club"
-                st.write(f"**{display_name1}**: {club_details['league']}, {club_details['country']}, European: {club_details bribe le texte au-delà de la limite de caractères. Je vais donc fournir la section corrigée pour l'onglet "Save/Load" et m'assurer que l'artefact complet est disponible si nécessaire.
+                st.write(f"**{display_name1}**: {club_details['league']}, {club_details['country']}, European: {club_details['european']}. Stature: {score1:.1f}")
+                st.write(f"**{display_name2}**: {club2_league_sell}, {club2_country_sell}, European: {club2_european_sell}. Stature: {score2:.1f}")
+                st.write(f"**Stature Difference**: {stature_diff:.1f}")
+                min_offer = calculate_minimum_offer(player_value_sell, stature_diff, is_young_sell)
+                st.success(f"**Minimum Offer to Accept**: €{min_offer:,.2f}")
+                st.session_state.analytics["transfer_calc_submit"] += 1
+            else:
+                st.error("Player value must be greater than 0.")
 
-### Section Corrigée (Tab 6: Save/Load)
-Voici la section corrigée pour l'onglet "Save/Load", en s'assurant que la logique de validation JSON est complète et que toutes les parenthèses et accolades sont correctement fermées. Cette section est extraite du fichier complet fourni ci-dessus, mais je la mets en avant pour plus de clarté.
+    with st.expander("Buying Transfer Calculator", expanded=False):
+        with st.form(key="buying_transfer_form"):
+            st.subheader("Selling Club Details")
+            club2_name_buy = st.text_input(
+                "Selling Club Name (Optional)",
+                key="club2_name_buy",
+                help="Enter the name of the club selling the player (optional)."
+            )
+            club2_league_buy = st.selectbox(
+                "Selling Club League",
+                list(league_tiers.keys()),
+                key="club2_league_buy",
+                help="Select the league of the selling club."
+            )
+            club2_country_buy = st.selectbox(
+                "Selling Club Country",
+                list(country_prestige.keys()),
+                key="club2_country_buy",
+                help="Select the country of the selling club."
+            )
+            club2_european_buy = st.checkbox(
+                "Selling Club in European Competitions",
+                key="club2_european_buy",
+                help="Check if the selling club is in UEFA competitions."
+            )
+            st.subheader("Player Details")
+            player_value_buy = st.number_input(
+                "Player Value",
+                min_value=0.0,
+                step=1000.0,
+                format="%.2f",
+                key="player_value_buy",
+                help="Enter the player's market value in FIFA (e.g., 1000000 for €1M)."
+            )
+            player_overall_buy = st.number_input(
+                "Player Overall",
+                min_value=0,
+                max_value=99,
+                step=1,
+                key="player_overall_buy",
+                help="Enter the player's overall rating (0-99)."
+            )
+            player_age_buy = st.number_input(
+                "Player Age",
+                min_value=16,
+                max_value=40,
+                step=1,
+                key="player_age_buy",
+                help="Enter the player's age (16-40)."
+            )
+            submit_buying_transfer = st.form_submit_button("Calculate Starting Bid", help="Calculate the starting bid and wage.")
+        
+        if submit_buying_transfer:
+            if player_value_buy > 0 and player_overall_buy > 0:
+                club_details = st.session_state.club_details
+                score1 = calculate_score(club_details["league"], club_details["country"], club_details["european"], league_tiers)
+                score2 = calculate_score(club2_league_buy, club2_country_buy, club2_european_buy, league_tiers)
+                stature_diff = score1 - score2
+                display_name1 = club_details["name"] if club_details["name"] else "Your Club"
+                display_name2 = club2_name_buy if club2_name_buy else "Selling Club"
+                st.write(f"**{display_name1}**: {club_details['league']}, {club_details['country']}, European: {club_details['european']}. Stature: {score1:.1f}")
+                st.write(f"**{display_name2}**: {club2_league_buy}, {club2_country_buy}, European: {club2_european_buy}. Stature: {score2:.1f}")
+                st.write(f"**Stature Difference**: {stature_diff:.1f}")
+                starting_bid, is_valid = calculate_starting_bid(
+                    player_value_buy,
+                    player_overall_buy,
+                    player_age_buy,
+                    st.session_state.average_team_overall
+                )
+                if is_valid:
+                    wage, wage_error = calculate_proportional_wage(player_overall_buy, st.session_state.starting_11)
+                    if wage_error:
+                        st.warning(wage_error)
+                    else:
+                        st.success(f"**Starting Bid**: €{starting_bid:,.2f}")
+                        st.success(f"**Suggested Wage**: €{wage:,} p/w")
+                else:
+                    st.success(f"**Starting Bid**: €{starting_bid:,.2f} (No team overall comparison available)")
+                    st.warning("Enter Starting 11 data for wage calculations and bid validation.")
+                st.session_state.analytics["transfer_calc_submit"] += 1
+            else:
+                st.error("Player value and overall must be greater than 0.")
 
-```python
+# Tab 5: Help/Info
+with tab5:
+    st.header("Help & Information")
+    with st.expander("About This Tool"):
+        st.write(
+            """
+            This toolkit helps FIFA career mode players make realistic transfer decisions.
+            - **Club Details**: Calculate your club's stature and scout rating.
+            - **Career Checklist**: Track signings and sales within FIFA guidelines.
+            - **Starting 11**: Calculate team average overall and wage cap.
+            - **Transfer Calculators**: Determine realistic bids and wages.
+            - **Save/Load**: Save or load your progress as JSON.
+            """
+        )
+    with st.expander("Usage Analytics"):
+        st.subheader("Your Usage Stats")
+        st.write(f"Club Details Submitted: {st.session_state.analytics['club_details_submit']}")
+        st.write(f"Checklist Actions: {st.session_state.analytics['checklist_add']}")
+        st.write(f"Starting 11 Submitted: {st.session_state.analytics['starting_11_submit']}")
+        st.write(f"Transfer Calculations: {st.session_state.analytics['transfer_calc_submit']}")
+        st.write(f"Save/Load Actions: {st.session_state.analytics['save_load']}")
+
 # Tab 6: Save/Load
 with tab6:
     st.header("Save/Load Data")
@@ -1474,56 +1582,4 @@ with tab6:
                         ) and
                         all(
                             key in loaded_data["checklist"]["winter"]
-                            for key in ["starting_signings", "bench_signings", "reserve_signings", "loans", "starting_sold"]
-                        ) and
-                        all(
-                            isinstance(loaded_data["checklist"]["summer"][key], int) and
-                            loaded_data["checklist"]["summer"][key] >= 0
-                            for key in loaded_data["checklist"]["summer"]
-                        ) and
-                        all(
-                            isinstance(loaded_data["checklist"]["winter"][key], int) and
-                            loaded_data["checklist"]["winter"][key] >= 0
-                            for key in loaded_data["checklist"]["winter"]
-                        )
-                    )
-                    if club_valid and starting_11_valid and checklist_valid:
-                        st.session_state.club_details = loaded_data["club_details"]
-                        st.session_state.starting_11 = loaded_data["starting_11"]
-                        st.session_state.checklist = loaded_data["checklist"]
-                        total_overall = sum(player["overall"] for player in loaded_data["starting_11"])
-                        st.session_state.average_team_overall = math.floor(total_overall / 11)
-                        score = calculate_score(
-                            loaded_data["club_details"]["league"],
-                            loaded_data["club_details"]["country"],
-                            loaded_data["club_details"]["european"],
-                            league_tiers
-                        )
-                        st.success(
-                            f"Club data loaded: {loaded_data['club_details']['name'] or 'None'}, "
-                            f"{loaded_data['club_details']['league']}, "
-                            f"{loaded_data['club_details']['country']}, "
-                            f"European: {loaded_data['club_details']['european']}. "
-                            f"Stature: {score:.1f}"
-                        )
-                        st.session_state.analytics["save_load"] += 1
-                        st.rerun()
-                    else:
-                        st.error("Invalid JSON format or data. Ensure 'club_details', 'starting_11', and 'checklist' are correctly formatted.")
-                except json.JSONDecodeError:
-                    st.error("Invalid JSON text pasted.")
-```
-
-### Modifications Effectuées
-1. **Correction de l'Erreur de Syntaxe** : La chaîne de caractères à triple guillemet dans l'appel `st.markdown` à la ligne 468 a été vérifiée pour s'assurer qu'elle est correctement fermée avec `"""` après le contenu CSS et HTML, suivie de `, unsafe_allow_html=True)`.
-2. **Préservation du Contenu** : Le contenu CSS et HTML reste inchangé, garantissant que le style de l'application n'est pas affecté.
-3. **ID d'Artefact Conservé** : L'`artifact_id` reste `224fd0d7-c5b2-43ce-b176-744fcf8d0d3c`, car il s'agit d'une mise à jour de l'artefact existant.
-4. **Validation de la Structure** : Le reste du fichier, y compris les corrections précédentes pour `ValueError: max() iterable argument is empty` et l'erreur de syntaxe dans l'onglet "Save/Load", est préservé.
-
-### Étapes Suivantes
-1. Remplacez le contenu de votre `app.py` par le code de l'artefact ci-dessus.
-2. Exécutez l'application pour vérifier que l'erreur de syntaxe est résolue (`SyntaxError: unterminated triple-quoted string literal`).
-3. Testez l'application, en particulier l'affichage de l'interface utilisateur (pour confirmer que le CSS est appliqué correctement) et la fonctionnalité "Save/Load" (pour s'assurer que les corrections précédentes fonctionnent).
-4. Si vous rencontrez d'autres erreurs, fournissez les messages d'erreur complets ou un exemple des données JSON que vous essayez de charger pour un dépannage supplémentaire.
-
-Si vous avez besoin d'une assistance supplémentaire ou si vous souhaitez que je me concentre sur une section spécifique du code, faites-le-moi savoir !
+                            for key in ["starting_signings", "bench_signings", "reserve_signings", "loans
