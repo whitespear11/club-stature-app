@@ -589,21 +589,12 @@ def do_load_data(json_text):
     total_overall = sum(player["overall"] for player in loaded_data["starting_11"])
     st.session_state.average_team_overall = math.floor(total_overall / 11)
 
-    # ── CRITICAL FIX: sync form widget keys so the UI actually updates ──
-    # Streamlit form widgets with a `key=` ignore the `value=` parameter after
-    # the first render. We must write the loaded values into those keys.
-    club = loaded_data["club_details"]
-    st.session_state["club_name"] = club["name"]
-    st.session_state["form_league"] = club["league"]
-    st.session_state["club_country"] = club["country"]
-    st.session_state["club_european"] = club["european"]
-
-    for i, player in enumerate(loaded_data["starting_11"]):
-        st.session_state[f"player_{i}_position"] = player["position"]
-        st.session_state[f"player_{i}_overall"] = player["overall"]
-        st.session_state[f"player_{i}_wage"] = player["wage"]
+    # Flag so the NEXT run (before any widgets are created) can safely
+    # push the loaded values into the form widget keys.
+    st.session_state["_sync_widgets_from_load"] = True
 
     # Recompute scout rating so it appears immediately after load
+    club = loaded_data["club_details"]
     league = club["league"]
     european = club["european"]
     if league == "First Division" and european:
@@ -648,6 +639,23 @@ if "club_details" not in st.session_state:
     }
 if "scout_rating_display" not in st.session_state:
     st.session_state.scout_rating_display = None
+
+# ── Sync form widget keys AFTER a successful load ──────────────────────────
+# This MUST run before any widgets with those keys are instantiated,
+# otherwise Streamlit raises StreamlitWidgetAlreadyInstantiatedError.
+if st.session_state.get("_sync_widgets_from_load"):
+    club = st.session_state.club_details
+    st.session_state["club_name"] = club.get("name", "")
+    st.session_state["form_league"] = club.get("league", "First Division")
+    st.session_state["club_country"] = club.get("country", "England")
+    st.session_state["club_european"] = club.get("european", False)
+
+    for i, player in enumerate(st.session_state.starting_11):
+        st.session_state[f"player_{i}_position"] = player["position"]
+        st.session_state[f"player_{i}_overall"] = player["overall"]
+        st.session_state[f"player_{i}_wage"] = player["wage"]
+
+    st.session_state["_sync_widgets_from_load"] = False
 
 # --- Save/Load state ---
 # pending_json: holds JSON text that has been staged (from file upload or paste)
