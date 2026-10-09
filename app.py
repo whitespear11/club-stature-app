@@ -559,6 +559,7 @@ def do_load_data(json_text):
     if not (club_valid and starting_11_valid):
         return False, "Invalid JSON format. Ensure 'club_details' and 'starting_11' are correctly formatted."
 
+    # Apply main data
     st.session_state.club_details = loaded_data["club_details"]
     st.session_state.starting_11 = loaded_data["starting_11"]
 
@@ -588,7 +589,40 @@ def do_load_data(json_text):
     total_overall = sum(player["overall"] for player in loaded_data["starting_11"])
     st.session_state.average_team_overall = math.floor(total_overall / 11)
 
+    # ── CRITICAL FIX: sync form widget keys so the UI actually updates ──
+    # Streamlit form widgets with a `key=` ignore the `value=` parameter after
+    # the first render. We must write the loaded values into those keys.
     club = loaded_data["club_details"]
+    st.session_state["club_name"] = club["name"]
+    st.session_state["form_league"] = club["league"]
+    st.session_state["club_country"] = club["country"]
+    st.session_state["club_european"] = club["european"]
+
+    for i, player in enumerate(loaded_data["starting_11"]):
+        st.session_state[f"player_{i}_position"] = player["position"]
+        st.session_state[f"player_{i}_overall"] = player["overall"]
+        st.session_state[f"player_{i}_wage"] = player["wage"]
+
+    # Recompute scout rating so it appears immediately after load
+    league = club["league"]
+    european = club["european"]
+    if league == "First Division" and european:
+        scout_rating = 10
+        message = f"Scout Star Rating: {scout_rating} stars. Can assign worldwide."
+    elif league == "First Division" and not european:
+        scout_rating = 8
+        message = f"Scout Star Rating: {scout_rating} stars. Can only assign to local continent and neighbouring continents."
+    elif league == "Second Division":
+        scout_rating = 6
+        message = f"Scout Star Rating: {scout_rating} stars. Can only assign to local continent."
+    elif league == "Third Division":
+        scout_rating = 4
+        message = f"Scout Star Rating: {scout_rating} stars. Can only assign to local country and neighbouring countries."
+    else:
+        scout_rating = 2
+        message = f"Scout Star Rating: {scout_rating} stars. Can only assign to local country."
+    st.session_state.scout_rating_display = message
+
     stature = calculate_score(club["league"], club["country"], club["european"], league_tiers)
     msg = (
         f"Loaded: {club['name'] or 'Unnamed Club'}, {club['league']}, {club['country']}, "
@@ -1285,11 +1319,11 @@ with tab6:
     json_str = json.dumps(combined_data, indent=2)
     col_save1, col_save2 = st.columns([3, 1])
     with col_save1:
+        # No key= here so the box always shows the live current data
         st.text_area(
             "Copy this JSON text or use the button to save as a file:",
             value=json_str,
-            height=300,
-            key="save_json_display"
+            height=300
         )
     with col_save2:
         st.download_button(
@@ -1331,16 +1365,22 @@ with tab6:
                 st.error(f"Could not read file: {e}")
 
     # --- Manual paste text area -----------------------------------------------
-    # Pre-populate with pending_json so the user can see what was uploaded.
+    # Keep the widget key and pending_json in sync so load always sees the
+    # current text (Streamlit prefers the key over the value= parameter).
+    if "load_json_input" not in st.session_state:
+        st.session_state["load_json_input"] = st.session_state.pending_json
+    elif st.session_state.pending_json and st.session_state["load_json_input"] != st.session_state.pending_json:
+        # File upload just populated pending_json — push it into the widget
+        st.session_state["load_json_input"] = st.session_state.pending_json
+
     pasted = st.text_area(
         "Or paste JSON text here:",
-        value=st.session_state.pending_json,
         height=250,
         key="load_json_input",
         help="Paste saved JSON here, or upload a file above — then click Load Data."
     )
 
-    # Keep pending_json in sync with whatever the user types
+    # Keep pending_json in sync with whatever the user types / widget holds
     if pasted != st.session_state.pending_json:
         st.session_state.pending_json = pasted
         st.session_state.load_result = None  # reset result when text changes
@@ -1352,8 +1392,9 @@ with tab6:
             success, message = do_load_data(text_to_load)
             st.session_state.load_result = {"success": success, "message": message}
             if success:
-                # Clear pending JSON so the box is empty after a successful load
+                # Clear pending JSON + the widget key so the text area empties
                 st.session_state.pending_json = ""
+                st.session_state["load_json_input"] = ""
                 st.session_state.pop("_last_upload_sig", None)
             st.rerun()
         else:
