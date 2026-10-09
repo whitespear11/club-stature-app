@@ -461,6 +461,30 @@ st.markdown(
     div[data-testid="stTabs"] {
         overflow: visible !important;
     }
+
+    /* Pills (button-style selectors) – readable on dark background */
+    div[data-testid="stPills"] button,
+    div[data-testid="stPills"] [role="option"] {
+        background-color: #2c3e50 !important;
+        color: #ffffff !important;
+        border: 1px solid #4a6278 !important;
+        border-radius: 0.5rem !important;
+        min-height: 40px !important;
+        font-weight: 500 !important;
+    }
+    div[data-testid="stPills"] button[aria-checked="true"],
+    div[data-testid="stPills"] button[kind="primary"],
+    div[data-testid="stPills"] [aria-selected="true"],
+    div[data-testid="stPills"] [data-selected="true"] {
+        background-color: #28a745 !important;
+        color: #ffffff !important;
+        border-color: #28a745 !important;
+        font-weight: 700 !important;
+    }
+    div[data-testid="stPills"] button:hover {
+        background-color: #34495e !important;
+        color: #ffffff !important;
+    }
     </style>
     <div class="app-wrapper">
     """,
@@ -811,17 +835,21 @@ with tab1:
                 value=st.session_state.club_details["name"],
                 key="club_name"
             )
-            club_league = st.selectbox(
+            st.markdown("**League/Division**")
+            club_league = st.pills(
                 "League/Division",
-                list(league_tiers.keys()),
-                index=list(league_tiers.keys()).index(st.session_state.club_details["league"]),
-                key="form_league"
+                options=list(league_tiers.keys()),
+                default=st.session_state.club_details.get("league", "First Division"),
+                key="form_league",
+                label_visibility="collapsed",
             )
-            club_country = st.selectbox(
+            st.markdown("**Country**")
+            club_country = st.pills(
                 "Country",
-                list(country_prestige.keys()),
-                index=list(country_prestige.keys()).index(st.session_state.club_details["country"]),
-                key="club_country"
+                options=list(country_prestige.keys()),
+                default=st.session_state.club_details.get("country", "England"),
+                key="club_country",
+                label_visibility="collapsed",
             )
             club_european = st.checkbox(
                 "Participates in European Competitions (e.g., Champions League)",
@@ -831,6 +859,11 @@ with tab1:
             submit_club_details = st.form_submit_button("Save Club Details")
 
         if submit_club_details:
+            # pills can return None if nothing selected – keep previous values
+            if club_league is None:
+                club_league = st.session_state.club_details.get("league", "First Division")
+            if club_country is None:
+                club_country = st.session_state.club_details.get("country", "England")
             st.session_state.club_details = {
                 "name": club_name,
                 "league": club_league,
@@ -1270,8 +1303,22 @@ with tab4:
         with st.form(key="selling_transfer_form"):
             st.subheader("Offering Club Details")
             club2_name_sell = st.text_input("Offering Club Name (Optional)", key="club2_name_sell")
-            club2_league_sell = st.selectbox("Offering Club League", list(league_tiers.keys()), key="club2_league_sell")
-            club2_country_sell = st.selectbox("Offering Club Country", list(country_prestige.keys()), key="club2_country_sell")
+            st.markdown("**Offering Club League**")
+            club2_league_sell = st.pills(
+                "Offering Club League",
+                options=list(league_tiers.keys()),
+                default="First Division",
+                key="club2_league_sell",
+                label_visibility="collapsed",
+            )
+            st.markdown("**Offering Club Country**")
+            club2_country_sell = st.pills(
+                "Offering Club Country",
+                options=list(country_prestige.keys()),
+                default="England",
+                key="club2_country_sell",
+                label_visibility="collapsed",
+            )
             club2_european_sell = st.checkbox("Offering Club in European Competitions", key="club2_european_sell")
             
             st.subheader("Transfer Details")
@@ -1288,6 +1335,11 @@ with tab4:
         
         if submit_selling_transfer:
             if player_value_sell > 0:
+                # pills can return None – fall back to defaults
+                if club2_league_sell is None:
+                    club2_league_sell = "First Division"
+                if club2_country_sell is None:
+                    club2_country_sell = "England"
                 club_details = st.session_state.club_details
                 score1 = calculate_score(club_details["league"], club_details["country"], club_details["european"], league_tiers)
                 score2 = calculate_score(club2_league_sell, club2_country_sell, club2_european_sell, league_tiers)
