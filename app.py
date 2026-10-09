@@ -724,7 +724,7 @@ def do_load_data(json_text):
 
 if "starting_11" not in st.session_state:
     st.session_state.starting_11 = [
-        {"position": default_positions[i], "overall": 0, "wage": 0} for i in range(11)
+        {"position": default_positions[i], "overall": 60, "wage": 0} for i in range(11)
     ]
 if "average_team_overall" not in st.session_state:
     st.session_state.average_team_overall = None
