@@ -1375,7 +1375,11 @@ with tab6:
     # --- Manual paste text area -----------------------------------------------
     # Keep the widget key and pending_json in sync so load always sees the
     # current text (Streamlit prefers the key over the value= parameter).
-    if "load_json_input" not in st.session_state:
+    # All writes to the key MUST happen before the text_area is created.
+    if st.session_state.get("_clear_load_input"):
+        st.session_state["load_json_input"] = ""
+        st.session_state["_clear_load_input"] = False
+    elif "load_json_input" not in st.session_state:
         st.session_state["load_json_input"] = st.session_state.pending_json
     elif st.session_state.pending_json and st.session_state["load_json_input"] != st.session_state.pending_json:
         # File upload just populated pending_json — push it into the widget
@@ -1400,9 +1404,10 @@ with tab6:
             success, message = do_load_data(text_to_load)
             st.session_state.load_result = {"success": success, "message": message}
             if success:
-                # Clear pending JSON + the widget key so the text area empties
+                # Clear pending JSON and set a flag so the NEXT run
+                # (before the text_area widget is created) empties the box.
                 st.session_state.pending_json = ""
-                st.session_state["load_json_input"] = ""
+                st.session_state["_clear_load_input"] = True
                 st.session_state.pop("_last_upload_sig", None)
             st.rerun()
         else:
