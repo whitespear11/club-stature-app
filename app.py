@@ -392,6 +392,75 @@ st.markdown(
             padding-left: env(safe-area-inset-left, 0) !important;
         }
     }
+
+    /* ── Selectbox / dropdown fixes ───────────────────────────────────────
+       Prevent parents from clipping Baseweb popovers and ensure the menu
+       appears above everything with readable black-on-white text.
+    */
+    .streamlit-expander,
+    [data-testid="stExpander"],
+    [data-testid="stExpanderDetails"],
+    .streamlit-expanderContent,
+    [data-testid="stVerticalBlock"],
+    [data-testid="stForm"],
+    .stForm,
+    div[data-testid="stMarkdownContainer"] {
+        overflow: visible !important;
+    }
+
+    /* Soften the nuclear * rule so it does not paint white text onto the
+       dropdown menu (which lives outside the normal layout tree). */
+    div[data-baseweb="popover"],
+    div[data-baseweb="popover"] *,
+    div[data-baseweb="menu"],
+    div[data-baseweb="menu"] *,
+    ul[role="listbox"],
+    ul[role="listbox"] *,
+    li[role="option"],
+    li[role="option"] * {
+        color: #000000 !important;
+        background-color: #ffffff !important;
+    }
+
+    div[data-baseweb="popover"],
+    div[data-baseweb="menu"],
+    ul[role="listbox"] {
+        z-index: 99999 !important;
+        background-color: #ffffff !important;
+        border: 1px solid #ced4da !important;
+        border-radius: 0.5rem !important;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.25) !important;
+        max-height: 280px !important;
+        overflow-y: auto !important;
+    }
+
+    li[role="option"] {
+        color: #000000 !important;
+        background-color: #ffffff !important;
+        padding: 0.6rem 0.75rem !important;
+    }
+
+    li[role="option"]:hover,
+    li[role="option"][aria-selected="true"],
+    li[role="option"][data-highlighted="true"] {
+        background-color: #e2e8f0 !important;
+        color: #000000 !important;
+    }
+
+    /* Make sure the select control itself stays readable */
+    [data-baseweb="select"] > div,
+    [data-baseweb="select"] span {
+        color: #000000 !important;
+        background-color: #ffffff !important;
+    }
+
+    /* Reduce horizontal clipping that can push the popover under other UI */
+    .app-wrapper {
+        overflow-x: clip !important;   /* clip instead of hidden – less aggressive */
+    }
+    div[data-testid="stTabs"] {
+        overflow: visible !important;
+    }
     </style>
     <div class="app-wrapper">
     """,
