@@ -502,9 +502,10 @@ league_tiers = {
 # Country prestige mapping
 country_prestige = {
     "England": 3, "Spain": 3, "Germany": 3, "Italy": 3, "France": 3,
-    "Netherlands": 2, "Portugal": 2, "USA": 2, "Belgium": 2,
     "Other": 1
 }
+# Countries removed from the UI but still accepted on load (mapped to Other)
+_legacy_countries = {"Netherlands", "Portugal", "USA", "Belgium"}
 
 # Player position options
 player_positions = [
@@ -601,7 +602,8 @@ def do_load_data(json_text):
         all(key in loaded_data["club_details"] for key in ["name", "league", "country", "european"]) and
         isinstance(loaded_data["club_details"]["name"], str) and
         loaded_data["club_details"]["league"] in league_tiers and
-        loaded_data["club_details"]["country"] in country_prestige and
+        (loaded_data["club_details"]["country"] in country_prestige
+         or loaded_data["club_details"]["country"] in _legacy_countries) and
         isinstance(loaded_data["club_details"]["european"], bool)
     )
     # Validate starting_11
@@ -654,6 +656,9 @@ def do_load_data(json_text):
 
     # Apply main data
     st.session_state.club_details = loaded_data["club_details"]
+    # Map removed countries to "Other" so the UI stays consistent
+    if st.session_state.club_details.get("country") in _legacy_countries:
+        st.session_state.club_details["country"] = "Other"
     st.session_state.starting_11 = loaded_data["starting_11"]
 
     if checklist_valid:
